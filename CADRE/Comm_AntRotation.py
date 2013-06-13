@@ -8,15 +8,15 @@ class Comm_AntRotation(Component):
 
     def __init__(self, n):
         self.add('q_A', Array(iotype='out', shape=(4,n)))
-        self.add('dq_dt', Array(iotype='out', shape=(4,n)))
+        self.add('dq_dt', Array(iotype='out', shape=(4)))
         self.n = n
 
     def linearize(self):
         rt2 = np.sqrt(2)
-        self.dq_dt[0,:] = - np.sin(self.antAngle/2.) / 2.
-        self.dq_dt[1,:] = np.cos(self.antAngle/2.) / rt2 / 2.
-        self.dq_dt[2,:] = - np.cos(self.antAngle/2.) / rt2 / 2.
-        self.dq_dt[3,:] = 0.0
+        self.dq_dt[0] = - np.sin(self.antAngle/2.) / 2.
+        self.dq_dt[1] = np.cos(self.antAngle/2.) / rt2 / 2.
+        self.dq_dt[2] = - np.cos(self.antAngle/2.) / rt2 / 2.
+        self.dq_dt[3] = 0.0
 
     def execute(self):
         rt2 = np.sqrt(2)
@@ -29,8 +29,4 @@ class Comm_AntRotation(Component):
         self.q_A += self.antAngle * self.dq_dt
 
     def applyDerT(self):
-        """
-        for k in range(4):
-            res('antAngle')[0] += self.dq_dt[k] * numpy.sum(arg('q_A')[k,:])
-        """
-        self.antAngle += np.sum([self.dq_dt * np.sum(self.q_A[i,:]) for i in xrange(4)])
+        self.antAngle += np.sum(self.dq_dt * np.sum(self.q_A[i,:], axis=1))
