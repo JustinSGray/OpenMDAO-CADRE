@@ -1,11 +1,11 @@
-from __future__ import division
-from CADRE.MDO import Component
-import numpy
+from openmdao.lib.datatypes.api import Float, Dict, Array, List
+from openmdao.main.api import Component
+import numpy as np
 
 
 class Comm_Distance(Component):
 
-    def initialize(self, n):
+    def __init__(self, n):
         super(Comm_Distance, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
