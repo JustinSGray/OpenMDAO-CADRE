@@ -6,6 +6,7 @@ import numpy as np
 class Comm_AntRotationMtx(Component):
 
     def __init__(self, n):
+        super(Comm_AntRotationMtx, self).__init__()
         self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         self.n = n
         self.add('O_AB', Array(iotype='out', shape=(3, 3, self.n)))

@@ -7,6 +7,7 @@ class Comm_AntRotation(Component):
     antAngle = Float(0, iotype="in", copy=None)
 
     def __init__(self, n):
+        super(Comm_AntRotation, self).__init__()
         self.add('q_A', Array(iotype='out', shape=(4,n)))
         self.add('dq_dt', Array(iotype='out', shape=(4)))
         self.n = n

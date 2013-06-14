@@ -6,6 +6,7 @@ import numpy as np
 class Comm_BitRate(Component):
 
     def __init__(self, n):
+        super(Comm_BitRate, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
 
