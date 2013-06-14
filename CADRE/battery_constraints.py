@@ -3,7 +3,7 @@ import numpy as np
 from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
 
-from CADRE.KS import KSfunction
+import KS
 
 class BatteryConstraints(Component): 
 
@@ -26,10 +26,10 @@ class BatteryConstraints(Component):
         self.add('SOC', Array(np.zeros((n,)), size=(n,), iotype="in", 
             desc="Battery State of Charge over time"))
 
-        self.KS_ch = KSfunction()
-        self.KS_ds = KSfunction()
-        self.KS_s0 = KSfunction()
-        self.KS_s1 = KSfunction()
+        self.KS_ch = KS.KSfunction()
+        self.KS_ds = KS.KSfunction()
+        self.KS_s0 = KS.KSfunction()
+        self.KS_s1 = KS.KSfunction()
 
     def execute(self):
 
