@@ -2,6 +2,7 @@ import numpy as np
 from numpy import array
 
 from CADRE.battery_constraints import BatteryConstraints
+from CADRE.battery_constraints import BatteryPower
 
 SIZE = 5
 
@@ -10,17 +11,15 @@ SIZE = 5
 ############################################################################
 
 io_spec = [
-    ('ConCh', (SIZE,)),
-    ('ConDs', (SIZE,)),
-    ('ConS0', (SIZE,)),
-    ('ConS1', (SIZE,)),
+    ('temperature', (5,SIZE)),
+    ('P_bat', (SIZE,)),
     ('I_bat', (SIZE,)),
     ('SOC', (1,SIZE)),
 ]
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = BatteryConstraints()
+comp = BatteryPower(n=SIZE)
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
