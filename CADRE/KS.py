@@ -3,7 +3,42 @@ import numpy as np
 from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
 
-class KSfunction(Component): 
+
+class KSfunction(object): 
+    """Helper class that can be used inside other components to aggregate constraint 
+    vectors with a KS function"""
+
+    def __init__(self): 
+        self._computed = False 
+
+    def compute(g, rho=50): 
+        """gets the value of the KS function for the given array of constraints"""
+
+        self.rho = rho
+        self.g_max = np.max(g)
+        self.g_diff = g-self.g_max
+        self.exponents = np.exp(rho * self.g_diff)
+        self.summation = np.sum(self.exponents)
+        self.KS = self.g_max + 1.0/rho * np.log(self.summation)
+
+        self._computed = True
+
+        return self.KS
+
+    def derivatives():
+        """returns a row vector of [dKS_gd, dKS_drho]"""
+        dsum_dg = self.rho*self.exponents
+        dKS_dsum = 1.0/self.rho/self.summation
+        self.dKS_dg = dKS_dsum * dsum_dg
+
+        dsum_drho = np.sum(self.g_diff*self.exponents)
+        self.dKS_drho = dKS_dsum * dsum_drho
+
+        return self.dks_dg, self.dKs_drho
+
+
+
+class KSComp(Component): 
     """Aggregates a number of functions to a single value via the 
     Kreisselmeier-Steinhauser Function""" 
 
@@ -18,27 +53,20 @@ class KSfunction(Component):
         self.add('g',Array(zeros((n,)), size=(n,1), dtype=Float, iotype="in", 
             desc="array of function values to be aggregated"))
 
+        self._ks = KSfunction()
+
     def execute(self): 
-        self.g_max = np.max(self.g)
-        self.g_diff = self.g-self.g_max
-        self.exponents = np.exp(self.rho * self.g_diff)
-        self.summation = np.sum(self.exponents)
-        self.KS = self.g_max + 1.0/self.rho * np.log(self.summation)
+        self.KS = self._ks.compute(self.g, self.rho)
 
     def linearize(self): 
         """linearize around the last executed point""" 
 
         #use g_max, exponsnte, summation from last executed point
-        dsum_dg = self.rho*self.exponents
-        dKS_dsum = 1.0/self.rho/self.summation
-        self.dKS_dg = dKS_dsum * dsum_dg
-
-        dsum_drho = np.sum(self.g_diff*self.exponents)
-        self.dKS_drho = dKS_dsum * dsum_drho
+        self.J = np.hstack(self._ks.derivatives())
 
 
     def provideDer(self): 
         ins = ('g','rho')
         outs = ('KS', )
-        J = np.hstack((self.dks_dg, [self.dKs_drho,]))
+        return ins, outs, self.J
 
