@@ -27,7 +27,7 @@ outputs = comp.list_outputs()
 for name,size in io_spec: 
     if name in inputs: 
         value = baseline['execute'][name]
-        comp.set(name,value.flatten())
+        comp.set(name,value)
 
 comp.run()        
 
