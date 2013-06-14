@@ -25,8 +25,14 @@ class Comm_AntRotation(Component):
         self.q_A[2,:] += - np.sin(self.antAngle/2.) / rt2
         self.q_A[3,:] += 0.0
 
-    def applyDer(self):
-        self.q_A += self.antAngle * self.dq_dt
+    def applyDer(self, arg, result):
+        if 'antAngle' in arg:
+            for k in xrange(4):
+                result['q_A'][k,:] += self.dq_dt[k] * arg['antAngle']
+        return result
 
-    def applyDerT(self):
-        self.antAngle += np.sum(self.dq_dt * np.sum(self.q_A[i,:], axis=1))
+    def applyDerT(self, arg, result):
+        if 'q_A' in arg:
+            for k in xrange(4):
+                result['antAngle'] += self.dq_dt[k] * numpy.sum(arg['q_A'][k,:])
+        return result

@@ -31,14 +31,21 @@ class Comm_BitRate(Component):
                                            self.GSdist, 
                                            self.CommLOS)
 
-    def applyDer(self):
-        self.Dr += self.dD_dP * self.P_comm
-        self.Dr += self.dD_dGt * self.gain
-        self.Dr += self.dD_dS * self.GSdist
-        self.Dr += self.dD_dLOS * self.CommLOS
+    def applyDer(self, arg, result):
+        if 'P_comm' in arg:
+            result['Dr'][:] += self.dD_dP * arg['P_comm'][:]
+        if 'gain' in arg:
+            result['Dr'][:] += self.dD_dGt * arg['gain'][:]
+        if 'GSdist' in arg:
+            result['Dr'][:] += self.dD_dS * arg['GSdist'][:]
+        if 'CommLOS' in arg:
+            result['Dr'][:] += self.dD_dLOS * arg['CommLOS'][:]
+        return result
 
-    def applyDerT(self):
-        self.P_comm += self.dD_dP * self.Dr
-        self.gain += self.dD_dGt * self.Dr
-        self.GSdist += self.dD_dS * self.Dr
-        self.CommLOS += self.dD_dLOS * self.Dr
+    def applyDerT(self, arg, result):
+        if 'Dr' in arg:
+            result['P_comm'][:] += self.dD_dP * arg['Dr'][:]
+            result['gain'][:] += self.dD_dGt * arg['Dr'][:]
+            result['GSdist'][:] += self.dD_dS * arg['Dr'][:]
+            result['CommLOS'][:] += self.dD_dLOS * arg['Dr'][:]
+        return result

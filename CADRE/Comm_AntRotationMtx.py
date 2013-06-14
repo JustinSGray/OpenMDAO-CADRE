@@ -19,14 +19,18 @@ class Comm_AntRotationMtx(Component):
     def execute(self):
         self.O_AB += self.lib.computerotationmtx(self.n, self.q_A)
 
-    def applyDer(self):
-        for u in xrange(3):
-            for v in xrange(3):
-                for k in xrange(4):
-                    self.O_AB[u,v,:] += self.J[:,u,v,k] * self.q_A[k,:]
+    def applyDer(self, arg, result):
+        if 'q_A' in arg:
+            for u in xrange(3):
+                for v in xrange(3):
+                    for k in xrange(4):
+                        result['O_AB'][u,v,:] += self.J[:,u,v,k] * arg['q_A'][k,:]
+        return result  
 
-    def applyDerT(self):
-        for u in xrange(3):
-            for v in xrange(3):
-                for k in xrange(4):
-                    self.q_A[k,:] += self.J[:,u,v,k] *  self.O_AB[u,v,:]
+    def applyDerT(self, arg, result):
+        if 'O_AB' in arg:
+            for u in range(3):
+                for v in range(3):
+                    for k in range(4):
+                        result['q_A'][k,:] += self.J[:,u,v,k] * arg['O_AB'][u,v,:]
+        return result
