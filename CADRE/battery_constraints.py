@@ -19,13 +19,41 @@ class BatteryPower(Component):
         self.T0 = 293
         self.alpha = log(1/1.1**5)
 
-        self.add('SOC', Array(zeros((n, )), dtype=Float, iotype="in"))
-        self.add('temperature', Array(zeros((n, )), dtype=Float, iotype="in"))
-        self.add('P_bat', Array(zeros((n, )), dtype=Float, iotype="in"))
+        self.add('SOC', Array(zeros((1, n)), size=(1, n), dtype=Float, iotype="in"))
+        self.add('temperature', Array(zeros((5, n)), size=(n, ), dtype=Float, iotype="in"))
+        self.add('P_bat', Array(zeros((n, )), size=(n, ), dtype=Float, iotype="in"))
 
 
-        self.add('I_bat', Array(zeros((n, )), dtype=Float, iotype="out"), 
+        self.add('I_bat', Array(zeros((n, )), size=(n, ), dtype=Float, iotype="out"), 
             desc="Batter Current over Time")
+
+    def execute(self): 
+        self.exponential = (2 - np.exp(self.alpha*(self.temperaturese-self.T0)/self.T0))
+        self.voc = 3 + (np.exp(self.SOC)-1) / (np.e-1)
+        self.V = self.IR * voc * self.exponential
+        self.I_bat = self.P_bat/V
+
+    def linearize(self): 
+        #dI_dP
+        dV_dvoc = self.IR * self.exponential
+        dV_dT = -self.V*self.alpha/self.T0
+        dVoc_dSOC = np.exp(self.SOC) / (np.e-1)
+
+        self.dI_dP = 1.0 / self.V
+        tmp = -self.P_bat/(self.V**2)
+        self.dI_dT = tmp * dV_dT
+        self.dI_dSOC = tmp * dV_dvoc * dVoc_dSOC
+
+    def applyDer(self, arg, result):
+        if 'P_bat' in arg: 
+            result['I_bat'] = self.dI_dP * arg['P_bat'] 
+        if 'temperature' in arg:  
+            result['I_bat'] += self.dI_dT * arg['temperature'][4,:]
+        if 'SOC' in arg:     
+            result['I_bat'] += self.dI_dSOC * arg['SOC'][0,:]
+
+            
+        
 
 
 class BatteryConstraints(Component): 
@@ -47,7 +75,7 @@ class BatteryConstraints(Component):
 
         self.add('I_bat', Array(np.zeros((n,)), size=(n,), iotype="in", 
             desc="Battery Current over time"))
-        self.add('SOC', Array(np.zeros((n,)), size=(n,), iotype="in", 
+        self.add('SOC', Array(np.zeros((1, n)), size=(1, n), iotype="in", 
             desc="Battery State of Charge over time"))
 
         self.KS_ch = KS.KSfunction()
@@ -73,8 +101,8 @@ class BatteryConstraints(Component):
             result['ConCh'] = np.dot(self.dCh_dg, arg['I_bat'])
             result['ConDs'] = -1 * np.dot(self.dDs_dg, arg['I_bat'])
         if 'SOC' in arg:
-            result['ConS0'] = -1* np.dot(self.dS0_dg, arg['SOC'])
-            result['ConS1'] = np.dot(self.dS1_dg, arg['SOC'])
+            result['ConS0'] = -1* np.dot(self.dS0_dg, arg['SOC'][0,:])
+            result['ConS1'] = np.dot(self.dS1_dg, arg['SOC'][0,:])
 
         return result
 
