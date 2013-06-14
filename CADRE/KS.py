@@ -8,10 +8,7 @@ class KSfunction(object):
     """Helper class that can be used inside other components to aggregate constraint 
     vectors with a KS function"""
 
-    def __init__(self): 
-        self._computed = False 
-
-    def compute(g, rho=50): 
+    def compute(self, g, rho=50): 
         """gets the value of the KS function for the given array of constraints"""
 
         self.rho = rho
@@ -21,11 +18,9 @@ class KSfunction(object):
         self.summation = np.sum(self.exponents)
         self.KS = self.g_max + 1.0/rho * np.log(self.summation)
 
-        self._computed = True
-
         return self.KS
 
-    def derivatives():
+    def derivatives(self):
         """returns a row vector of [dKS_gd, dKS_drho]"""
         dsum_dg = self.rho*self.exponents
         dKS_dsum = 1.0/self.rho/self.summation
@@ -34,7 +29,7 @@ class KSfunction(object):
         dsum_drho = np.sum(self.g_diff*self.exponents)
         self.dKS_drho = dKS_dsum * dsum_drho
 
-        return self.dks_dg, self.dKs_drho
+        return self.dKS_dg, self.dKS_drho
 
 
 
