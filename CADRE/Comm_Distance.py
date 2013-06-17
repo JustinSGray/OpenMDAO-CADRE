@@ -16,16 +16,18 @@ class Comm_Distance(Component):
         self.J = self.lib.computejacobiand(self.n, self.r_b2g_A)
 
     def execute(self):
-        self.GSdist[:] += self.lib.computed(self.n, self.r_b2g_A)
+        self.GSdist[:] = self.lib.computed(self.n, self.r_b2g_A)
 
     def applyDer(self, arg, result):
         if 'r_b2g_A' in arg:
+            result['GSdist'][:]  = 0*result['GSdist'][:] 
             for k in xrange(3):
                 result['GSdist'][:] += self.J[:,k] * arg['r_b2g_A'][k,:]
         return result
 
     def applyDerT(self, arg, result):
-        for 'GSdist' in arg:
+        if 'GSdist' in arg:
+            result['r_b2g_A'] = 0*result['r_b2g_A']
             for k in xrange(3):
                 result['r_b2g_A'][k,:] += self.J[:,k] * arg['GSdist'][:]
         return result

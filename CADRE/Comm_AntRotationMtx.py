@@ -18,9 +18,10 @@ class Comm_AntRotationMtx(Component):
         self.J = self.lib.computerotmtxjacobian(self.n, self.q_A)
 
     def execute(self):
-        self.O_AB += self.lib.computerotationmtx(self.n, self.q_A)
+        self.O_AB = self.lib.computerotationmtx(self.n, self.q_A)
 
     def applyDer(self, arg, result):
+        result['O_AB'] = 0*result['O_AB']
         if 'q_A' in arg:
             for u in xrange(3):
                 for v in xrange(3):
@@ -30,6 +31,7 @@ class Comm_AntRotationMtx(Component):
 
     def applyDerT(self, arg, result):
         if 'O_AB' in arg:
+            result['q_A'] = 0*result['q_A']
             for u in range(3):
                 for v in range(3):
                     for k in range(4):

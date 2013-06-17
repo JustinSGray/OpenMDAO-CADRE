@@ -26,7 +26,7 @@ class Comm_BitRate(Component):
         self.dD_dP, self.dD_dGt, self.dD_dS, self.dD_dLOS = response
         
     def execute(self):
-        self.Dr += self.lib.computedr(self.n, 
+        self.Dr = self.lib.computedr(self.n, 
                                            self.P_comm, 
                                            self.gain, 
                                            self.GSdist, 
@@ -34,7 +34,7 @@ class Comm_BitRate(Component):
 
     def applyDer(self, arg, result):
         if 'P_comm' in arg:
-            result['Dr'][:] += self.dD_dP * arg['P_comm'][:]
+            result['Dr'][:] = self.dD_dP * arg['P_comm'][:]
         if 'gain' in arg:
             result['Dr'][:] += self.dD_dGt * arg['gain'][:]
         if 'GSdist' in arg:
@@ -45,8 +45,8 @@ class Comm_BitRate(Component):
 
     def applyDerT(self, arg, result):
         if 'Dr' in arg:
-            result['P_comm'][:] += self.dD_dP * arg['Dr'][:]
-            result['gain'][:] += self.dD_dGt * arg['Dr'][:]
-            result['GSdist'][:] += self.dD_dS * arg['Dr'][:]
-            result['CommLOS'][:] += self.dD_dLOS * arg['Dr'][:]
+            result['P_comm'][:] = self.dD_dP * arg['Dr'][:]
+            result['gain'][:] = self.dD_dGt * arg['Dr'][:]
+            result['GSdist'][:] = self.dD_dS * arg['Dr'][:]
+            result['CommLOS'][:] = self.dD_dLOS * arg['Dr'][:]
         return result

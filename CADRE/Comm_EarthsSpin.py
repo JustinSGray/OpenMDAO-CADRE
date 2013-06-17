@@ -20,11 +20,15 @@ class Comm_EarthsSpin(Component):
         self.q_E += self.lib.computeqe(self.n, self.t)
 
     def applyDer(self, arg, result):
-        for k in range(4):
-            result['q_E'][k,:] += self.dq_dt[:,k] * arg['t'][:]
+        if 't' in arg:
+            result['q_E'][k,:] = 0*result['q_E'][k,:]
+            for k in range(4):
+                result['q_E'][k,:] += self.dq_dt[:,k] * arg['t'][:]
         return result
 
     def applyDerT(self, arg, result):
-        for k in range(4):
-            result['t'][:] += self.dq_dt[:,k] * arg['q_E'][k,:]
+        if 'q_E' in arg:
+            result['t'][:] = 0*result['t'][:]
+            for k in range(4):
+                result['t'][:] += self.dq_dt[:,k] * arg['q_E'][k,:]
         return result
