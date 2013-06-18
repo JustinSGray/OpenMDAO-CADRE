@@ -45,8 +45,9 @@ class Comm_GainPattern(Component):
         self.gain = self.MBI.evaluate(self.x)[:,0]
 
     def applyDer(self, arg, result):
+        result['gain'][:] = np.zeros(self.n)
         if 'azimuthGS' in arg:
-            result['gain'][:] = self.dg_daz * arg['azimuthGS'][:]
+            result['gain'][:] += self.dg_daz * arg['azimuthGS'][:]
         if 'elevationGS' in arg:
             result['gain'][:] += self.dg_del * arg['elevationGS'][:]
         return result
@@ -54,5 +55,5 @@ class Comm_GainPattern(Component):
     def applyDerT(self, arg, result):
         if 'gain' in arg:
             result['azimuthGS'][:] = self.dg_daz * arg['gain'][:]
-            result['elevationGS'][:] += self.dg_del * arg['gain'][:]
+            result['elevationGS'][:] = self.dg_del * arg['gain'][:]
         return result

@@ -10,6 +10,7 @@ class Comm_GSposEarth(Component):
     alt = Float(0, iotype="in")
     
     def __init__(self, n):
+        super(Comm_GSposEarth, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         self.add('r_e2g_E', Array(iotype='out', shape=(3, self.n)))
@@ -22,9 +23,10 @@ class Comm_GSposEarth(Component):
         self.r_e2g_E = self.lib.computegs(self.n, self.lon, self.lat, self.alt)
 
     def applyDer(self, arg, result):
+        result['r_e2g_E'] = np.zeros((3, self.n))
         if 'lon' in arg:
             for k in xrange(3):
-                result['r_e2g_E'][k,:] = self.dr_dlon[k] * arg['lon']
+                result['r_e2g_E'][k,:] += self.dr_dlon[k] * arg['lon']
         if 'lat' in arg:
             for k in xrange(3):
                 result['r_e2g_E'][k,:] += self.dr_dlat[k] * arg['lat']
@@ -35,8 +37,11 @@ class Comm_GSposEarth(Component):
 
     def applyDerT(self, arg, result):
         if 'r_e2g_E' in arg:
+            result['lon'] = 0.
+            result['lat'] = 0.
+            result['alt'] = 0.
             for k in xrange(3):
-                result['lon'] = self.dr_dlon[k] * numpy.sum(arg['r_e2g_E'][k,:])
-                result['lat'] = self.dr_dlat[k] * numpy.sum(arg['r_e2g_E'][k,:])
-                result['alt'] = self.dr_dalt[k] * numpy.sum(arg['r_e2g_E'][k,:])
+                result['lon'] += self.dr_dlon[k] * numpy.sum(arg['r_e2g_E'][k,:])
+                result['lat'] += self.dr_dlat[k] * numpy.sum(arg['r_e2g_E'][k,:])
+                result['alt'] += self.dr_dalt[k] * numpy.sum(arg['r_e2g_E'][k,:])
         return result

@@ -20,14 +20,14 @@ class Comm_Distance(Component):
 
     def applyDer(self, arg, result):
         if 'r_b2g_A' in arg:
-            result['GSdist'][:]  = 0*result['GSdist'][:] 
+            result['GSdist'][:]  = np.zeros(self.n)
             for k in xrange(3):
                 result['GSdist'][:] += self.J[:,k] * arg['r_b2g_A'][k,:]
         return result
 
     def applyDerT(self, arg, result):
         if 'GSdist' in arg:
-            result['r_b2g_A'] = 0*result['r_b2g_A']
+            result['r_b2g_A'] = np.zeros((3, self.n))
             for k in xrange(3):
                 result['r_b2g_A'][k,:] += self.J[:,k] * arg['GSdist'][:]
         return result

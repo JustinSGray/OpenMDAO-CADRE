@@ -21,14 +21,14 @@ class Comm_EarthsSpin(Component):
 
     def applyDer(self, arg, result):
         if 't' in arg:
-            result['q_E'][k,:] = 0*result['q_E'][k,:]
+            result['q_E'][k,:] = np.zeros((4, self.n))
             for k in range(4):
                 result['q_E'][k,:] += self.dq_dt[:,k] * arg['t'][:]
         return result
 
     def applyDerT(self, arg, result):
         if 'q_E' in arg:
-            result['t'][:] = 0*result['t'][:]
+            result['t'][:] = np.zeros(self.n)
             for k in range(4):
                 result['t'][:] += self.dq_dt[:,k] * arg['q_E'][k,:]
         return result

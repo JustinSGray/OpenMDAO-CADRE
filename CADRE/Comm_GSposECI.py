@@ -6,6 +6,7 @@ import numpy as np
 class Comm_GSposECI(Component):
 
     def __init__(self, n):
+        super(Comm_GSposECI, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
@@ -27,7 +28,7 @@ class Comm_GSposECI(Component):
 
     def applyDer(self, arg, result):
         if 'O_IE' in arg and 'r_e2g_E' in arg:
-            result['r_e2g_I'] = 0*result['r_e2g_I']
+            result['r_e2g_I'] = np.zeros((3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
@@ -38,7 +39,7 @@ class Comm_GSposECI(Component):
 
     def applyDerT(self, arg, result):
         if 'r_e2g_I' in arg:
-            result['O_IE'] = 0*result['O_IE']
+            result['O_IE'] = np.zeros((3, 3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):

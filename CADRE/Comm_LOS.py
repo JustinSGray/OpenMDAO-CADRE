@@ -6,6 +6,7 @@ import numpy as np
 class Comm_LOS(Component):
 
     def __init__(self, n):
+        super(Comm_LOS, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         
@@ -24,13 +25,17 @@ class Comm_LOS(Component):
                                               self.r_e2g_I[:])
 
     def applyDer(self, arg, result):
-        for k in xrange(3):
-            result['CommLOS'][:] = self.dLOS_drb[:,k] * arg['r_b2g_I'][k,:]
-            result['CommLOS'][:] += self.dLOS_dre[:,k] * arg['r_e2g_I'][k,:]
+        if 'r_b2g_I' in arg:
+            result['CommLOS'][:] = np.zeros(self.n)
+            for k in xrange(3):
+                result['CommLOS'][:] += self.dLOS_drb[:,k] * arg['r_b2g_I'][k,:]
+                result['CommLOS'][:] += self.dLOS_dre[:,k] * arg['r_e2g_I'][k,:]
         return result
     
     def applyDerT(self, arg, result):
-        for k in xrange(3):
-            result['r_b2g_I'][k,:] = self.dLOS_drb[:,k] * arg['CommLOS'][:]
-            result['r_e2g_I'][k,:] += self.dLOS_dre[:,k] * arg['CommLOS'][:]
+        if 'CommLOS' in arg:
+            result['r_b2g_I'][:] = np.zeros((3,self.n))
+            for k in xrange(3):
+                result['r_b2g_I'][k,:] += self.dLOS_drb[:,k] * arg['CommLOS'][:]
+                result['r_e2g_I'][k,:] += self.dLOS_dre[:,k] * arg['CommLOS'][:]
         return result

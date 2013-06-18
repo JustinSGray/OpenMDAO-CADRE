@@ -21,7 +21,7 @@ class Comm_EarthsSpinMtx(Component):
 
     def applyDer(self, arg, result):
         if 'q_E' in arg:
-            result['O_IE'] = 0*result['O_IE']
+            result['O_IE'] = np.zeros((3, 3, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
@@ -30,7 +30,7 @@ class Comm_EarthsSpinMtx(Component):
 
     def applyDerT(self, arg, result):
         if 'O_IE' in arg:
-            result['q_E'] = 0*result['q_E']
+            result['q_E'] = np.zeros((4, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):

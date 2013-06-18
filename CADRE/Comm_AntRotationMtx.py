@@ -21,8 +21,8 @@ class Comm_AntRotationMtx(Component):
         self.O_AB = self.lib.computerotationmtx(self.n, self.q_A)
 
     def applyDer(self, arg, result):
-        result['O_AB'] = 0*result['O_AB']
         if 'q_A' in arg:
+            result['O_AB'] = np.zeros((3, 3, self.n))
             for u in xrange(3):
                 for v in xrange(3):
                     for k in xrange(4):
@@ -31,7 +31,7 @@ class Comm_AntRotationMtx(Component):
 
     def applyDerT(self, arg, result):
         if 'O_AB' in arg:
-            result['q_A'] = 0*result['q_A']
+            result['q_A'] = np.zeros((4, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
