@@ -4,6 +4,7 @@ import numpy as np
 
 
 class Comm_GSposEarth(Component):
+    
     lon = Float(0, iotype="in")
     lat = Float(0, iotype="in")
     alt = Float(0, iotype="in")
@@ -34,7 +35,7 @@ class Comm_GSposEarth(Component):
 
     def applyDerT(self, arg, result):
         if 'r_e2g_E' in arg:
-            for k in range(3):
+            for k in xrange(3):
                 result['lon'] = self.dr_dlon[k] * numpy.sum(arg['r_e2g_E'][k,:])
                 result['lat'] = self.dr_dlat[k] * numpy.sum(arg['r_e2g_E'][k,:])
                 result['alt'] = self.dr_dalt[k] * numpy.sum(arg['r_e2g_E'][k,:])
