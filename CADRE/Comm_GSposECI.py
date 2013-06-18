@@ -27,6 +27,7 @@ class Comm_GSposECI(Component):
 
     def applyDer(self, arg, result):
         if 'O_IE' in arg and 'r_e2g_E' in arg:
+            result['r_e2g_I'] = 0*result['r_e2g_I']
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
@@ -37,6 +38,7 @@ class Comm_GSposECI(Component):
 
     def applyDerT(self, arg, result):
         if 'r_e2g_I' in arg:
+            result['O_IE'] = 0*result['O_IE']
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
