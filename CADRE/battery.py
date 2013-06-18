@@ -4,6 +4,111 @@ from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
 
 import KS
+import rk4
+
+
+#Constants 
+sigma = 1e-10
+eta = 0.99
+Cp = 2900*0.001*3600
+IR = 0.9
+T0 = 293.
+alpha = np.log(1/1.1**5)
+
+
+class BatterySOC(rk4.RK4): 
+
+    def __init__(self, n_times, time_step=.01): 
+        """computes the time history of the battery state of 
+        charge. 
+            n_time: (integer) number of time_steps to take 
+            time_step: (float) size of each timestep
+        """ 
+        super(BatterySOC, self).__init__()
+
+        self.time_step = time_step
+
+        self.add('SOC', 
+            Array(np.zeros((1,n_times)), shape=(1,n_times), dtype=np.float, 
+                iotype="out", desc="battery state of charge over time")
+        )
+
+        self.add('iSOC', 
+            Array(np.zeros((1, )), shape=(1, ), dtype=np.float, 
+                iotype="in", desc="initial state of charge")
+        )
+
+        self.add('P_bat', 
+            Array(np.zeros((n_times, )), shape=(n_times, ), dtype=np.float, 
+                iotype="in", desc="battery state of charge over time")
+        )
+
+        self.add('temperature', 
+            Array(np.zeros((n_times, )), shape=(n_times, ), dtype=np.float, 
+                iotype="in", desc="battery temperature over ftime")
+        )
+
+        self.state_var = "SOC"
+        self.init_state_var = "iSOC"
+        self.external_vars = ["P_bat","temperature"]
+
+
+
+    def f_dot(self,external,state): 
+        """Rate of change of SOC""" 
+
+        SOC = state[0]
+        P = external[0]
+        T = external[1]
+
+
+        voc = 3 + np.expm1(SOC) / (np.e-1)
+        dVoc_dSOC = np.exp(SOC) / (np.e-1)
+
+        V = IR * voc * (2 - np.exp(alpha*(T-T0)/T0))
+        I = P/V
+
+        soc_dot = -sigma/24*SOC + eta/Cp*I
+        return soc_dot 
+
+    def df_dy(self, external, state): 
+
+        SOC = state[0]
+        P = external[0]
+        T = external[1]
+
+        voc = 3 + np.expm1(SOC) / (np.e-1)
+        dVoc_dSOC = np.exp(SOC) / (np.e-1)
+
+        tmp = 2 - np.exp(alpha*(T-T0)/T0)
+
+        V = IR * voc * tmp
+        I = P/V
+
+        dV_dSOC = IR * dVoc_dSOC * tmp
+        dI_dSOC = -P/V**2 * dV_dSOC
+
+        df_dy = -sigma/24 + eta/Cp*dI_dSOC
+        return np.array([[df_dy]])
+
+    def df_dx(self, external, state):   
+        SOC = state[0]
+        P = external[0]
+        T = external[1]
+
+        voc = 3 + np.expm1(SOC) / (np.e-1)
+        dVoc_dSOC = np.exp(SOC) / (np.e-1)
+
+        tmp = 2 - np.exp(alpha*(T-T0)/T0)
+
+        V = IR * voc * tmp
+        I = P/V
+
+        dV_dT = - IR * voc * (tmp+2) * alpha/T0
+        dI_dT = - P/V**2 * dV_dT
+        dI_dP = 1.0/V
+
+        return np.array([[eta/Cp*dI_dP, eta/Cp*dI_dT]])
 
 class BatteryPower(Component): 
 
@@ -11,13 +116,6 @@ class BatteryPower(Component):
         super(BatteryPower, self).__init__()
 
         self.n = n 
-
-        self.sigma = 1e-10
-        self.eta = 0.99
-        self.Cp = 2900*0.001*3600
-        self.IR = 0.9
-        self.T0 = 293.
-        self.alpha = np.log(1/1.1**5)
 
         self.add('SOC', Array(np.zeros((1, n)), size=(1, n), dtype=np.float, iotype="in"))
         self.add('temperature', Array(np.zeros((5, n)), size=(n, ), dtype=np.float, iotype="in"))
@@ -28,15 +126,15 @@ class BatteryPower(Component):
             desc="Batter Current over Time"))
 
     def execute(self): 
-        self.exponential = (2 - np.exp(self.alpha*(self.temperature[4,:]-self.T0)/self.T0))
+        self.exponential = (2 - np.exp(alpha*(self.temperature[4,:]-T0)/T0))
         self.voc = 3 + np.expm1(self.SOC[0,:]) / (np.e-1)
-        self.V = self.IR * self.voc * self.exponential
+        self.V = IR * self.voc * self.exponential
         self.I_bat = self.P_bat/self.V
 
     def linearize(self): 
         #dI_dP
-        dV_dvoc = self.IR * self.exponential
-        dV_dT = -self.V*self.alpha/self.T0
+        dV_dvoc = IR * self.exponential
+        dV_dT = -self.V*alpha/T0
         dVoc_dSOC = np.exp(self.SOC[0,:]) / (np.e-1)
 
         self.dI_dP = 1.0 / self.V
@@ -109,7 +207,7 @@ class BatteryConstraints(Component):
             result['ConCh'] = np.dot(self.dCh_dg, arg['I_bat'])
             result['ConDs'] = -1 * np.dot(self.dDs_dg, arg['I_bat'])
         if 'SOC' in arg:
-            result['ConS0'] = -1* np.dot(self.dS0_dg, arg['SOC'][0,:])
+            result['ConS0'] = -1 * np.dot(self.dS0_dg, arg['SOC'][0,:])
             result['ConS1'] = np.dot(self.dS1_dg, arg['SOC'][0,:])
 
         return result
