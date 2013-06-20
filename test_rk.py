@@ -3,9 +3,7 @@ from numpy import array
 
 import timeit
 
-from CADRE.battery import BatteryConstraints
-from CADRE.battery import BatteryPower
-from CADRE.battery import BatterySOC
+from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
 
 SIZE = 5
 
@@ -15,22 +13,21 @@ SIZE = 5
 
 #battery SOC
 io_spec = [
-    ('temperature', (SIZE, )),
-    ('P_bat', (SIZE,)),
-    ('iSOC', (1,)),
-    ('SOC', (1,SIZE)),
+    ('w_B', (3,SIZE)),
+    ('T_RW', (3,SIZE)),
+    ('w_RW', (3,SIZE)),
 ]
 
 io_map = {
-    'SOC':'y'
+    'w_RW':'y'
 }
 
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = BatterySOC(n_times=SIZE, time_step=1)
-inputs = ['iSOC', 'P_bat', 'temperature']#comp.list_inputs()
-outputs = ['SOC'] #comp.list_outputs()
+comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=8) #edit: made time_step equal 8
+inputs = ['w_B','T_RW']#comp.list_inputs()
+outputs = ['w_RW'] #comp.list_outputs()
 
 for name,size in io_spec: 
     if name in inputs: 

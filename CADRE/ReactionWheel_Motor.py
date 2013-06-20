@@ -33,6 +33,9 @@ class ReactionWheel_Motor(Component):
         self.T_m = self.lib.computet(self.n, self.T_RW[:], self.w_B[:], self.J_RW * self.w_RW[:])
         
     def applyDer(self, arg, result):
+        if not result['T_m']:
+            result['T_m'] = np.zeros((3,self.n))
+        
         for k in range(3):
             for j in range(3):
                 if 'T_RW' in arg:
@@ -44,6 +47,13 @@ class ReactionWheel_Motor(Component):
         return result
                     
     def applyDerT(self, arg, result):
+        if not result['T_RW']:
+            result['T_RW'] = np.zeros((3,self.n))
+        if not result['w_B']:
+            result['w_B'] = np.zeros((3,self.n))        
+        if not result['w_RW']:
+            result['w_RW'] = np.zeros((3,self.n))
+        
         for k in range(3):
             for j in range(3):
                 if 'T_RW' in arg:
