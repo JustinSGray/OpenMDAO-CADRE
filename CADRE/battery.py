@@ -44,7 +44,7 @@ class BatterySOC(rk4.RK4):
         )
 
         self.add('temperature', 
-            Array(np.zeros((n_times, )), shape=(n_times, ), dtype=np.float, 
+            Array(np.zeros((5, n_times )), shape=(5, n_times ), dtype=np.float, 
                 iotype="in", desc="battery temperature over ftime")
         )
 
@@ -59,7 +59,7 @@ class BatterySOC(rk4.RK4):
 
         SOC = state[0]
         P = external[0]
-        T = external[1]
+        T = external[5]
 
 
         voc = 3 + np.expm1(SOC) / (np.e-1)
@@ -75,7 +75,7 @@ class BatterySOC(rk4.RK4):
 
         SOC = state[0]
         P = external[0]
-        T = external[1]
+        T = external[5]
 
         voc = 3 + np.expm1(SOC) / (np.e-1)
         dVoc_dSOC = np.exp(SOC) / (np.e-1)
@@ -89,6 +89,7 @@ class BatterySOC(rk4.RK4):
         dI_dSOC = -P/V**2 * dV_dSOC
 
         df_dy = -sigma/24 + eta/Cp*dI_dSOC
+
         return np.array([[df_dy]])
 
     def df_dx(self, external, state):   
@@ -108,7 +109,7 @@ class BatterySOC(rk4.RK4):
         dI_dT = - P/V**2 * dV_dT
         dI_dP = 1.0/V
 
-        return np.array([[eta/Cp*dI_dP, eta/Cp*dI_dT]])
+        return np.array([[eta/Cp*dI_dP, 0 , 0, 0, 0, eta/Cp*dI_dT]])
 
 class BatteryPower(Component): 
 
@@ -134,7 +135,7 @@ class BatteryPower(Component):
     def linearize(self): 
         #dI_dP
         dV_dvoc = IR * self.exponential
-        dV_dT = -self.V*alpha/T0
+        dV_dT = - IR * self.voc * np.exp(alpha*(self.temperature[4,:]-T0)/T0) * alpha / T0
         dVoc_dSOC = np.exp(self.SOC[0,:]) / (np.e-1)
 
         self.dI_dP = 1.0 / self.V
@@ -155,8 +156,12 @@ class BatteryPower(Component):
     def applyDerT(self, arg, result): 
         if 'I_bat' in arg: 
             result['P_bat'] = self.dI_dP * arg['I_bat']
-            result['temperature'] = self.dI_dT * arg['I_bat']
-            result['SOC'] = self.dI_dSOC * arg['I_bat']
+
+            result['temperature'] = np.zeros(self.temperature.shape)
+            result['temperature'][4,:] = self.dI_dT * arg['I_bat']
+
+            result['SOC'] = np.zeros(self.SOC.shape)
+            result['SOC'][0,:] = self.dI_dSOC * arg['I_bat']
 
         return result     
 
