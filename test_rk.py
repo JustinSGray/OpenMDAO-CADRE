@@ -3,11 +3,7 @@ from numpy import array
 
 import timeit
 
-from CADRE.battery import BatteryConstraints
-from CADRE.battery import BatteryPower
-from CADRE.battery import BatterySOC
-
-from CADRE.thermal_temperature import ThermalTemperature
+from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
 
 SIZE = 10
 
@@ -15,28 +11,17 @@ SIZE = 10
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
 
-#battery SOC
+#ReactionWheel_Dynamics
 io_spec = [
-    ('temperature', (5, SIZE)),
-    ('P_bat', (SIZE,)),
-    ('iSOC', (1,)),
-    ('SOC', (1,SIZE)),
+    ('w_B', (5, SIZE)),
+    ('T_RW', (SIZE,)),
+    ('w_RW', (1,)),
 ]
-"""
-#thermal_temperature
-io_spec = [
-    ('temperature', (5, SIZE)),
-    ('exposedArea', (7,12,SIZE)), 
-    ('cellInstd',(7,12)), 
-    ('LOS', (SIZE, )), 
-    ('P_comm', (SIZE, ))
-]
-"""
+
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = BatterySOC(n_times=SIZE, time_step=1)
-#comp = ThermalTemperature(n_times=SIZE, time_step=1)
+comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
