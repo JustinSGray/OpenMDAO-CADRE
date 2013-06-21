@@ -67,7 +67,8 @@ class RK4(Component):
             self.state_var:'y',
             self.init_state_var:'y0'
         }
-        for i,var in enumerate(self.external_vars): 
+        e_vars = np.hstack((self.external_vars,self.fixed_external_vars))
+        for i,var in enumerate(e_vars): 
             self.reverse_name_map[var] = i
 
         self.name_map = dict([(v,k) for k,v in self.reverse_name_map.iteritems()])
@@ -130,8 +131,8 @@ class RK4(Component):
 
             self.y[self.n_states+k1:self.n_states+k2] = y + self.time_step/6.*(a + 2*b + 2*c + d)
 
-        state_var = self.get(self.name_map['y'])
-        state_var = self.y.reshape((self.n,self.n_states)).T.copy()
+        state_var_name = self.name_map['y']
+        setattr(self, state_var_name, self.y.T.reshape((self.n,self.n_states)).T)
 
 
     def linearize(self): 
@@ -142,7 +143,7 @@ class RK4(Component):
         self.Jj = np.zeros((self.nJ, ))
         self.Jx = np.zeros((self.n, self.n_external, self.n_states))
 
-        self.Ja[:self.ny] = np.ones((self.n_states, ))
+        self.Ja[:self.ny] = np.ones((self.ny, ))
         self.Ji[:self.ny] = np.arange(self.ny)
         self.Jj[:self.ny] = np.arange(self.ny)
 
@@ -196,26 +197,50 @@ class RK4(Component):
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve
 
+
+
     def applyJ(self, arg, result): 
+
+        r1 = self.applyJint(arg, result)
+        r2 = self.applyJext(arg, result)
+
+        r3 = dict(r1)
+        for k,v in r2.iteritems(): 
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
+        return r3
+
+
+    def applyJint(self, arg, result): 
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
 
         if "y" in arg:
-            flat_y = arg['y'].flatten()
-            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n))
-        if "y0" in arg: 
-            result["y"][:,0] -= arg['y0'] 
-        
+            flat_y = arg['y'].T.flatten()
+            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n)).T
 
-        for e in [ext for ext in self.name_map if isinstance(ext,int)]: 
-            flat_arg = arg[e].reshape(-1,self.n)
-            for i in xrange(flat_arg.shape[0]): 
-                result['y'][0,1:] += self.Jx[1:,e,0] * flat_arg[i][:-1]
-
-        result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])   
+        result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])  
         return result
 
+    def applyJext(self, arg, result): 
+        raise NotImplementedError
+
     def applyJT(self, arg, result): 
+
+        r1 = self.applyJintT(arg, result)
+        r2 = self.applyJextT(arg, result)
+
+        r3 = dict(r1)
+        for k,v in r2.iteritems(): 
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
+        return r3
+
+    def applyJintT(self, arg, result): 
 
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
@@ -223,10 +248,10 @@ class RK4(Component):
         if 'y' in arg: 
             flat_y = arg['y'].flatten()
             result['y'] = self.JT.dot(flat_y).reshape((self.n_states,self.n))
-
+            """
             result['y0'] = np.zeros((self.n_states, ))
             result['y0'] = -1 * arg['y'][:,0]
-
+            
             for e in [ext for ext in self.name_map if isinstance(ext,int)]: 
                 arg_shape = arg[e].shape
                 if len(arg_shape) == 1: 
@@ -239,8 +264,12 @@ class RK4(Component):
                     for i in xrange(flat_arg.shape[0]): 
                        flat_result[i,:-1] =  self.Jx[1:,e,0] * arg['y'][0,1:]
                     result[e] = flat_result.reshape(arg[e].shape)
+            """
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()]) 
         return result
+
+    def applyJextT(self, arg, result): 
+        raise NotImplementedError
 
 
     
