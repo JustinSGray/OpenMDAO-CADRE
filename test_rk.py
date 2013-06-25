@@ -1,7 +1,9 @@
 from numpy import array
 import numpy as np
 
-from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
+from CADRE.battery import BatteryConstraints
+from CADRE.battery import BatteryPower
+from CADRE.battery import BatterySOC
 
 SIZE = 5
 
@@ -41,7 +43,6 @@ for name,size in io_spec:
         #print baseline_value, "\n\n" ,comp.get(name)        
 
 comp.linearize()
-
 arg = {}
 result = {}
 for name, size in io_spec: 

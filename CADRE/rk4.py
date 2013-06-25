@@ -41,7 +41,8 @@ class RK4(Component):
             self.state_var:'y',
             self.init_state_var:'y0'
         }
-        for i,var in enumerate(self.external_vars): 
+        e_vars = np.hstack((self.external_vars,self.fixed_external_vars))
+        for i,var in enumerate(e_vars): 
             self.reverse_name_map[var] = i
 
         self.name_map = dict([(v,k) for k,v in self.reverse_name_map.iteritems()])
@@ -109,7 +110,7 @@ class RK4(Component):
         self.Jj = np.zeros((self.nJ, ))
         self.Jx = np.zeros((self.n, self.n_external, self.n_states))
 
-        self.Ja[:self.ny] = np.ones((self.n_states, ))
+        self.Ja[:self.ny] = np.ones((self.ny, ))
         self.Ji[:self.ny] = np.arange(self.ny)
         self.Jj[:self.ny] = np.arange(self.ny)
 
@@ -163,7 +164,23 @@ class RK4(Component):
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve
 
+
+
     def applyJ(self, arg, result): 
+
+        r1 = self.applyJint(arg, result)
+        r2 = self.applyJext(arg, result)
+
+        r3 = dict(r1)
+        for k,v in r2.iteritems(): 
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
+        return r3
+
+
+    def applyJint(self, arg, result): 
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
 
@@ -180,7 +197,23 @@ class RK4(Component):
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])   
         return result
 
+    def applyJext(self, arg, result): 
+        raise NotImplementedError
+
     def applyJT(self, arg, result): 
+
+        r1 = self.applyJintT(arg, result)
+        r2 = self.applyJextT(arg, result)
+
+        r3 = dict(r1)
+        for k,v in r2.iteritems(): 
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
+        return r3
+
+    def applyJintT(self, arg, result): 
 
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
