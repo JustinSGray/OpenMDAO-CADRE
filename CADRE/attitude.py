@@ -1,11 +1,71 @@
 from openmdao.lib.datatypes.api import Float, Dict, Array, List
-from openmdao.main.api import Component
+from openmdao.main.api import Component, Assembly
 import numpy as np
 
+class Attitude(Assembly):
+    """
+    CADRE Attitude assembly
+    """
 
+    def __init__(self, n=2):
+        super(Attitude, self).__init__()
+        
+        self.add("angular", Attitude_Angular(n=n))
+        self.driver.workflow.add("angular")
+        
+        self.make_connections()
+        
+    def make_connections(self):
+        """
+        Collects the names of all input and output variables for all
+        components within the assembly (drivers excluded). 
+        
+        Then establishes connections between
+        any output variable and input variable that has the same name, so 
+        long as the variable name does not exist as an output to more than
+        a single component (so excludes default outputs)
+        """
+        inputs, outputs = {}, {}
+        for compname in self.list_components():
+            if compname == "driver":
+                continue
+            
+            comp_inputs = self.get(compname).list_inputs()
+            
+            for input_name in comp_inputs:
+                if input_name not in inputs:
+                    inputs[input_name] = [compname]
+                else:
+                    inputs[input_name].append(compname)
+                
+            comp_outputs = self.get(compname).list_outputs()
+            
+            for output_name in comp_outputs:
+                if output_name not in outputs:
+                    outputs[output_name] = [compname]
+                else:
+                    outputs[output_name].append(compname)
+            
+        print
+        for varname in outputs.keys():
+            comps = outputs[varname]
+            if len(comps) > 1:
+                continue
+            frompath = '.'.join([comps[0], varname])
+            
+            if varname in inputs:
+                for compname in inputs[varname]:
+                    topath = '.'.join([compname, varname])
+                    self.connect(frompath, topath)
+                    print "Connecting", frompath, "to", topath, "..."
+
+            
+            
+            
+        
 class Attitude_Angular(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_Angular, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
@@ -48,7 +108,7 @@ class Attitude_Angular(Component):
 
 class Attitude_AngularRates(Component):
 
-    def __init__(self, n, h = 0.01):
+    def __init__(self, n=2, h = 0.01):
         super(Attitude_AngularRates, self).__init__()
         self.n = n
         self.h = h
@@ -96,7 +156,7 @@ class Attitude_AngularRates(Component):
 
 class Attitude_Attitude(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_Attitude, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
@@ -133,7 +193,7 @@ class Attitude_Attitude(Component):
 
 class Attitude_Roll(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_Roll, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
@@ -168,7 +228,7 @@ class Attitude_Roll(Component):
     
 class Attitude_RotationMtx(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_RotationMtx, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
@@ -211,7 +271,7 @@ class Attitude_RotationMtx(Component):
 
 class Attitude_RotationMtxRates(Component):
 
-    def __init__(self, n, h=0.01):
+    def __init__(self, n=2, h=0.01):
         super(Attitude_RotationMtxRates, self).__init__()
         self.n = n
         self.h = h
@@ -264,7 +324,7 @@ class Attitude_RotationMtxRates(Component):
 
 class Attitude_Sideslip(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_Sideslip, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
@@ -309,7 +369,7 @@ class Attitude_Sideslip(Component):
 
 class Attitude_Torque(Component):
 
-    def __init__(self, n):
+    def __init__(self, n=2):
         super(Attitude_Torque, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
@@ -344,3 +404,4 @@ class Attitude_Torque(Component):
                     result['w_B'][j,:] += self.dT_dw[:,k,j] * arg['T_tot'][k,:]
                     result['wdot_B'][j,:] += self.dT_dwdot[:,k,j] * arg['T_tot'][k,:]
         return result
+
