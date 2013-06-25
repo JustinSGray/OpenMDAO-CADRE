@@ -4,6 +4,46 @@ import numpy as np
 import scipy.sparse
 import MBI
 
+import rk4
+
+
+class Comm_DataDownloaded(rk4.RK4):
+
+    def __init__(self, n_times, time_step=.01):
+        super(Comm_DataDownloaded, self).__init__()
+        self.time_step = time_step
+        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
+        
+        self.add('Data0', Array(np.ones(n_times), iotype='in', shape=(n_times,)))
+        self.add('Data', Array(np.zeros((1, n_times)), iotype='out', 
+                               shape=(1, n_times)))
+        
+        self.add('Dr', Array(np.zeros(n_times), iotype='in', shape=(n_times,)))
+        
+        
+        self.state_var = "Data"
+        self.init_state_var = "Data0"
+        self.external_vars = ["Dr"]
+
+    def f_dot(self, external, state): 
+        return external[0]
+
+    def df_dy(self, external, state): 
+        return np.array([[0.]])
+
+    def df_dx(self, external, state):   
+        return np.array([[1.]])
+
+    def applyJext(self, arg, result):
+        if 'Dr' in arg:
+            result['Data'][0,1:] = self.Jx[1:,0,0] * arg['Dr'][:-1]
+        return result
+
+    def applyJextT(self, arg, result):
+        if 'SOC' in arg: 
+            result['Dr'][:-1] = self.Jx[1:,0,0] * arg['Data'][0,1:]
+        return result
+
 class Comm_AntRotation(Component):
     antAngle = Float(0., iotype="in", copy=None)
 
@@ -232,7 +272,7 @@ class Comm_EarthsSpinMtx(Component):
 
 class Comm_GainPattern(Component):
 
-    def __init__(self, n, rawG):
+    def __init__(self, n):
         super(Comm_GainPattern, self).__init__()
         self.n = n
         self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
@@ -242,13 +282,16 @@ class Comm_GainPattern(Component):
         self.add('azimuthGS', Array(np.zeros(n), iotype='in', shape=(self.n,)))
         self.add('elevationGS', Array(np.zeros(n), iotype='in', 
                                       shape=(self.n,)))
-
+        
+        rawGdata = np.genfromtxt('CADRE/data/Comm/Gain.txt')
+        rawG = (10**(rawGdata/10.0)).reshape((361,361),order='F')
+        
         pi = np.pi
         az = np.linspace(0,2*pi,361)
         el = np.linspace(0,2*pi,361)
 
         self.MBI = MBI.MBI(rawG,[az,el],[15,15],[4,4])
-        self.x = numpy.zeros((self.n,2),order='F')
+        self.x = np.zeros((self.n,2),order='F')
 
     def setx(self):
         self.x[:,0] = self.azimuthGS
