@@ -1,8 +1,9 @@
-from numpy import array
 import numpy as np
+from numpy import array
 
-from CADRE.battery import BatteryConstraints
-from CADRE.battery import BatteryPower
+import timeit
+
+#from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
 from CADRE.battery import BatterySOC
 
 SIZE = 5
@@ -10,15 +11,26 @@ SIZE = 5
 ############################################################################
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
+'''
 #ReactionWheel_Dynamics
 io_spec = [
     ('w_B', (3,SIZE)),
     ('T_RW', (3,SIZE)),
     ('w_RW', (3,SIZE))
 ]
+'''
+io_spec = [
+        ('SOC', (1,SIZE)),
+        ('iSOC', (1,)),
+        ('P_bat', (SIZE,)),
+        ('temperature', (5,SIZE))
+]
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
-comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+
+#comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+comp = BatterySOC(n_times=SIZE, time_step=1)
+
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
@@ -26,6 +38,7 @@ for name,size in io_spec:
     if name in inputs:
         value = baseline['execute'][name]
         comp.set(name,value)
+
 comp.run()        
 
 print 5*"#######" 
@@ -40,7 +53,7 @@ for name,size in io_spec:
             continue
         is_error = np.allclose(baseline_value, comp.get(name))
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong' 
-        #print baseline_value, "\n\n" ,comp.get(name)        
+        #print baseline_value, "\n\n" ,comp.get(name)
 
 comp.linearize()
 arg = {}
@@ -77,6 +90,4 @@ for name, baseline_value in baseline['applyDerT'].iteritems():
         is_error = np.allclose(baseline_value, result[name],rtol=1e-1,atol=5)
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'    
         #print (name+": ").ljust(10), baseline_value, "\n\n", result[name]
-print "COMPLETE"
-
 
