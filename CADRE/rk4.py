@@ -205,11 +205,12 @@ class RK4(Component):
         r2 = self.applyJext(arg, result)
 
         r3 = dict(r1)
-        for k,v in r2.iteritems(): 
-            if k in r3 and r3[k] is not None: 
-                r3[k] += v
-            else: 
-                r3[k] = v
+        for k,v in r2.iteritems():
+            if v is not None:
+                if k in r3 and r3[k] is not None: 
+                    r3[k] += v
+                else: 
+                    r3[k] = v
         return r3
 
 

@@ -3,22 +3,24 @@ from numpy import array
 
 import timeit
 
-#from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
+from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
 from CADRE.battery import BatterySOC
+from CADRE.comm import Comm_DataDownloaded
 
 SIZE = 5
 
 ############################################################################
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
-'''
+
 #ReactionWheel_Dynamics
 io_spec = [
     ('w_B', (3,SIZE)),
     ('T_RW', (3,SIZE)),
-    ('w_RW', (3,SIZE))
+    ('w_RW', (3,SIZE)),
 ]
 '''
+#BatterySOC
 io_spec = [
         ('SOC', (1,SIZE)),
         ('iSOC', (1,)),
@@ -26,10 +28,18 @@ io_spec = [
         ('temperature', (5,SIZE))
 ]
 
+# Comm_DataDownloaded
+io_spec = [
+    ('Data0', (SIZE)),
+    ('Data', (1, SIZE)),
+    ('Dr', (SIZE))
+]
+'''
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-#comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
-comp = BatterySOC(n_times=SIZE, time_step=1)
+comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+#comp = BatterySOC(n_times=SIZE, time_step=1)
+#comp = Comm_DataDownloaded(n_times=SIZE, time_step=1)
 
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
