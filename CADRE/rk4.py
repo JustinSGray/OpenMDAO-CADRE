@@ -206,11 +206,11 @@ class RK4(Component):
 
         r3 = dict(r1)
         for k,v in r2.iteritems():
-            if v is not None:
+            if v is not None: #THIS IS NEW (KEN)
                 if k in r3 and r3[k] is not None: 
-                    r3[k] += v
+                    r3[k] += v.T #REMOVE .T !!!!
                 else: 
-                    r3[k] = v
+                    r3[k] = v.T
         return r3
 
 
@@ -235,10 +235,11 @@ class RK4(Component):
 
         r3 = dict(r1)
         for k,v in r2.iteritems(): 
-            if k in r3 and r3[k] is not None: 
-                r3[k] += v
-            else: 
-                r3[k] = v
+            if v is not None: #THIS IS NEW (MEERA)
+                if k in r3 and r3[k] is not None: 
+                    r3[k] += v
+                else: 
+                    r3[k] = v
         return r3
 
     def applyJintT(self, arg, result): 

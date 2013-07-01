@@ -3,9 +3,7 @@ from numpy import array
 
 import timeit
 
-from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
-from CADRE.battery import BatterySOC
-from CADRE.comm import Comm_DataDownloaded
+from CADRE.thermal_temperature import ThermalTemperature
 
 SIZE = 5
 
@@ -13,38 +11,23 @@ SIZE = 5
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
 
-#ReactionWheel_Dynamics
+#thermal_temperature
 io_spec = [
-    ('w_B', (3,SIZE)),
-    ('T_RW', (3,SIZE)),
-    ('w_RW', (3,SIZE)),
-]
-'''
-#BatterySOC
-io_spec = [
-        ('SOC', (1,SIZE)),
-        ('iSOC', (1,)),
-        ('P_bat', (SIZE,)),
-        ('temperature', (5,SIZE))
+    ('temperature', (5, SIZE)),
+    ('exposedArea', (7,12,SIZE)), 
+    ('cellInstd',(7,12)), 
+    ('LOS', (SIZE, )), 
+    ('P_comm', (SIZE, ))
 ]
 
-# Comm_DataDownloaded
-io_spec = [
-    ('Data0', (SIZE)),
-    ('Data', (1, SIZE)),
-    ('Dr', (SIZE))
-]
-'''
+
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
-#comp = BatterySOC(n_times=SIZE, time_step=1)
-#comp = Comm_DataDownloaded(n_times=SIZE, time_step=1)
-
+comp = ThermalTemperature(n_times=SIZE, time_step=1)
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
-for name,size in io_spec: 
+for name,size in io_spec:
     if name in inputs:
         value = baseline['execute'][name]
         comp.set(name,value)
@@ -63,7 +46,7 @@ for name,size in io_spec:
             continue
         is_error = np.allclose(baseline_value, comp.get(name))
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong' 
-        #print baseline_value, "\n\n" ,comp.get(name)
+        print baseline_value, "\n\n" ,comp.get(name)
 
 comp.linearize()
 arg = {}
@@ -85,6 +68,7 @@ for name, baseline_value in baseline['applyDer'].iteritems():
             continue
         is_error = np.allclose(result[name],baseline_value,rtol=1e-1,atol=5)
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong' 
+        print name, ": ", baseline_value, result[name]    
         #print (name+": ").ljust(10), "\n" , baseline_value, "\n\n", result[name]
 
 print 5*"#######" 
@@ -98,6 +82,6 @@ for name, baseline_value in baseline['applyDerT'].iteritems():
             continue
         #error = np.linalg.norm(baseline_value - result[name])
         is_error = np.allclose(baseline_value, result[name],rtol=1e-1,atol=5)
-        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'    
+        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'  
+        print name, ": ", baseline_value, result[name]        
         #print (name+": ").ljust(10), baseline_value, "\n\n", result[name]
-
