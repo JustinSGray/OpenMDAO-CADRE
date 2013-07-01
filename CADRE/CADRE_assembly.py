@@ -15,6 +15,7 @@ from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
 from reactionwheel import ReactionWheel_Motor, ReactionWheel_Power, \
      ReactionWheel_Torque
 #from solar import Solar
+#from power import *
 from sun import Sun_LOS, Sun_PositionBody, Sun_PositionECI, Sun_PositionSpherical
 from thermal_temperature import ThermalTemperature
 
