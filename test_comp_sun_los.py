@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import array
 
-from CADRE.sun_los import Sun_LOS
+from CADRE.sun import Sun_LOS
 
 SIZE = 10
 
@@ -35,8 +35,11 @@ print 5*"#######"
 for name,size in io_spec: 
     if name in outputs: 
         baseline_value = baseline['execute'][name]
-        error = np.linalg.norm(baseline_value - comp.get(name))
-        print (name+": ").ljust(10), 'OK' if error < 1e-5 else 'Wrong'
+        if (baseline_value.shape != comp.get(name).shape) and (not(baseline_value.shape==(1,) and isinstance(comp.get(name), float))): 
+            print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, comp.get(name).shape
+            continue
+        is_error = np.allclose( baseline_value, comp.get(name) )
+        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'
 
 comp.linearize()
 
@@ -50,12 +53,15 @@ for name, size in io_spec:
 print 5*"#######" 
 print "Testing ApplyDer"
 print 5*"#######" 
+
 result = comp.applyDer(arg, result)
 for name, baseline_value in baseline['applyDer'].iteritems():
-    #print name, ": ", baseline_value, result[name]
     if name in outputs: 
-        error = np.linalg.norm(baseline_value - result[name])
-        print (name+": ").ljust(10), 'OK' if error < 1e-5 else 'Wrong: %f'%error 
+        if (baseline_value.shape != result[name].shape) and (not(baseline_value.shape==(1,) and isinstance(result[name], float))): 
+            print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape, 
+            continue
+        is_error = np.allclose( baseline_value, result[name] )
+        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'
 
 
 print 5*"#######" 
@@ -64,8 +70,8 @@ print 5*"#######"
 result = comp.applyDerT(arg, result)
 for name, baseline_value in baseline['applyDerT'].iteritems():
     if name in inputs: 
-        #print name, ": ", baseline_value, result[name]
-        error = np.linalg.norm(baseline_value - result[name])
-        print (name+": ").ljust(10), 'OK' if error < 1e-5 else 'Wrong: %f'%error         
-
-
+        if  baseline_value.shape != result[name].shape and (not(baseline_value.shape==(1,) and isinstance(result[name], float))): 
+            print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape
+            continue
+        is_error = np.allclose( baseline_value, result[name] )
+        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'
