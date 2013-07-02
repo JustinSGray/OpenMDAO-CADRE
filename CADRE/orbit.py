@@ -12,10 +12,10 @@ class Orbit_Initial(Component):
 	
 	def __init__(self):
 		super(Orbit_Initial, self).__init__()
-		self.add('r_e2b_I0', Array(np.ones(3)), size=3, dtype=np.float, iotype='out')
-		self.add('v_e2b_I0', Array(np.ones(3)), , size=3, dtype=np.float,iotype='out')
+		self.add('r_e2b_I0', Array(np.ones((3,)), size=(3,), dtype=np.float, iotype='out'))
+		self.add('v_e2b_I0', Array(np.ones((3,)), size=(3,), dtype=np.float,iotype='out'))
 		
-	def compute(self):
+	def compute(self, altPerigee, altApogee, RAAN, Inc, argPerigee, trueAnomaly):
 		Re=6378.137
 		mu=398600.44
 		
@@ -56,7 +56,7 @@ class Orbit_Initial(Component):
 		h = 1e-16
 		ih = complex(0,h)
 		v = np.zeros(6,complex)
-		v[:] = [self.altPerigee[0]. self.altApogee[0], slef.RAAN[0], self.Inc[0], self.argPerigee[0], self.trueAnomaly[0])
+		v[:] = [self.altPerigee, self.altApogee, self.RAAN, self.Inc, self.argPerigee, self.trueAnomaly]
 		self.J = np.zeros((6,6))
 		for i in range(6):
 			v[i] += ih
@@ -66,26 +66,30 @@ class Orbit_Initial(Component):
 			self.J[3:,i] = v0_ECI.imag/h
 	
 	def execute(self):
-		r0_ECI, v0_ECI = self.compute(self.altPerigee[0], self.altApogee[0], self.RAAN[0], self.Inc[0], self.argPerigee[0], self.trueAnomaly[0])
+		r0_ECI, v0_ECI = self.compute(self.altPerigee, self.altApogee, self.RAAN, self.Inc, self.argPerigee, self.trueAnomaly)
 		self.r_e2b_I0 = r0_ECI.real
 		self.v_e2b_I0 = v0_ECI.real
 		
-	def applyDer(salf, arg, result):
+	def applyDer(self, arg, result):
 		if not result['r_e2b_I0']:
 			result['r_e2b_I0'] = np.zeros(3)
 		if not result['v_e2b_I0']:
 			result['v_e2b_I0'] = np.zeros(3)
 		J = self.J
-		result['r_e2b_I0'] = J[:3,0]*arg['altPerigee'][0] + J[:3,1]*arg['altApogee'][0] + J[:3,2]*arg['RAAN'][0] + J[:3,3]*arg['Inc'][0] + J[:3,4]*arg['argPerigee'][0] + J[:3,5]*arg['trueAnomaly'][0]
-		result['v_e2b_I0'] = J[3:,0]*arg['altPerigee'][0] + J[3:,1]*arg['altApogee'][0] + J[3:,2]*arg['RAAN'][0] + J[3:,3]*arg['Inc'][0] + J[3:,4]*arg['argPerigee'][0] + J[3:,5]*arg['trueAnomaly'][0]
+		result['r_e2b_I0'] = J[:3,0]*arg['altPerigee'] + J[:3,1]*arg['altApogee'] + J[:3,2]*arg['RAAN'] + \
+		J[:3,3]*arg['Inc'] + J[:3,4]*arg['argPerigee'] + J[:3,5]*arg['trueAnomaly']
+		result['v_e2b_I0'] = J[3:,0]*arg['altPerigee'] + J[3:,1]*arg['altApogee'] + J[3:,2]*arg['RAAN'] + \
+		J[3:,3]*arg['Inc'] + J[3:,4]*arg['argPerigee'] + J[3:,5]*arg['trueAnomaly']
 	
 		return result
 		
 	def applyDerT(self, arg, result):
 		J = self.J
-		result['altPerigee'][0] += sum(J[:3,0]*arg['r_e2b_I0'][:]) + sum(J[3:,0]*arg['v_e2b_I0'][:])
-		result['altApogee'][0] += sum(J[:3,1]*arg['r_e2b_I0'][:]) + sum(J[3:,1]*arg['v_e2b_I0'][:])
-		result['RAAN'][0] += sum(J[:3,2]*arg['r_e2b_I0'][:]) + sum(J[3:,2]*arg['v_e2b_I0'][:])
-		result['Inc'][0] += sum(J[:3,3]*arg['r_e2b_I0'][:]) + sum(J[3:,3]*arg['v_e2b_I0'][:])
-		result['argPerigee'][0] += sum(J[:3,4]*arg['r_e2b_I0'][:]) + sum(J[3:,4]*arg['v_e2b_I0'][:])
-		result['trueAnomaly'][0]+= sum(J[:3,5]*arg['r_e2b_I0'][:]) + sum(J[3:,5]*arg['v_e2b_I0'][:])
+		if 'r_e2b_I0' in arg and 'v_e2b_I0' in arg:
+			result['altPerigee'] = sum(J[:3,0]*arg['r_e2b_I0'][:]) + sum(J[3:,0]*arg['v_e2b_I0'][:])
+			result['altApogee'] = sum(J[:3,1]*arg['r_e2b_I0'][:]) + sum(J[3:,1]*arg['v_e2b_I0'][:])
+			result['RAAN'] = sum(J[:3,2]*arg['r_e2b_I0'][:]) + sum(J[3:,2]*arg['v_e2b_I0'][:])
+			result['Inc'] = sum(J[:3,3]*arg['r_e2b_I0'][:]) + sum(J[3:,3]*arg['v_e2b_I0'][:])
+			result['argPerigee'] = sum(J[:3,4]*arg['r_e2b_I0'][:]) + sum(J[3:,4]*arg['v_e2b_I0'][:])
+			result['trueAnomaly'] = sum(J[:3,5]*arg['r_e2b_I0'][:]) + sum(J[3:,5]*arg['v_e2b_I0'][:])
+		return result

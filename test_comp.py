@@ -4,45 +4,36 @@ from numpy import array
 from CADRE.reactionwheel import ReactionWheel_Motor
 from CADRE.reactionwheel import ReactionWheel_Power
 from CADRE.reactionwheel import ReactionWheel_Torque
+from CADRE.orbit import Orbit_Initial
 
 SIZE = 5
 
 ############################################################################
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
-'''
-#ReactionWheel_Motor
+
+#Orbit_Initial
 io_spec = [
-    ('T_m', (3,SIZE)),
-    ('T_RW', (3,SIZE)),
-    ('w_B', (3,SIZE)),
-    ('w_RW', (3,SIZE)),
+    ('altPerigee', (1,)),
+    ('altApogee', (1,)), 
+    ('RAAN', (1,)), 
+    ('Inc', (1,)),
+    ('argPerigee', (1,)),
+    ('trueAnomaly', (1,)),
+    ('r_e2b_I0', (3,)),
+    ('v_e2b_I0', (3,))
 ]
-'''
-#ReactionWheel_Power
-io_spec = [
-    ('w_RW', (3,SIZE)),
-    ('T_RW', (3,SIZE)),
-    ('P_RW', (3,SIZE)),
-]
-'''
-#ReactionWheel_Torque
-io_spec = [
-    ('T_RW', (3,SIZE)),
-    ('T_tot', (3,SIZE))
-]
-'''
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = ReactionWheel_Power(n=SIZE)
+comp = Orbit_Initial()
 
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
 for name,size in io_spec: 
     if name in inputs: 
-        value = baseline['execute'][name]
+        value = baseline['execute'][name][0]
         comp.set(name,value)
 
 comp.run()        

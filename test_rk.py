@@ -3,10 +3,6 @@ from numpy import array
 
 import timeit
 
-from CADRE.battery import BatteryConstraints
-from CADRE.battery import BatteryPower
-from CADRE.battery import BatterySOC
-
 from CADRE.thermal_temperature import ThermalTemperature
 
 SIZE = 5
@@ -14,14 +10,6 @@ SIZE = 5
 ############################################################################
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
-
-#battery SOC
-io_spec = [
-    ('temperature', (5, SIZE)),
-    ('P_bat', (SIZE,)),
-    ('iSOC', (1,)),
-    ('SOC', (1,SIZE)),
-]
 
 #thermal_temperature
 io_spec = [
@@ -35,12 +23,11 @@ io_spec = [
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = BatterySOC(n_times=SIZE, time_step=1)
 comp = ThermalTemperature(n_times=SIZE, time_step=1)
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
-for name,size in io_spec: 
+for name,size in io_spec:
     if name in inputs:
         value = baseline['execute'][name]
         comp.set(name,value)
@@ -59,7 +46,7 @@ for name,size in io_spec:
             continue
         is_error = np.allclose(baseline_value, comp.get(name))
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong' 
-        #print baseline_value, "\n\n" ,comp.get(name)
+        print baseline_value, "\n\n" ,comp.get(name)
 
 comp.linearize()
 arg = {}
@@ -81,6 +68,7 @@ for name, baseline_value in baseline['applyDer'].iteritems():
             continue
         is_error = np.allclose(result[name],baseline_value,rtol=1e-1,atol=5)
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong' 
+        print name, ": ", baseline_value, result[name]    
         #print (name+": ").ljust(10), "\n" , baseline_value, "\n\n", result[name]
 
 print 5*"#######" 
@@ -94,7 +82,6 @@ for name, baseline_value in baseline['applyDerT'].iteritems():
             continue
         #error = np.linalg.norm(baseline_value - result[name])
         is_error = np.allclose(baseline_value, result[name],rtol=1e-1,atol=5)
-        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'    
+        print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'  
+        print name, ": ", baseline_value, result[name]        
         #print (name+": ").ljust(10), baseline_value, "\n\n", result[name]
-
-
