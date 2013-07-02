@@ -90,22 +90,3 @@ class Orbit_Initial(Component):
         result['Inc'][0] += sum(J[:3,3]*arg['r_e2b_I0'][:]) + sum(J[3:,3]*arg['v_e2b_I0'][:])
         result['argPerigee'][0] += sum(J[:3,4]*arg['r_e2b_I0'][:]) + sum(J[3:,4]*arg['v_e2b_I0'][:])
         result['trueAnomaly'][0]+= sum(J[:3,5]*arg['r_e2b_I0'][:]) + sum(J[3:,5]*arg['v_e2b_I0'][:])
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
