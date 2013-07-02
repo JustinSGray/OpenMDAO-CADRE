@@ -205,12 +205,11 @@ class RK4(Component):
         r2 = self.applyJext(arg, result)
 
         r3 = dict(r1)
-        for k,v in r2.iteritems():
-            if v is not None: #THIS IS NEW (KEN)
-                if k in r3 and r3[k] is not None: 
-                    r3[k] += v.T #REMOVE .T !!!!
-                else: 
-                    r3[k] = v.T
+        for k,v in r2.iteritems(): 
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
         return r3
 
 
@@ -219,8 +218,8 @@ class RK4(Component):
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
 
         if "y" in arg:
-            flat_y = arg['y'].T.flatten()
-            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n)).T
+            flat_y = arg['y'].reshape((self.n_states*self.n),order='F') 
+            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n),order='F')
 
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])  
         return result
@@ -235,11 +234,10 @@ class RK4(Component):
 
         r3 = dict(r1)
         for k,v in r2.iteritems(): 
-            if v is not None: #THIS IS NEW (MEERA)
-                if k in r3 and r3[k] is not None: 
-                    r3[k] += v
-                else: 
-                    r3[k] = v
+            if k in r3 and r3[k] is not None: 
+                r3[k] += v
+            else: 
+                r3[k] = v
         return r3
 
     def applyJintT(self, arg, result): 
@@ -273,3 +271,5 @@ class RK4(Component):
     def applyJextT(self, arg, result): 
         raise NotImplementedError
 
+
+    
