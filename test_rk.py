@@ -9,7 +9,7 @@ from CADRE.battery import BatterySOC
 
 from CADRE.thermal_temperature import ThermalTemperature
 
-from CADRE.ReactionWheel_Dynamics import ReactionWheel_Dynamics
+from CADRE.reactionwheel import ReactionWheel_Dynamics
 
 SIZE = 5
 

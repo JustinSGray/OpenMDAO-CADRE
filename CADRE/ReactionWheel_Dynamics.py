@@ -1,7 +1,6 @@
 from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
 
-import rk4
 
 import numpy as np
 
