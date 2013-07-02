@@ -125,3 +125,111 @@ class Power_CellVoltage( Component ):
 
         return result
 
+class Power_SolarPower( Component ):
+
+    def __init__(self, n=2): 
+        super(Power_SolarPower, self).__init__()
+
+        self.n = n 
+
+        self.add('Isetpt', Array(np.zeros((12,n, ), order='F'), size=(12,n,), dtype=np.float,
+                                      iotype="in"))
+        self.add('V_sol', Array(np.zeros((12,n, ), order='F'), size=(12,n,), dtype=np.float,
+                                      iotype="in"))
+
+        self.add('P_sol', Array(np.zeros((n, ), order='F'), size=(n,), dtype=np.float,
+                                      iotype="out"))
+
+    def execute(self): 
+
+        for p in range(12):
+            self.P_sol[:] += self.V_sol[p,:] * self.Isetpt[p,:]
+
+    def applyDer(self, arg, result):
+
+        if not result['P_sol'] :
+            result['P_sol'] = np.zeros( (self.n,) )
+
+        if 'V_sol' in arg: 
+            for p in range(12):
+                result['P_sol'][:] += arg['V_sol'][p,:] * self.Isetpt[p,:]
+
+        if 'Isetpt' in arg: 
+            for p in range(12):
+                result['P_sol'][:] += arg['Isetpt'][p,:] * self.V_sol[p,:]
+
+        return result   
+
+    def applyDerT(self, arg, result): 
+
+        if not result['V_sol'] :
+            result['V_sol'] = np.zeros( (12, self.n,) )
+
+        if not result['Isetpt'] :
+            result['Isetpt'] = np.zeros( (12, self.n,) )
+
+        if 'P_sol' in arg:
+            for p in range(12):
+                result['V_sol'][p,:] += arg['P_sol'][:] * self.Isetpt[p,:]
+                result['Isetpt'][p,:] += self.V_sol[p,:] * arg['P_sol'][:]
+
+        return result
+
+class Power_Total( Component ):
+
+    def __init__(self, n=2): 
+        super(Power_Total, self).__init__()
+
+        self.n = n 
+
+        self.add('P_sol', Array(np.zeros((n, ), order='F'), size=(n,), dtype=np.float,
+                                      iotype="in"))
+        self.add('P_comm', Array(np.zeros((n, ), order='F'), size=(n,), dtype=np.float,
+                                      iotype="in"))
+        self.add('P_RW', Array(np.zeros((3,n, ), order='F'), size=(3,n,), dtype=np.float,
+                                      iotype="in"))
+
+        self.add('P_bat', Array(np.zeros((n, ), order='F'), size=(n,), dtype=np.float,
+                                      iotype="out"))
+
+    def execute(self): 
+        self.P_bat[:] += self.P_sol[:] - 5*self.P_comm[:] - np.sum(self.P_RW[:], 0) - 2.0
+
+    def applyDer(self, arg, result):
+
+        # for k in range(3):
+        #     res('P_bat')[:] -= arg('P_RW')[k,:]
+
+
+        if not result['P_bat'] :
+            result['P_bat'] = np.zeros( (self.n,) )
+
+        if 'P_sol' in arg: 
+            result['P_bat'][:] += arg['P_sol'][:]
+
+        if 'P_comm' in arg: 
+            result['P_bat'][:] -= 5 * arg['P_comm'][:]
+
+        if 'P_RW' in arg: 
+            for k in range(3):
+                result['P_bat'][:] -= arg['P_RW'][k,:]
+
+        return result   
+
+    def applyDerT(self, arg, result): 
+
+        if not result['P_sol'] :
+            result['P_sol'] = np.zeros( (self.n,) )
+        if not result['P_comm'] :
+            result['P_comm'] = np.zeros( (self.n,) )
+        if not result['P_RW'] :
+            result['P_RW'] = np.zeros( (3,self.n,) )
+
+        if 'P_bat' in arg:
+            result['P_sol'][:] += arg['P_bat'][:]
+            result['P_comm'][:] -= 5*arg['P_bat'][:]
+            for k in range(3):
+                result['P_RW'][k,:] -= arg['P_bat'][:]
+
+        return result
+
