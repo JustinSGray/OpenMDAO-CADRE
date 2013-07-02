@@ -12,6 +12,7 @@ from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
 #from MultiPtParameters import MultiPtParameters ??
 #from orbit import Orbit
 #from parameters import Parameters ??
+from orbit import Orbit_Initial
 from reactionwheel import ReactionWheel_Motor, ReactionWheel_Power, \
      ReactionWheel_Torque
 #from solar import Solar
@@ -108,6 +109,11 @@ class CADRE(Assembly):
         
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
+		
+		# Orbit components
+		
+		self.add("Orbit_Initial", Orbit_Initial())
+		self.driver.workflow.add("Orbit_Initial")
         
         # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
