@@ -31,26 +31,26 @@ class Orbit_Initial(Component):
 			return R
 			
 	d2r = np.pi/180.0
-        r_perigee = Re + altPerigee
-        r_apogee = Re + altApogee
-        e = (r_apogee-r_perigee)/(r_apogee+r_perigee)
-        a = (r_perigee+r_apogee)/2
-        p = a*(1-e**2)
-        h = np.sqrt(p*mu)
+	r_perigee = Re + altPerigee
+	r_apogee = Re + altApogee
+	e = (r_apogee-r_perigee)/(r_apogee+r_perigee)
+	a = (r_perigee+r_apogee)/2
+	p = a*(1-e**2)
+	h = np.sqrt(p*mu)
 
-        rmag0 = p/(1+e*np.cos(d2r*trueAnomaly))
-        r0_P = np.array([rmag0*np.cos(d2r*trueAnomaly), rmag0*np.sin(d2r*trueAnomaly), 0], complex)
-        v0_P = np.array([-np.sqrt(mu/p)*np.sin(d2r*trueAnomaly), np.sqrt(mu/p)*(e+np.cos(d2r*trueAnomaly)), 0], complex)
+	rmag0 = p/(1+e*np.cos(d2r*trueAnomaly))
+	r0_P = np.array([rmag0*np.cos(d2r*trueAnomaly), rmag0*np.sin(d2r*trueAnomaly), 0], complex)
+	v0_P = np.array([-np.sqrt(mu/p)*np.sin(d2r*trueAnomaly), np.sqrt(mu/p)*(e+np.cos(d2r*trueAnomaly)), 0], complex)
 
-        O_IP = np.eye(3, dtype=complex)
-        O_IP = np.dot(O_IP, getRotation(np.array([0,0,1]),RAAN*d2r))
-        O_IP = np.dot(O_IP, getRotation(np.array([1,0,0]),Inc*d2r))
-        O_IP = np.dot(O_IP, getRotation(np.array([0,0,1]),argPerigee*d2r))
+	O_IP = np.eye(3, dtype=complex)
+	O_IP = np.dot(O_IP, getRotation(np.array([0,0,1]),RAAN*d2r))
+	O_IP = np.dot(O_IP, getRotation(np.array([1,0,0]),Inc*d2r))
+	O_IP = np.dot(O_IP, getRotation(np.array([0,0,1]),argPerigee*d2r))
 
-        r0_ECI = np.dot(O_IP,r0_P)
-        v0_ECI = np.dot(O_IP,v0_P)
+	r0_ECI = np.dot(O_IP,r0_P)
+	v0_ECI = np.dot(O_IP,v0_P)
 
-        return r0_ECI, v0_ECI
+	return r0_ECI, v0_ECI
 		
 	def linearize(self):
 		h = 1e-16
