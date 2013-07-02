@@ -22,13 +22,13 @@ class Orbit_Initial(Component):
 		def S(v);
 			S = np.zeros((3,3),complex)
 			S[0,:] = [0, -v[2], v[1]]
-            S[1,:] = [v[2], 0, -v[0]]
-            S[2,:] = [-v[1], v[0], 0]
-            return S
+			S[1,:] = [v[2], 0, -v[0]]
+			S[2,:] = [-v[1], v[0], 0]
+			return S
 			
 		def getRotation(axis,angle):
 			R = np.eye(3,dtype=complex) + S(axis)*np.sin(angle) + (1 - np.cos(angle)) * (np.outer(axis,axis) - np.eye(3,dtype=complex))
-            return R
+			return R
 			
 		d2r = np.pi/180.0
         r_perigee = Re + altPerigee
