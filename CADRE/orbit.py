@@ -1,4 +1,4 @@
-from openmdao.lib.datatypes.api import Float, Dict, Array, List
+from openmdao.lib.datatypes.api import Float, Array
 from openmdao.main.api import Component
 import numpy as np
 
