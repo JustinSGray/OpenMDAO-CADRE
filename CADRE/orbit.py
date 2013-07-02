@@ -19,7 +19,7 @@ class Orbit_Initial(Component):
 		Re=6378.137
 		mu=398600.44
 		
-		def S(v);
+		def S(v):
 			S = np.zeros((3,3),complex)
 			S[0,:] = [0, -v[2], v[1]]
 			S[1,:] = [v[2], 0, -v[0]]
