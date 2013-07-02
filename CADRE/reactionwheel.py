@@ -70,17 +70,15 @@ class ReactionWheel_Power(Component):
         self.add('w_RW', Array(np.zeros((3,n)), size=(3,n), dtype=np.float, iotype='in'))
         self.add('T_RW', Array(np.zeros((3,n)), size=(3,n), dtype=np.float, iotype='in'))
 
-        self.add('P_RW', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out')) #CHANGE TO ZEROS()??
+        self.add('P_RW', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out')) 
              
     def linearize(self):
         self.dP_dw, self.dP_dT = self.lib.computejacobianp(self.n, 
                                                            self.w_RW[:], 
-                                                           self.T_RW[:])
-        #print "dP_dw", self.dP_dw, "dP_dT", self.dP_dT        
+                                                           self.T_RW[:])   
 
     def execute(self):
-        self.P_RW[:] = self.lib.computep(self.n, self.w_RW[:], self.T_RW[:])
-        #print "P_RW", self.P_RW        
+        self.P_RW[:] = self.lib.computep(self.n, self.w_RW[:], self.T_RW[:])       
 
     def applyDer(self, arg, result):
         result['P_RW'] = np.zeros((3,self.n))
@@ -90,7 +88,6 @@ class ReactionWheel_Power(Component):
                 result['P_RW'][k,:] += self.dP_dw[:,k] * arg['w_RW'][k,:]
             if 'T_RW' in arg:
                 result['P_RW'][k,:] += self.dP_dT[:,k] * arg['T_RW'][k,:]
-        #print "w_RW", arg['w_RW'], "T_RW", arg['T_RW'], "P_RW", result['P_RW']                
         return result
 
     def applyDerT(self, arg, result):
@@ -102,7 +99,6 @@ class ReactionWheel_Power(Component):
                 result['w_RW'][k,:] += self.dP_dw[:,k] * arg['P_RW'][k,:]
             if 'T_RW' in arg:
                 result['T_RW'][k,:] += self.dP_dT[:,k] * arg['P_RW'][k,:]
-        #print "w_RW", result['w_RW'], "T_RW", result['T_RW']        
         return result
 
 
