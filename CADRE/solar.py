@@ -24,14 +24,7 @@ class Solar_ExposedArea(Component):
         self.add('raw1', Array(dtype=np.float))
         self.add('raw2', Array(dtype=np.float))
         raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
-        raw2 = []
-        counter = 10
-        for p in range(12):
-            for c in range(7):
-                print 'Reading: ', p, c
-                raw2.append(np.genfromtxt('CADRE/data/Solar/Area'+str(counter)+'.txt'))
-                counter += 1
-
+        raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
         self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
         self.add('nc', 7)
