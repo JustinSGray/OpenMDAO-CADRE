@@ -11,11 +11,9 @@ from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
      Comm_VectorBody, Comm_VectorECI, Comm_VectorSpherical
 #from MultiPtParameters import MultiPtParameters ??
 from orbit import Orbit_Initial
-#from parameters import Parameters ??
 from reactionwheel import ReactionWheel_Motor, ReactionWheel_Power, \
      ReactionWheel_Torque
-#from solar import Solar
-#from power import *
+from solar import Solar_ExposedArea
 from sun import Sun_LOS, Sun_PositionBody, Sun_PositionECI, Sun_PositionSpherical
 from thermal_temperature import ThermalTemperature
 
@@ -109,7 +107,7 @@ class CADRE(Assembly):
         
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
-        
+
 		# Orbit components
         self.add("Orbit_Initial", Orbit_Initial())
         self.driver.workflow.add("Orbit_Initial")
@@ -123,6 +121,10 @@ class CADRE(Assembly):
         
         self.add("ReactionWheel_Torque", ReactionWheel_Torque(n))
         self.driver.workflow.add("ReactionWheel_Torque")
+
+        # Solar
+        self.add("Solar_ExposedArea", Solar_ExposedArea(n))
+        self.driver.workflow.add("Solar_ExposedArea")
 
         # Sun components
         self.add("Sun_LOS", Sun_LOS(n))
