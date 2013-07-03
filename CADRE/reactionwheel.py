@@ -184,6 +184,7 @@ class ReactionWheel_Dynamics(rk4.RK4):
 
     def applyJext(self, arg, result):
         result['w_RW'] = np.zeros((self.w_RW.shape))
+        print self.Jx.shape
         for k in range(3):
             for j in range(3):
                 if 'w_B' in arg:
