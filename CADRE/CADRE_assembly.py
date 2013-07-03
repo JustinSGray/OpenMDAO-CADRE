@@ -4,7 +4,7 @@ from attitude import Attitude_Angular, Attitude_AngularRates, Attitude_Attitude,
      Attitude_Roll, Attitude_RotationMtx, \
      Attitude_RotationMtxRates, Attitude_Sideslip, Attitude_Torque
 from battery import BatteryConstraints, BatteryPower, BatterySOC
-#from bsplineparameters import BsplineParameters ??
+from parameters import BsplineParameters
 from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
      Comm_DataDownloaded, Comm_Distance, Comm_EarthsSpin, Comm_EarthsSpinMtx, \
      Comm_GainPattern, Comm_GSposEarth, Comm_GSposECI, Comm_LOS, Comm_VectorAnt, \
@@ -62,6 +62,10 @@ class CADRE(Assembly):
 
         self.add("BatterySOC", BatterySOC(n))
         self.driver.workflow.add("BatterySOC")
+
+        # Parameters
+        self.add("BsplineParameters", BsplineParameters(n))
+        self.driver.workflow.add("BsplineParameters")
 
         # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))

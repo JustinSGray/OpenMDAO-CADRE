@@ -5,35 +5,38 @@ from CADRE.reactionwheel import ReactionWheel_Motor
 from CADRE.reactionwheel import ReactionWheel_Power
 from CADRE.reactionwheel import ReactionWheel_Torque
 from CADRE.orbit import Orbit_Initial
+from CADRE.BsplineParameters import BsplineParameters
 
 SIZE = 5
+STEP = 1
+m = 5
+t1 = 0
+t2 = 48000
 
 ############################################################################
 # Edit the io_spec to match your component -- same as from other test file
 ############################################################################
 
-#Orbit_Initial
+#Bspline_Parameters
 io_spec = [
-    ('altPerigee', (1,)),
-    ('altApogee', (1,)), 
-    ('RAAN', (1,)), 
-    ('Inc', (1,)),
-    ('argPerigee', (1,)),
-    ('trueAnomaly', (1,)),
-    ('r_e2b_I0', (3,)),
-    ('v_e2b_I0', (3,))
+    ('CP_P_comm', (m,)),
+    ('CP_gamma', (m,)), 
+    ('CP_Isetpt', (12,SIZE)), 
+    ('P_comm', (SIZE,)),
+    ('Gamma', (SIZE,)),
+    ('Isetpt', (12,SIZE)),
 ]
 
 baseline = eval(open('comp_check_baseline.out','rb').read())
 
-comp = Orbit_Initial()
+comp = BsplineParameters(n=SIZE)
 
 inputs = comp.list_inputs()
 outputs = comp.list_outputs()
 
 for name,size in io_spec: 
     if name in inputs: 
-        value = baseline['execute'][name][0]
+        value = baseline['execute'][name]
         comp.set(name,value)
 
 comp.run()        
@@ -43,7 +46,7 @@ print "Testing execute"
 print 5*"#######" 
 
 for name,size in io_spec: 
-    if name in outputs: 
+    if name in outputs:
         baseline_value = baseline['execute'][name]
         if (baseline_value.shape != comp.get(name).shape) and (not(baseline_value.shape==(1,) and isinstance(comp.get(name), float))): 
             print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, comp.get(name).shape
@@ -53,7 +56,7 @@ for name,size in io_spec:
         is_error = np.allclose( baseline_value, comp.get(name) )
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'        
 
-comp.linearize()
+#comp.linearize()PUT BACK IN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 arg = {}
 result = {}
@@ -96,4 +99,3 @@ for name, baseline_value in baseline['applyDerT'].iteritems():
         print (name+": ").ljust(10), 'OK' if is_error else 'Wrong'
         #print (name+": ").ljust(10), baseline_value, result[name]  #TAKE OUT
 print "COMPLETE"
-
