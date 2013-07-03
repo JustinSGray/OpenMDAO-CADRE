@@ -189,7 +189,9 @@ class ReactionWheel_Dynamics(rk4.RK4):
                 if 'w_B' in arg:
                     result['w_RW'][k,1:] += self.Jx[1:,j,k] * arg['w_B'][j,:-1]
                 if 'T_RW' in arg:
-                    result['w_RW'][k,1:] += self.Jx[1:,j+3,k] * arg['T_RW'][j,:-1] / self.J_RW        
+                    result['w_RW'][k,1:] += self.Jx[1:,j+3,k] * arg['T_RW'][j,:-1] / self.J_RW   
+                if 'w_RW0' in arg: 
+                    result['w_RW'][0,0] -= arg['w_RW0'][0]
 
         return result
 
@@ -198,8 +200,11 @@ class ReactionWheel_Dynamics(rk4.RK4):
         if 'w_RW' in arg:
             result['w_B'] = np.zeros(self.w_B.shape)
             result['T_RW'] = np.zeros(self.T_RW.shape)
+            result['w_RW0'] = np.zeros(self.w_RW0.shape)
             for k in range(3):
                 for j in range(3):
                     result['w_B'][j,:-1] += self.Jx[1:,j,k] * arg['w_RW'][k,1:]
                     result['T_RW'][j,:-1] += self.Jx[1:,j+3,k] * arg['w_RW'][k,1:] / self.J_RW
+                    result['w_RW0'][0] -= arg['w_RW'] [0,0]
+
         return result
