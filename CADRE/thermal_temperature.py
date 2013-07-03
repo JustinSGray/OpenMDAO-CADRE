@@ -56,38 +56,6 @@ class ThermalTemperature(RK4):
         self.external_vars = ["exposedArea","LOS","P_comm"]
         self.fixed_external_vars = ["cellInstd",]
 
-    def applyJext(self, arg, result): 
-        result['temperature'] = np.zeros((self.temperature.shape))
-        for k in xrange(5): 
-            if 'exposedArea' in arg: 
-                #print self.Jx[1:,:84,k].shape, arg['exposedArea'].reshape(-1,self.n).T[:-1,:].shape, np.sum(self.Jx[1:,:84,k]*arg['exposedArea'].reshape(-1,self.n).T[:-1,:],1).shape
-                #exit()
-                result['temperature'][k,1:] += np.sum(self.Jx[1:,:84,k]*arg['exposedArea'].reshape(84,self.n).T[:-1,:],1)
-            if 'cellInstd' in arg: 
-                result['temperature'][k,1:] += np.dot(self.Jx[1,86:,k],arg['cellInstd'].reshape((84,)))
-            if 'LOS' in arg: 
-                result['temperature'][k,1:] += self.Jx[1:,84,k]*arg['LOS'][:-1]
-            if 'P_comm' in arg: 
-                result['temperature'][k,1:] += self.Jx[1:,85,k]*arg['P_comm'][:-1]
-
-        return result
-
-    def applyJextT(self, arg, result): 
-        if 'temperature' in arg: 
-            result['exposedArea'] = np.zeros(self.exposedArea.shape)
-            result['cellInstd'] = np.zeros(self.cellInstd.shape)
-            result['LOS'] = np.zeros(self.LOS.shape)
-            result['P_comm'] = np.zeros(self.P_comm.shape)
-            for k in xrange(5): 
-                for p in range(12): 
-                    for c in range(7): 
-                        result['exposedArea'][c, p, :-1] += self.Jx[1:,p*7+c,k]*arg['temperature'][k,1:]
-                        result['cellInstd'][c,p] += np.dot(self.Jx[1:,86+p*7+c,k],arg['temperature'][k,1:])
-                result['LOS'][:-1] += self.Jx[1:,84,k]*arg['temperature'][k,1:]
-                result['P_comm'][:-1] += self.Jx[1:,85,k]*arg['temperature'][k,1:]
-                
-        return result
-
     def f_dot(self, external, state): 
 
         f = np.zeros((5, ))

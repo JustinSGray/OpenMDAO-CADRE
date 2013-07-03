@@ -80,7 +80,6 @@ class BatterySOC(rk4.RK4):
         dVoc_dSOC = np.exp(SOC) / (np.e-1)
 
         tmp = 2 - np.exp(alpha*(T-T0)/T0)
-
         V = IR * voc * tmp
         I = P/V
 
@@ -110,27 +109,6 @@ class BatterySOC(rk4.RK4):
 
         return np.array([[eta/Cp*dI_dP, 0 , 0, 0, 0, eta/Cp*dI_dT]])
 
-    def applyJext(self, arg, result): 
-        result['SOC'] = np.zeros(self.SOC.shape)
-        if 'P_bat' in arg: 
-            result['SOC'][0,1:] += self.Jx[1:,0,0] * arg['P_bat'][:-1]
-        if 'temperature' in arg:
-            result['SOC'][0,1:] += self.Jx[1:,5,0] * arg['temperature'][4,:-1]
-        if 'SOC' in arg: 
-            result['SOC'][0,0] -= arg['iSOC'][0]
-
-        return result
-
-    def applyJextT(self, arg, result):
-        if 'SOC' in arg: 
-            result['P_bat'] = np.zeros(self.P_bat.shape)
-            result['P_bat'][:-1] = self.Jx[1:,0,0] * arg['SOC'][0,1:]
-
-            result['temperature'] = np.zeros(self.temperature.shape)
-            result['temperature'][4,:-1] = self.Jx[1:,5,0] * arg['SOC'][0,1:]
-
-            result['iSOC'] = -1*arg['SOC'][0,0]
-        return result
 
 class BatteryPower(Component): 
 
