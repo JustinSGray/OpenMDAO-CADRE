@@ -56,7 +56,6 @@ class BatterySOC(rk4.RK4):
 
     def f_dot(self,external,state): 
         """Rate of change of SOC""" 
-
         SOC = state[0]
         P = external[0]
         T = external[5]

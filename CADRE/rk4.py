@@ -218,8 +218,8 @@ class RK4(Component):
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
 
         if "y" in arg:
-            flat_y = arg['y'].T.flatten()
-            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n)).T
+            flat_y = arg['y'].reshape((self.n_states*self.n),order='F') 
+            result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n),order='F')
 
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])  
         return result
