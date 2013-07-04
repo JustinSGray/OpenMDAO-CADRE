@@ -45,13 +45,18 @@ class RK4(Component):
         self.n = y.shape[1]
                     
         ext = []
+        self.ext_index_map = {}
         for e in self.external_vars: 
             var = self.get(e)
+            self.ext_index_map[e] = len(ext)
+
             #TODO: Check that shape[-1]==self.n
             ext.extend(var.reshape(-1,self.n))
 
         for e in self.fixed_external_vars: 
             var = self.get(e)
+            self.ext_index_map[e] = len(ext)
+
             flat_var = var.flatten()
             #create n copies of the var
             ext.extend(np.tile(flat_var,(self.n, 1)).T)
@@ -202,7 +207,8 @@ class RK4(Component):
     def applyJ(self, arg, result): 
 
         r1 = self.applyJint(arg, result)
-        r2 = self.applyJext(arg, result)
+        #r2 = self.applyJext(arg, result)
+        r2 = self._applyJext(arg, result)
 
         r3 = dict(r1)
         for k,v in r2.iteritems(): 
@@ -227,10 +233,39 @@ class RK4(Component):
     def applyJext(self, arg, result): 
         raise NotImplementedError
 
+    def _applyJext(self, arg, result): 
+        #Jx --> (n_times,n_external,n_states)
+        state_var = getattr(self,self.state_var)
+        result[self.state_var] = np.zeros(state_var.shape)
+        
+        for ext_var_name in self.external_vars: 
+            if ext_var_name in arg: 
+                ext_var = getattr(self,ext_var_name)
+                i_ext = self.ext_index_map[ext_var_name]
+                ext_length = np.prod(ext_var.shape)/self.n
+                for k in xrange(self.n_states): 
+                    for j in xrange(ext_length): 
+                        result[self.state_var][k,1:] += self.Jx[1:,j+i_ext,k] * self.external[j+i_ext,:-1]
+
+        for ext_var_name in self.fixed_external_vars: 
+            if ext_var_name in arg: 
+                ext_var = getattr(self,ext_var_name)
+                i_ext = self.ext_index_map[ext_var_name]
+                ext_length = np.prod(ext_var.shape)
+                for k in xrange(self.n_states):
+                    result[self.state_var][k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
+        if self.init_state_var in arg: 
+            result[self.state_var][:,0] -= arg[self.init_state_var][0]
+        
+
+        return result
+
     def applyJT(self, arg, result): 
 
         r1 = self.applyJintT(arg, result)
-        r2 = self.applyJextT(arg, result)
+        #r2 = self.applyJextT(arg, result)
+        r2 = self._applyJextT(arg, result)
+                        
 
         r3 = dict(r1)
         for k,v in r2.iteritems(): 
@@ -248,28 +283,45 @@ class RK4(Component):
         if 'y' in arg: 
             flat_y = arg['y'].flatten()
             result['y'] = self.JT.dot(flat_y).reshape((self.n_states,self.n))
-            """
-            result['y0'] = np.zeros((self.n_states, ))
-            result['y0'] = -1 * arg['y'][:,0]
             
-            for e in [ext for ext in self.name_map if isinstance(ext,int)]: 
-                arg_shape = arg[e].shape
-                if len(arg_shape) == 1: 
-                    result[e] = np.zeros((self.n, ))
-                    result[e][:-1] =  self.Jx[1:,e,0] * arg['y'][0,1:]
-                else: 
-                    flat_arg = arg[e].reshape(-1,self.n) 
-                    flat_result = np.zeros(flat_arg.shape)
-
-                    for i in xrange(flat_arg.shape[0]): 
-                       flat_result[i,:-1] =  self.Jx[1:,e,0] * arg['y'][0,1:]
-                    result[e] = flat_result.reshape(arg[e].shape)
-            """
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()]) 
         return result
 
     def applyJextT(self, arg, result): 
         raise NotImplementedError
+
+    def _applyJextT(self, arg, result):
+        if self.state_var in arg: 
+
+            for ext_var_name in self.external_vars: 
+                ext_var = getattr(self,ext_var_name)
+                i_ext = self.ext_index_map[ext_var_name]
+                ext_length = np.prod(ext_var.shape)/self.n
+                result[ext_var_name] = np.zeros((ext_length,self.n))
+                for k in xrange(self.n_states): 
+                    for j in xrange(ext_length): 
+                        result[ext_var_name][j,:-1] += self.Jx[1:,j+i_ext,k] * arg[self.state_var][k,1:] 
+                        
+
+            for ext_var_name in self.fixed_external_vars: 
+                ext_var = getattr(self,ext_var_name)
+                i_ext = self.ext_index_map[ext_var_name]
+                ext_length = np.prod(ext_var.shape)
+                result[ext_var_name] = np.zeros((ext_length, ))
+                for k in xrange(self.n_states): 
+                    result[ext_var_name] += self.Jx[1:,i_ext:i_ext+ext_length,k].T.dot(arg[self.state_var][k,1:])
+
+        
+            result[self.init_state_var] = -arg[self.state_var][:,0]
+
+        for k,v in result.iteritems(): 
+            ext_var = getattr(self,k)
+            result[k] = v.reshape(ext_var.shape, order='F')
+
+        return result
+
+
+
 
 
     
