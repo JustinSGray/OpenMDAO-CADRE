@@ -12,7 +12,6 @@ class Comm_DataDownloaded(rk4.RK4):
     def __init__(self, n_times, time_step=.01):
         super(Comm_DataDownloaded, self).__init__()
         self.time_step = time_step
-        #self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         
         self.add('Data0', Array([0.0], iotype='in', shape=(1,)))
         self.add('Data', Array(np.zeros((1, n_times)), iotype='out', 

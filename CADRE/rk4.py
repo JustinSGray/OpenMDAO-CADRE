@@ -126,7 +126,7 @@ class RK4(Component):
         for k in xrange(0,self.n-1):
             k1 = (k)*self.n_states  
             k2 = (k+1)*self.n_states
-            ex = self.external[:,k]
+            ex = self.external[:,k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
 
             a = self.a[:,k] = self.f_dot(ex,y)
@@ -156,7 +156,7 @@ class RK4(Component):
         for k in xrange(0,self.n-1):
             k1 = (k)*self.n_states  
             k2 = (k+1)*self.n_states
-            ex = self.external[:,k]
+            ex = self.external[:,k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
 
             a = self.a[:,k]
