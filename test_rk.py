@@ -11,6 +11,8 @@ from CADRE.thermal_temperature import ThermalTemperature
 
 from CADRE.reactionwheel import ReactionWheel_Dynamics
 
+from CADRE.comm import Comm_DataDownloaded
+
 SIZE = 5
 
 ############################################################################
@@ -51,11 +53,20 @@ io_spec = [
 
 io_specs.append(io_spec)
 
+io_spec = [
+    ('Dr',(SIZE,)),
+    ('Data',(1,SIZE)),
+]
+
+io_specs.append(io_spec)
+
 
 baselines = []
 baselines.append('comp_check_SOC')
 baselines.append('comp_check_thermal_temp')
 baselines.append('comp_check_reactionwheel_dynamics')
+baselines.append('comp_check_comm_datadownloaded')
+
 
 
 comps = []
@@ -67,6 +78,9 @@ comp = ThermalTemperature(n_times=SIZE, time_step=1)
 comps.append(comp)
 
 comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+comps.append(comp)
+
+comp = Comm_DataDownloaded(n_times=SIZE, time_step=1)
 comps.append(comp)
 
 

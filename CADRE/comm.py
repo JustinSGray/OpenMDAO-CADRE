@@ -12,9 +12,9 @@ class Comm_DataDownloaded(rk4.RK4):
     def __init__(self, n_times, time_step=.01):
         super(Comm_DataDownloaded, self).__init__()
         self.time_step = time_step
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
+        #self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         
-        self.add('Data0', Array(np.ones(n_times), iotype='in', shape=(n_times,)))
+        self.add('Data0', Array([0.0], iotype='in', shape=(1,)))
         self.add('Data', Array(np.zeros((1, n_times)), iotype='out', 
                                shape=(1, n_times)))
         
@@ -25,24 +25,19 @@ class Comm_DataDownloaded(rk4.RK4):
         self.init_state_var = "Data0"
         self.external_vars = ["Dr"]
 
+        self.dfdy = np.array([[0.]])
+        self.dfdx = np.array([[1.]])
+
     def f_dot(self, external, state): 
         return external[0]
 
     def df_dy(self, external, state): 
-        return np.array([[0.]])
+        return self.dfdy
 
     def df_dx(self, external, state):   
-        return np.array([[1.]])
+        return self.dfdx
 
-    def applyJext(self, arg, result):
-        if 'Dr' in arg:
-            result['Data'][0,1:] = self.Jx[1:,0,0] * arg['Dr'][:-1]
-        return result
-
-    def applyJextT(self, arg, result):
-        if 'SOC' in arg: 
-            result['Dr'][:-1] = self.Jx[1:,0,0] * arg['Data'][0,1:]
-        return result
+   
 
 class Comm_AntRotation(Component):
     antAngle = Float(0., iotype="in", copy=None)
