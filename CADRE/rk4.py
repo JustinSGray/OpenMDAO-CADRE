@@ -171,9 +171,9 @@ class RK4(Component):
             di_dy = self.df_dy(ex, y + self.time_step*c)
 
             da_dy = df_dy
-            db_dy = dg_dy + np.matrix(df_dy)*np.matrix((self.time_step/2*da_dy))
-            dc_dy = dh_dy + np.matrix(dh_dy)*np.matrix((self.time_step/2*db_dy))
-            dd_dy = di_dy + np.matrix(di_dy)*np.matrix((self.time_step*dc_dy))
+            db_dy = dg_dy + df_dy.dot(self.time_step/2*da_dy)
+            dc_dy = dh_dy + dh_dy.dot(self.time_step/2*db_dy)
+            dd_dy = di_dy + di_dy.dot(self.time_step*dc_dy)
 
             dR_dy = - I - self.time_step/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
 
@@ -191,9 +191,9 @@ class RK4(Component):
             di_dx = self.df_dx(ex, y + self.time_step*c)
 
             da_dx = df_dx
-            db_dx = dg_dx + np.matrix(dg_dy)*np.matrix(self.time_step/2*da_dx)
-            dc_dx = dh_dx + np.matrix(dh_dy)*np.matrix(self.time_step/2*db_dx)
-            dd_dx = di_dx + np.matrix(di_dy)*np.matrix(self.time_step*dc_dx)
+            db_dx = dg_dx + dg_dy.dot(self.time_step/2*da_dx)
+            dc_dx = dh_dx + dh_dy.dot(self.time_step/2*db_dx)
+            dd_dx = di_dx + di_dy.dot(self.time_step*dc_dx)
 
             self.Jx[k+1,:,:] = -self.time_step/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
 

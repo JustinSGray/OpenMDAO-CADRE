@@ -97,7 +97,7 @@ class Orbit_Dynamics(rk4.RK4):
         
         eye = np.identity(3)
         
-        dfdy = np.zeros((6,3))
+        dfdy = np.zeros((6,6))
         dfdy[0:3,3:] += eye
         
         dfdy[3:,0:3] += eye*(C1/r**3 + C2/r**5*T2 + C3/r**7*T3 + C4/r**7*T4)
@@ -110,12 +110,12 @@ class Orbit_Dynamics(rk4.RK4):
         dfdy[5,0] += drdx*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
         dfdy[5,1] += drdy*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
         dfdy[5,2] += drdz*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
-        dfdy[5,0]) += z*(C3/r**7*dT3z_dx + C4/r**7*dT4z_dx)
+        dfdy[5,0] += z*(C3/r**7*dT3z_dx + C4/r**7*dT4z_dx)
         dfdy[5,1] += z*(C3/r**7*dT3z_dy + C4/r**7*dT4z_dy)
         dfdy[5,2] += z*(C3/r**7*dT3z_dz + C4/r**7*dT4z_dz)
         dfdy[5,2] += (C2/r**5*2 + C3/r**7*T3z + C4/r**7*T4z)
-        
-		return dfdy
+
+        return dfdy
 
     def df_dx(self, external, state): 
         
