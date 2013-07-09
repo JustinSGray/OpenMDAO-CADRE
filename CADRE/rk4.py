@@ -126,7 +126,7 @@ class RK4(Component):
         for k in xrange(0,self.n-1):
             k1 = (k)*self.n_states  
             k2 = (k+1)*self.n_states
-            ex = self.external[:,k]
+            ex = self.external[:,k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
 
             a = self.a[:,k] = self.f_dot(ex,y)
@@ -152,11 +152,10 @@ class RK4(Component):
         self.Ji[:self.ny] = np.arange(self.ny)
         self.Jj[:self.ny] = np.arange(self.ny)
 
-
         for k in xrange(0,self.n-1):
             k1 = (k)*self.n_states  
             k2 = (k+1)*self.n_states
-            ex = self.external[:,k]
+            ex = self.external[:,k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
 
             a = self.a[:,k]
@@ -170,10 +169,10 @@ class RK4(Component):
             dh_dy = self.df_dy(ex, y + self.time_step/2.*b)
             di_dy = self.df_dy(ex, y + self.time_step*c)
 
-            da_dy = df_dy
-            db_dy = dg_dy + np.matrix(df_dy)*np.matrix((self.time_step/2*da_dy))
-            dc_dy = dh_dy + np.matrix(dh_dy)*np.matrix((self.time_step/2*db_dy))
-            dd_dy = di_dy + np.matrix(di_dy)*np.matrix((self.time_step*dc_dy))
+            da_dy = df_dy        
+            db_dy = dg_dy + dg_dy.dot(self.time_step/2.*da_dy)
+            dc_dy = dh_dy + dh_dy.dot(self.time_step/2.*db_dy)
+            dd_dy = di_dy + di_dy.dot(self.time_step*dc_dy)
 
             dR_dy = - I - self.time_step/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
 
@@ -191,13 +190,12 @@ class RK4(Component):
             di_dx = self.df_dx(ex, y + self.time_step*c)
 
             da_dx = df_dx
-            db_dx = dg_dx + np.matrix(dg_dy)*np.matrix(self.time_step/2*da_dx)
-            dc_dx = dh_dx + np.matrix(dh_dy)*np.matrix(self.time_step/2*db_dx)
-            dd_dx = di_dx + np.matrix(di_dy)*np.matrix(self.time_step*dc_dx)
+            db_dx = dg_dx + dg_dy.dot(self.time_step/2*da_dx)
+            dc_dx = dh_dx + dh_dy.dot(self.time_step/2*db_dx)
+            dd_dx = di_dx + di_dy.dot(self.time_step*dc_dx)
 
             self.Jx[k+1,:,:] = -self.time_step/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
 
-        
         self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(self.ny,self.ny))
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve

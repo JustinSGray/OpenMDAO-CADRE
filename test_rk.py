@@ -11,6 +11,10 @@ from CADRE.thermal_temperature import ThermalTemperature
 
 from CADRE.reactionwheel import ReactionWheel_Dynamics
 
+from CADRE.comm import Comm_DataDownloaded
+
+from CADRE.orbit import Orbit_Dynamics
+
 SIZE = 5
 
 ############################################################################
@@ -51,11 +55,28 @@ io_spec = [
 
 io_specs.append(io_spec)
 
+io_spec = [
+    ('Dr',(SIZE,)),
+    ('Data',(1,SIZE)),
+]
+
+io_specs.append(io_spec)
+
+io_spec = [
+    ('r_e2b_I',(6,SIZE)),
+    ('r_e2b_I0',(6,)), 
+]
+
+io_specs.append(io_spec)
+
 
 baselines = []
 baselines.append('comp_check_SOC')
 baselines.append('comp_check_thermal_temp')
 baselines.append('comp_check_reactionwheel_dynamics')
+baselines.append('comp_check_comm_datadownloaded')
+baselines.append('comp_check_orbit_dynamics')
+
 
 
 comps = []
@@ -67,6 +88,12 @@ comp = ThermalTemperature(n_times=SIZE, time_step=1)
 comps.append(comp)
 
 comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+comps.append(comp)
+
+comp = Comm_DataDownloaded(n_times=SIZE, time_step=1)
+comps.append(comp)
+
+comp = Orbit_Dynamics(n_times=SIZE, time_step=1)
 comps.append(comp)
 
 
@@ -128,7 +155,7 @@ for comp,io_spec,baseline_file in zip(comps,io_specs,baselines):
             if (baseline_value.shape != result[name].shape) and (not(baseline_value.shape==(1,) and isinstance(result[name], float))): 
                 print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape
                 continue
-            is_ok = np.allclose(result[name],baseline_value,rtol=1e-1,atol=5)
+            is_ok = np.allclose(result[name],baseline_value,rtol=.01)
             print (name+": ").ljust(10), 'OK' if is_ok else 'Wrong' 
             if not is_ok: 
                 print (name+": ").ljust(10), "\n" , baseline_value, "\n\n", result[name]
@@ -144,7 +171,7 @@ for comp,io_spec,baseline_file in zip(comps,io_specs,baselines):
                 print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape
                 continue
             #error = np.linalg.norm(baseline_value - result[name])
-            is_ok = np.allclose(baseline_value, result[name],rtol=1e-1,atol=5)
+            is_ok = np.allclose(baseline_value, result[name],rtol=.01)
             print (name+": ").ljust(10), 'OK' if is_ok else 'Wrong'    
             
             if not is_ok: 
