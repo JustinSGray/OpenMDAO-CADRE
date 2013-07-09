@@ -152,7 +152,6 @@ class RK4(Component):
         self.Ji[:self.ny] = np.arange(self.ny)
         self.Jj[:self.ny] = np.arange(self.ny)
 
-
         for k in xrange(0,self.n-1):
             k1 = (k)*self.n_states  
             k2 = (k+1)*self.n_states
@@ -170,9 +169,9 @@ class RK4(Component):
             dh_dy = self.df_dy(ex, y + self.time_step/2.*b)
             di_dy = self.df_dy(ex, y + self.time_step*c)
 
-            da_dy = df_dy
-            db_dy = dg_dy + df_dy.dot(self.time_step/2*da_dy)
-            dc_dy = dh_dy + dh_dy.dot(self.time_step/2*db_dy)
+            da_dy = df_dy        
+            db_dy = dg_dy + dg_dy.dot(self.time_step/2.*da_dy)
+            dc_dy = dh_dy + dh_dy.dot(self.time_step/2.*db_dy)
             dd_dy = di_dy + di_dy.dot(self.time_step*dc_dy)
 
             dR_dy = - I - self.time_step/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
@@ -197,7 +196,6 @@ class RK4(Component):
 
             self.Jx[k+1,:,:] = -self.time_step/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
 
-        
         self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(self.ny,self.ny))
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve

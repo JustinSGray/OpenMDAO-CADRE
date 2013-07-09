@@ -4,6 +4,8 @@ import numpy as np
 
 import rk4
 
+
+
 mu = 398600.44
 Re = 6378.137
 J2 = 1.08264e-3
@@ -30,7 +32,7 @@ class Orbit_Dynamics(rk4.RK4):
         self.state_var = 'r_e2b_I'
         self.init_state_var = 'r_e2b_I0'
 
-        self.dfdx = np.zeros((6, ))
+        self.dfdx = np.zeros((6, 1))
 
     def f_dot(self, external, state):
 
@@ -57,7 +59,7 @@ class Orbit_Dynamics(rk4.RK4):
         x = state[0]
         y = state[1]
         z = state[2] if abs(state[2]) > 1e-15 else 1e-5
-        r = (x**2 + y**2 + z**2)**.5
+        r = (x**2 + y**2 + z**2)**0.5
 
         T2 = 1 - 5*z**2/r**2
         T3 = 3*z - 7*z**3/r**2
@@ -75,17 +77,17 @@ class Orbit_Dynamics(rk4.RK4):
         T3z = 3*z - 0.6*r**2/z
         T4z = 4 - 28.0/3.0*z**2/r**2
         
-        dT2_dx = 10*z**2/r**3*drdx
-        dT2_dy = 10*z**2/r**3*drdy
-        dT2_dz = 10*z**2/r**3*drdz - 10*z/r**2
+        dT2_dx = (10*z**2)/(r**3)*drdx
+        dT2_dy = (10*z**2)/(r**3)*drdy
+        dT2_dz = (10*z**2)/(r**3)*drdz - 10.*z/r**2
 
         dT3_dx = 14*z**3/r**3*drdx
         dT3_dy = 14*z**3/r**3*drdy
-        dT3_dz = 14*z**3/r**3*drdz - 21*z**2/r**2 + 3
+        dT3_dz = 14*z**3/r**3*drdz - 21.*z**2/r**2 + 3
 
-        dT4_dx = 28*z**2/r**3*drdx - 84*z**4/r**5*drdx
-        dT4_dy = 28*z**2/r**3*drdy - 84*z**4/r**5*drdy
-        dT4_dz = 28*z**2/r**3*drdz - 84*z**4/r**5*drdz - 28*z/r**2 + 84*z**3/r**4
+        dT4_dx = 28*z**2/r**3*drdx - 84.*z**4/r**5*drdx
+        dT4_dy = 28*z**2/r**3*drdy - 84.*z**4/r**5*drdy
+        dT4_dz = 28*z**2/r**3*drdz - 84.*z**4/r**5*drdz - 28*z/r**2 + 84*z**3/r**4
 
         dT3z_dx = -1.2*r/z*drdx
         dT3z_dy = -1.2*r/z*drdy
@@ -100,20 +102,21 @@ class Orbit_Dynamics(rk4.RK4):
         dfdy = np.zeros((6,6))
         dfdy[0:3,3:] += eye
         
-        dfdy[3:,0:3] += eye*(C1/r**3 + C2/r**5*T2 + C3/r**7*T3 + C4/r**7*T4)
-        dfdy[3:,0] += drdx*state[0:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
-        dfdy[3:,1] += drdy*state[0:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
-        dfdy[3:,2] += drdz*state[0:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
-        dfdy[3:,0] += state[0:3]*(C2/r**5*dT2_dx + C3/r**7*dT3_dx + C4/r**7*dT4_dx)
-        dfdy[3:,1] += state[0:3]*(C2/r**5*dT2_dy + C3/r**7*dT3_dy + C4/r**7*dT4_dy)
-        dfdy[3:,2] += state[0:3]*(C2/r**5*dT2_dz + C3/r**7*dT3_dz + C4/r**7*dT4_dz)
-        dfdy[5,0] += drdx*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
-        dfdy[5,1] += drdy*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
-        dfdy[5,2] += drdz*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
-        dfdy[5,0] += z*(C3/r**7*dT3z_dx + C4/r**7*dT4z_dx)
-        dfdy[5,1] += z*(C3/r**7*dT3z_dy + C4/r**7*dT4z_dy)
-        dfdy[5,2] += z*(C3/r**7*dT3z_dz + C4/r**7*dT4z_dz)
-        dfdy[5,2] += (C2/r**5*2 + C3/r**7*T3z + C4/r**7*T4z)
+        dfdy[3:,:3] = dfdy[3:,:3] + eye*(C1/r**3 + C2/r**5*T2 + C3/r**7*T3 + C4/r**7*T4)
+        dfdy[3:,0] = dfdy[3:,0] + drdx*state[:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
+        dfdy[3:,1] = dfdy[3:,1] + drdy*state[:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
+        dfdy[3:,2] = dfdy[3:,2] + drdz*state[:3]*(-3*C1/r**4 - 5*C2/r**6*T2 - 7*C3/r**8*T3 - 7*C4/r**8*T4)
+        dfdy[3:,0] = dfdy[3:,0] + state[:3]*(C2/r**5*dT2_dx + C3/r**7*dT3_dx + C4/r**7*dT4_dx)
+        dfdy[3:,1] = dfdy[3:,1] + state[:3]*(C2/r**5*dT2_dy + C3/r**7*dT3_dy + C4/r**7*dT4_dy)
+        dfdy[3:,2] = dfdy[3:,2] + state[:3]*(C2/r**5*dT2_dz + C3/r**7*dT3_dz + C4/r**7*dT4_dz)
+        dfdy[5,0] = dfdy[5,0] + drdx*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
+        dfdy[5,1] = dfdy[5,1] + drdy*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
+        dfdy[5,2] = dfdy[5,2] + drdz*z*(-5*C2/r**6*2 - 7*C3/r**8*T3z - 7*C4/r**8*T4z)
+        dfdy[5,0] = dfdy[5,0] + z*(C3/r**7*dT3z_dx + C4/r**7*dT4z_dx)
+        dfdy[5,1] = dfdy[5,1] + z*(C3/r**7*dT3z_dy + C4/r**7*dT4z_dy)
+        dfdy[5,2] = dfdy[5,2] + z*(C3/r**7*dT3z_dz + C4/r**7*dT4z_dz)
+        dfdy[5,2] = dfdy[5,2] + (C2/r**5*2 + C3/r**7*T3z + C4/r**7*T4z)
+
 
         return dfdy
 

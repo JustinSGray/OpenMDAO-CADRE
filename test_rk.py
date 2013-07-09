@@ -155,7 +155,7 @@ for comp,io_spec,baseline_file in zip(comps,io_specs,baselines):
             if (baseline_value.shape != result[name].shape) and (not(baseline_value.shape==(1,) and isinstance(result[name], float))): 
                 print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape
                 continue
-            is_ok = np.allclose(result[name],baseline_value,rtol=1e-1,atol=5)
+            is_ok = np.allclose(result[name],baseline_value,rtol=.01)
             print (name+": ").ljust(10), 'OK' if is_ok else 'Wrong' 
             if not is_ok: 
                 print (name+": ").ljust(10), "\n" , baseline_value, "\n\n", result[name]
@@ -171,7 +171,7 @@ for comp,io_spec,baseline_file in zip(comps,io_specs,baselines):
                 print (name+": ").ljust(10), 'wrong shaped result: ', baseline_value.shape, result[name].shape
                 continue
             #error = np.linalg.norm(baseline_value - result[name])
-            is_ok = np.allclose(baseline_value, result[name],rtol=1e-1,atol=5)
+            is_ok = np.allclose(baseline_value, result[name],rtol=.01)
             print (name+": ").ljust(10), 'OK' if is_ok else 'Wrong'    
             
             if not is_ok: 
