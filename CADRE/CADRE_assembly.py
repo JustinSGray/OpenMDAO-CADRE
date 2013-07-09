@@ -10,7 +10,7 @@ from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
      Comm_GainPattern, Comm_GSposEarth, Comm_GSposECI, Comm_LOS, Comm_VectorAnt, \
      Comm_VectorBody, Comm_VectorECI, Comm_VectorSpherical
 #from MultiPtParameters import MultiPtParameters ??
-from orbit import Orbit_Initial
+from orbit import Orbit_Initial, Orbit_Dynamics
 from reactionwheel import ReactionWheel_Motor, ReactionWheel_Power, \
      ReactionWheel_Torque
 from solar import Solar_ExposedArea
@@ -116,6 +116,9 @@ class CADRE(Assembly):
         # Orbit components
         self.add("Orbit_Initial", Orbit_Initial())
         self.driver.workflow.add("Orbit_Initial")
+        
+        self.add("Orbit_Dynamics", Orbit_Dynamics(n))
+        self.driver.workflow.add("Orbit_Dynamics")
         
         # Power
         self.add("Power_CellVoltage", Power_CellVoltage(n))
