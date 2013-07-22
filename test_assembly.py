@@ -1,7 +1,13 @@
 from CADRE.CADRE_assembly import CADRE
 import networkx as nx
+import pprint
 
 assembly = CADRE()
+
+pprint.pprint(assembly.varnames)
+
+assembly.get(assembly.varnames[var]).get(var)
+
 graph = assembly._depgraph._graph
 
 graph.remove_node("@xin")
