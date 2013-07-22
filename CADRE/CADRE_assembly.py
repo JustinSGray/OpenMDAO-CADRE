@@ -174,6 +174,7 @@ class CADRE(Assembly):
         a single component (so excludes default outputs)
         """
         inputs, outputs = {}, {}
+        self.varnames = {}
         for compname in self.list_components():
             if compname == "driver":
                 continue
@@ -181,6 +182,7 @@ class CADRE(Assembly):
             comp_inputs = self.get(compname).list_inputs()
 
             for input_name in comp_inputs:
+                self.varnames[input_name] = compname
                 if input_name not in inputs:
                     inputs[input_name] = [compname]
                 else:
@@ -189,6 +191,7 @@ class CADRE(Assembly):
             comp_outputs = self.get(compname).list_outputs()
 
             for output_name in comp_outputs:
+                self.varnames[output_name] = compname
                 if output_name not in outputs:
                     outputs[output_name] = [compname]
                 else:
