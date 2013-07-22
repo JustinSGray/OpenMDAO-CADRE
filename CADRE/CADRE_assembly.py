@@ -25,7 +25,7 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=2):
+    def __init__(self, n=1500): #n was 2
         super(CADRE, self).__init__()
 
         # Additude components
