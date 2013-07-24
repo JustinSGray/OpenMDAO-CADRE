@@ -85,9 +85,9 @@ class Solar_ExposedArea(Component):
         self.azimuth[:], self.elevation[:] = self.lib.fixangles(self.n, 
                                                                 self.azimuth[:], 
                                                                 self.elevation[:])
-        self.x[:,0] = self.finAngle[0]
-        self.x[:,1] = self.azimuth[:]
-        self.x[:,2] = self.elevation[:]
+        self.x[:,0] = self.finAngle
+        self.x[:,1] = self.azimuth
+        self.x[:,2] = self.elevation
     
 
     def linearize(self):
