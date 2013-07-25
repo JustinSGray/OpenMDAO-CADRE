@@ -6,7 +6,6 @@ idx = '5'
 
 setd = {}
 data = pickle.load(open("data1346.pkl", 'rb'))
-
 for key in data.keys():
     if key[0] == idx or not key[0].isdigit():
         if not key[0].isdigit():
