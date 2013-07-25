@@ -19,6 +19,8 @@ class generate_plots(object):
         self.myplot()
         self.plot_from_pkl()
         
+        self.testData()
+        
     def set_vals(self):
         for comp in assembly.list_components():
             for input_name in assembly.get(comp).list_inputs():
@@ -215,6 +217,7 @@ class generate_plots(object):
 
     def myplot(self):
         time = linspace(0,43200.0,1500)
+        #time = assembly.get(assembly.varnames['t']).get('t')
         xlim = [time.min()/3600.0, time.max()/3600.0]
 
         figure()
@@ -299,6 +302,7 @@ class generate_plots(object):
 
     def plot_from_pkl(self):
         time = linspace(0,43200.0,1500)
+        #time = assembly.get(assembly.varnames['t']).get('t')
         xlim = [time.min()/3600.0, time.max()/3600.0]
         
         figure()
@@ -378,11 +382,34 @@ class generate_plots(object):
         ylim([0,1])
         plot(time, testAssembly['5:LOS'])
         
-        savefig('plot_from_pkl.pdf')
+        savefig('plot_from_pkl.pdf')      
 
 
-
-
+    def testData(self):
+        for comp in assembly.list_components():
+            for output_name in assembly.get(comp).list_outputs():
+                for var_name in testAssembly:
+                    if var_name[0] == '5' or not var_name[0].isdigit():
+                        if var_name[0].isdigit():
+                            var_name_short = var_name[2:]    
+                        if output_name == var_name_short:
+                            if testAssembly[var_name].shape == (7,12) and assembly.get(assembly.varnames[output_name]).get(output_name).shape ==(7,12,1500):
+                                for k in range (1500):
+                                    res = zeros(1500)
+                                    if allclose(testAssembly[var_name][:,:], assembly.get(assembly.varnames[output_name]).get(output_name)[:,:,k]):
+                                        #print output_name, " [",k, "]\t\tOK"
+                                        pass
+                                    else:
+                                        res[k] = average(abs(testAssembly[var_name][:,:] - assembly.get(assembly.varnames[output_name]).get(output_name)[:,:,k]) / testAssembly[var_name][:,:])
+                                print output_name, "\t\t%Error:",average(res)
+                            elif len(testAssembly[var_name]) == (3) and len(assembly.get(assembly.varnames[output_name]).get(output_name)) == (6):
+                                print var_name, testAssembly[var_name], assembly.get(assembly.varnames[output_name]).get(output_name)
+                                pass
+                            else:
+                                if np.allclose(testAssembly[var_name], assembly.get(assembly.varnames[output_name]).get(output_name)):
+                                    print output_name, "\t\tOK"
+                                else:
+                                    print output_name, "\t\t%Error:", average(abs(testAssembly[var_name] - assembly.get(assembly.varnames[output_name]).get(output_name)) / testAssembly[var_name])
 
 
 
