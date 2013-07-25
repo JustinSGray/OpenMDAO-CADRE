@@ -20,6 +20,8 @@ for key in data.keys():
         else:
             setd[shortkey] = data[key]
 n = setd['P_comm'].size
+print n
+quit()
 
 assembly = CADRE(n=n)
 
