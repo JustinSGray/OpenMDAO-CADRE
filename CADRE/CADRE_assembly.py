@@ -12,12 +12,13 @@ from comm import Comm_AntRotation, Comm_AntRotationMtx, Comm_BitRate, \
 #from MultiPtParameters import MultiPtParameters ??
 from orbit import Orbit_Initial, Orbit_Dynamics
 from reactionwheel import ReactionWheel_Motor, ReactionWheel_Power, \
-     ReactionWheel_Torque
+     ReactionWheel_Torque, ReactionWheel_Dynamics
 from solar import Solar_ExposedArea
 from sun import Sun_LOS, Sun_PositionBody, Sun_PositionECI, Sun_PositionSpherical
 from thermal_temperature import ThermalTemperature
 from power import Power_CellVoltage, Power_SolarPower, Power_Total
 
+import numpy as np
 #rk4 components:
 #Comm_DataDownloaded, BatterySOC, ThermalTemperature, Orbit_Dynamics
 
@@ -139,6 +140,9 @@ class CADRE(Assembly):
 
         self.add("ReactionWheel_Torque", ReactionWheel_Torque(n))
         self.driver.workflow.add("ReactionWheel_Torque")
+        
+        self.add("ReactionWheel_Dynamics", ReactionWheel_Dynamics(n))
+        self.driver.workflow.add("ReactionWheel_Dynamics")
 
         # Solar
         self.add("Solar_ExposedArea", Solar_ExposedArea(n))
@@ -162,7 +166,47 @@ class CADRE(Assembly):
         self.driver.workflow.add("ThermalTemperature")
 
         self.make_connections()
-
+        
+    def print_set_vals(self,setvals=None, printvals=None, tval=None):
+        vals = []
+        defaults = ['itername', 'force_execute', 'directory', 'exec_count',
+                    'derivative_exec_count', 'fixed_external_vars']
+        for compname in self.list_components():
+            if compname == "driver":
+                continue
+            comp = self.get(compname)
+            for var in comp.list_inputs():
+                if var in defaults:
+                    continue
+                if setvals:
+                    try:
+                        val = comp.set(var, setvals[var])
+                        print "setting:",comp,var
+                    except (RuntimeError, KeyError):
+                        #print "error setting inp:",var, compname
+                        pass
+                val = comp.get(var)
+                data = [var, val, compname, "in"]
+                vals.append(data)
+            for var in comp.list_outputs():
+                if var in defaults:
+                    continue
+                val = comp.get(var)
+                data = [var, val, compname, "out"]
+                vals.append(data)
+        
+        vals.sort(key=lambda x: x[3], reverse=True)        
+        vals.sort(key=lambda x: x[0])
+        
+        for v in vals:
+            if printvals:
+                if v[0] == printvals:
+                    print v[0], v[2], v[3]
+                    if isinstance(tval, np.ndarray):
+                        print "rel error:", np.linalg.norm(tval - v[1])/np.linalg.norm(tval)
+            else:
+                print v[0]
+        
     def make_connections(self):
         """
         Collects the names of all input and output variables for all
@@ -209,3 +253,7 @@ class CADRE(Assembly):
                     topath = '.'.join([compname, varname])
                     self.connect(frompath, topath)
                     print "Connecting", frompath, "to", topath, "..."
+                    
+if __name__ == "__main__":
+    a = CADRE()
+    a.print_vals()
