@@ -242,13 +242,14 @@ class Sun_PositionBody( Component ):
         return result
 
 class Sun_PositionECI( Component ):
-
+    LD = Float(0., iotype="in", copy=None)
     def __init__(self, n=2): 
         super(Sun_PositionECI, self).__init__()
 
         self.n = n 
 
-        self.add('LD', Array(np.zeros((1,), order='F'), size=(1,), dtype=np.float, iotype="in"))
+        #self.add('LD', Array(np.zeros((1,), order='F'), size=(1,), dtype=np.float, iotype="in"))
+        
         self.add('t', Array(np.zeros((n,), order='F'), size=(n,), dtype=np.float, iotype="in"))
 
         self.add('r_e2s_I', Array(np.zeros((3,n, ), order='F'), size=(3,n, ),
@@ -256,7 +257,7 @@ class Sun_PositionECI( Component ):
         self.lib = __import__('CADRE.lib.SunLib').lib.SunLib
 
     def execute(self): 
-        self.r_e2s_I += self.lib.computeposition(self.n, self.LD[0] + self.t[:]/3600.0/24.0)
+        self.r_e2s_I += self.lib.computeposition(self.n, self.LD + self.t[:]/3600.0/24.0)
 
     def linearize(self): 
         self.Ja, self.Ji, self.Jj = self.lib.computepositionjacobian(self.n, 3*self.n, self.LD + self.t[:]/3600.0/24.0)
@@ -271,7 +272,7 @@ class Sun_PositionECI( Component ):
             result['r_e2s_I'] = np.zeros( (3,self.n,) )
 
         if 'LD' in arg:
-            result['r_e2s_I'][:] += self.J.dot( arg['LD'][0] * np.ones( (10, )) ).reshape((3,self.n),order='F')
+            result['r_e2s_I'][:] += self.J.dot( arg['LD'] * np.ones( (10, )) ).reshape((3,self.n),order='F')
 
         if 't' in arg: 
             result['r_e2s_I'][:] += self.J.dot( arg['t'][:]/3600.0/24.0).reshape((3,self.n),order='F')
@@ -284,11 +285,11 @@ class Sun_PositionECI( Component ):
             result['t'] = np.zeros( (self.n,) )
 
         if not result['LD'] :
-            result['LD'] = np.zeros( (1,) )
+            result['LD'] = 0.
 
         if 'r_e2s_I' in arg: 
             r_e2s_I = arg['r_e2s_I'][:].reshape((3*self.n),order='F')
-            result['LD'][0] += sum(self.JT.dot(r_e2s_I))
+            result['LD'] += sum(self.JT.dot(r_e2s_I))
             result['t'][:] += self.JT.dot(r_e2s_I)/3600.0/24.0
 
         return result
