@@ -162,7 +162,43 @@ class CADRE(Assembly):
         self.driver.workflow.add("ThermalTemperature")
 
         self.make_connections()
-
+        
+    def print_set_vals(self,setvals=None, printvals=None):
+        vals = []
+        defaults = ['itername', 'force_execute', 'directory', 'exec_count',
+                    'derivative_exec_count', 'fixed_external_vars']
+        for compname in self.list_components():
+            if compname == "driver":
+                continue
+            comp = self.get(compname)
+            for var in comp.list_inputs():
+                if var in defaults:
+                    continue
+                if setvals:
+                    try:
+                        val = comp.set(var, setvals[var])
+                    except (RuntimeError, KeyError):
+                        print "error setting inp:",var, compname
+                val = comp.get(var)
+                data = [var, val, compname, "in"]
+                vals.append(data)
+            for var in comp.list_outputs():
+                if var in defaults:
+                    continue
+                val = comp.get(var)
+                data = [var, val, compname, "out"]
+                vals.append(data)
+        
+        vals.sort(key=lambda x: x[3], reverse=True)        
+        vals.sort(key=lambda x: x[0])
+        
+        for v in vals:
+            if printvals:
+                if v[0] == printvals:
+                    print v
+            else:
+                print v
+        
     def make_connections(self):
         """
         Collects the names of all input and output variables for all
@@ -209,3 +245,7 @@ class CADRE(Assembly):
                     topath = '.'.join([compname, varname])
                     self.connect(frompath, topath)
                     print "Connecting", frompath, "to", topath, "..."
+                    
+if __name__ == "__main__":
+    a = CADRE()
+    a.print_vals()
