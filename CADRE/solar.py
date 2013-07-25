@@ -17,7 +17,7 @@ class Solar_ExposedArea(Component):
        e: elevation [0,180]
        LOS: line of sight with the sun [0,1]
     '''
-
+    finAngle = Float(0., iotype="in", copy=None)
     def __init__(self, n):
         super(Solar_ExposedArea, self).__init__()
         self.n = n
@@ -30,7 +30,6 @@ class Solar_ExposedArea(Component):
         self.add('nc', 7)
         self.add('np', 12)
 
-        self.add('finAngle', Array(np.zeros((10,)), size=(10,), dtype=np.float, iotype='in'))
         self.add('azimuth', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         self.add('elevation', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         
@@ -82,12 +81,10 @@ class Solar_ExposedArea(Component):
         self.Js = [None for i in range(3)]
     
     def setx(self):
-        self.azimuth[:], self.elevation[:] = self.lib.fixangles(self.n, 
-                                                                self.azimuth[:], 
-                                                                self.elevation[:])
-        self.x[:,0] = self.finAngle[0]
-        self.x[:,1] = self.azimuth[:]
-        self.x[:,2] = self.elevation[:]
+        result = self.lib.fixangles(self.n, self.azimuth[:], self.elevation[:])
+        self.x[:,0] = self.finAngle
+        self.x[:,1] = result[0]
+        self.x[:,2] = result[1]
     
 
     def linearize(self):
@@ -108,7 +105,7 @@ class Solar_ExposedArea(Component):
         for c in range(7):
             for p in range(12):
                 if 'finAngle' in arg:
-                    result['exposedArea'][c,p,:] += self.Js[0][:,7*p+c]*arg['finAngle'][0]
+                    result['exposedArea'][c,p,:] += self.Js[0][:,7*p+c]*arg['finAngle']
                 if 'azimuth' in arg:
                     result['exposedArea'][c,p,:] += self.Js[1][:,7*p+c]*arg['azimuth'][:]
                 if 'elevation' in arg:
@@ -116,13 +113,13 @@ class Solar_ExposedArea(Component):
         return result
 
     def applyDerT(self, arg, result):
-        result['finAngle'] = np.zeros((10,))
+        result['finAngle'] = 0.0
         result['azimuth'] = np.zeros((5,))
         result['elevation'] = np.zeros((5,))
         for c in range(7):
             for p in range(12):
                 if 'finAngle' in arg:
-                    result['finAngle'][0] += np.dot(self.Js[0][:,7*p+c], arg['exposedArea'][c,p,:])
+                    result['finAngle'] += np.dot(self.Js[0][:,7*p+c], arg['exposedArea'][c,p,:])
                 if 'azimuth' in arg:
                     result['azimuth'][:] += self.Js[1][:,7*p+c]*arg['exposedArea'][c,p,:]
                 if 'elevation' in arg:

@@ -301,9 +301,8 @@ class Comm_GainPattern(Component):
 
     def execute(self):
         result = self.lib.fixangles(self.n, self.azimuthGS, self.elevationGS)
-        self.azimuthGS, self.elevationGS = result
-        self.x[:,0] = self.azimuthGS
-        self.x[:,1] = self.elevationGS
+        self.x[:,0] = result[0]
+        self.x[:,1] = result[1]
         self.gain = self.MBI.evaluate(self.x)[:,0]
 
     def applyDer(self, arg, result):

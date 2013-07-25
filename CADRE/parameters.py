@@ -11,7 +11,7 @@ class BsplineParameters(Component):
     def __init__(self, n):
         super(BsplineParameters, self).__init__()
         self.n = n
-        self.add('m', 5)
+        self.add('m', 300)
         m = self.m
         self.add('t1', 0)
         self.add('t2', 48000)        
@@ -22,7 +22,7 @@ class BsplineParameters(Component):
         
         self.add('CP_P_comm', Array(np.zeros((m,)), size=(m,), dtype=float, iotype='in'))
         self.add('CP_gamma', Array(np.zeros((m,)), size=(m,), dtype=float, iotype='in'))
-        self.add('CP_Isetpt', Array(np.zeros((12,n)), size=(12,n), dtype=float, iotype='in'))
+        self.add('CP_Isetpt', Array(np.zeros((12,m)), size=(12,m), dtype=float, iotype='in'))
 
         self.add('P_comm', Array(np.ones((n,)), size=(n,), dtype=float, iotype='out'))
         self.add('Gamma', Array(0.1*np.ones((n,)), size=(n,), dtype=float, iotype='out'))
