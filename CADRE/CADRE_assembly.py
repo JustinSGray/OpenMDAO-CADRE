@@ -18,6 +18,7 @@ from sun import Sun_LOS, Sun_PositionBody, Sun_PositionECI, Sun_PositionSpherica
 from thermal_temperature import ThermalTemperature
 from power import Power_CellVoltage, Power_SolarPower, Power_Total
 
+import numpy as np
 #rk4 components:
 #Comm_DataDownloaded, BatterySOC, ThermalTemperature, Orbit_Dynamics
 
@@ -166,7 +167,7 @@ class CADRE(Assembly):
 
         self.make_connections()
         
-    def print_set_vals(self,setvals=None, printvals=None):
+    def print_set_vals(self,setvals=None, printvals=None, tval=None):
         vals = []
         defaults = ['itername', 'force_execute', 'directory', 'exec_count',
                     'derivative_exec_count', 'fixed_external_vars']
@@ -200,9 +201,11 @@ class CADRE(Assembly):
         for v in vals:
             if printvals:
                 if v[0] == printvals:
-                    print v
+                    print v[0], v[2], v[3]
+                    if isinstance(tval, np.ndarray):
+                        print "rel error:", np.linalg.norm(tval - v[1])/np.linalg.norm(tval)
             else:
-                print v
+                print v[0]
         
     def make_connections(self):
         """
