@@ -4,7 +4,7 @@ import numpy as np
 import pickle
 import pylab
 
-idx = '5'
+idx = '0'
 
 setd = {}
 data = pickle.load(open("data1346.pkl", 'rb'))
@@ -19,19 +19,18 @@ for key in data.keys():
             setd[shortkey] = data[key][0]
         else:
             setd[shortkey] = data[key]
-n = setd['P_comm'].size
 
+n = setd['P_comm'].size
 assembly = CADRE(n=n)
 
 setd['r_e2b_I0'] = np.zeros(6)
 setd['r_e2b_I0'][:3] = data[idx+":r_e2b_I0"]
 setd['r_e2b_I0'][3:] = data[idx+":v_e2b_I0"]
+setd['Gamma'] = data[idx+":gamma"]
+
 
 assembly.print_set_vals(setvals=setd, printvals="none")
-
 assembly.run()
-
-print
 
 for key in setd.keys():
         print "checking",key
