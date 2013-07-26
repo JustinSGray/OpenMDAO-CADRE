@@ -2,67 +2,7 @@ from openmdao.lib.datatypes.api import Float, Dict, Array, List
 from openmdao.main.api import Component, Assembly
 import numpy as np
 
-class Attitude(Assembly):
-    """
-    CADRE Attitude assembly
-    """
 
-    def __init__(self, n=2):
-        super(Attitude, self).__init__()
-        
-        self.add("angular", Attitude_Angular(n=n))
-        self.driver.workflow.add("angular")
-        
-        self.make_connections()
-        
-    def make_connections(self):
-        """
-        Collects the names of all input and output variables for all
-        components within the assembly (drivers excluded). 
-        
-        Then establishes connections between
-        any output variable and input variable that has the same name, so 
-        long as the variable name does not exist as an output to more than
-        a single component (so excludes default outputs)
-        """
-        inputs, outputs = {}, {}
-        for compname in self.list_components():
-            if compname == "driver":
-                continue
-            
-            comp_inputs = self.get(compname).list_inputs()
-            
-            for input_name in comp_inputs:
-                if input_name not in inputs:
-                    inputs[input_name] = [compname]
-                else:
-                    inputs[input_name].append(compname)
-                
-            comp_outputs = self.get(compname).list_outputs()
-            
-            for output_name in comp_outputs:
-                if output_name not in outputs:
-                    outputs[output_name] = [compname]
-                else:
-                    outputs[output_name].append(compname)
-            
-        print
-        for varname in outputs.keys():
-            comps = outputs[varname]
-            if len(comps) > 1:
-                continue
-            frompath = '.'.join([comps[0], varname])
-            
-            if varname in inputs:
-                for compname in inputs[varname]:
-                    topath = '.'.join([compname, varname])
-                    self.connect(frompath, topath)
-                    print "Connecting", frompath, "to", topath, "..."
-
-            
-            
-            
-        
 class Attitude_Angular(Component):
 
     def __init__(self, n=2):
@@ -111,7 +51,7 @@ class Attitude_AngularRates(Component):
     def __init__(self, n=2, h = 0.01):
         super(Attitude_AngularRates, self).__init__()
         self.n = n
-        self.h = h
+        self.add('h', Float(28.8, iotype='in'))
 
         self.add('wdot_B', Array(np.zeros((3, n)), iotype='out', shape=(3, n)))
         
@@ -271,23 +211,24 @@ class Attitude_RotationMtx(Component):
 
 class Attitude_RotationMtxRates(Component):
 
-    def __init__(self, n=2, h=0.01):
+    def __init__(self, n=1500):
         super(Attitude_RotationMtxRates, self).__init__()
         self.n = n
-        self.h = h
-
+        self.add('h', Float(28.8, iotype='in'))
         self.add('Odot_BI', Array(np.zeros((3, 3, n)), iotype='out', 
                                   shape=(3, 3, n)))
         
         self.add('O_BI', Array(np.zeros((3, 3, n)), iotype='in', 
                                shape=(3, 3, n)))
 
+
     def linearize(self):
         return
 
     def execute(self):
-        for k in xrange(3):
-            for j in xrange(3):
+        self.Odot_BI = np.zeros((3, 3, self.n))
+        for k in range(3):
+            for j in range(3):
                 self.Odot_BI[k,j,0] += self.O_BI[k,j,1] / self.h
                 self.Odot_BI[k,j,0] -= self.O_BI[k,j,0] / self.h
                 self.Odot_BI[k,j,1:-1] += self.O_BI[k,j,2:] / 2.0 / self.h

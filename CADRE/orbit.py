@@ -19,7 +19,7 @@ C4 = 1.875*mu*J4*Re**4
 
 class Orbit_Dynamics(rk4.RK4): 
 
-    def __init__(self, n_times, time_step=.01): 
+    def __init__(self, n_times, time_step=28.819212808539024): 
         super(Orbit_Dynamics, self).__init__()
         self.time_step = time_step
 
@@ -129,12 +129,12 @@ class Orbit_Dynamics(rk4.RK4):
 
 class Orbit_Initial(Component):
 
-    altPerigee = Float(0, iotype="in", copy=None)
-    altApogee = Float(0, iotype="in", copy=None)
-    RAAN = Float(0, iotype="in", copy=None)
-    Inc = Float(0, iotype="in", copy=None)
+    altPerigee = Float(500., iotype="in", copy=None)
+    altApogee = Float(500., iotype="in", copy=None)
+    RAAN = Float(66.279, iotype="in", copy=None)
+    Inc = Float(82.072, iotype="in", copy=None)
     argPerigee = Float(0, iotype="in", copy=None)
-    trueAnomaly = Float(0, iotype="in", copy=None)
+    trueAnomaly = Float(337.987, iotype="in", copy=None)
     
     def __init__(self):
         super(Orbit_Initial, self).__init__()

@@ -23,7 +23,7 @@ K = 5.6704e-8
 
 class ThermalTemperature(RK4): 
 
-    def __init__(self, n_times, time_step=.01): 
+    def __init__(self, n_times, time_step=28.819212808539024): 
         super(ThermalTemperature, self).__init__()
         self.time_step=time_step
 

@@ -9,7 +9,7 @@ import rk4
 
 class Comm_DataDownloaded(rk4.RK4):
 
-    def __init__(self, n_times, time_step=.01):
+    def __init__(self, n_times, time_step=28.819212808539024):
         super(Comm_DataDownloaded, self).__init__()
         self.time_step = time_step
         
@@ -27,13 +27,13 @@ class Comm_DataDownloaded(rk4.RK4):
         self.dfdy = np.array([[0.]])
         self.dfdx = np.array([[1.]])
 
-    def f_dot(self, external, state): 
+    def f_dot(self, external, state):
         return external[0]
 
-    def df_dy(self, external, state): 
+    def df_dy(self, external, state):
         return self.dfdy
 
-    def df_dx(self, external, state):   
+    def df_dx(self, external, state):
         return self.dfdx
 
    

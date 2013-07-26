@@ -18,7 +18,7 @@ alpha = np.log(1/1.1**5)
 
 class BatterySOC(rk4.RK4): 
 
-    def __init__(self, n_times, time_step=.01): 
+    def __init__(self, n_times, time_step=28.819212808539024): 
         """computes the time history of the battery state of 
         charge. 
             n_time: (integer) number of time_steps to take 

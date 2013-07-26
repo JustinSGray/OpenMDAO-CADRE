@@ -13,8 +13,10 @@ class BsplineParameters(Component):
         self.n = n
         self.add('m', 300)
         m = self.m
-        self.add('t1', 0)
-        self.add('t2', 48000)        
+        self.add('t1', 0.)
+        self.add('t2', 43200.)       
+        self.add('h', Float(0.01, iotype='out'))
+        
         self.B = MBI(np.zeros(n), [np.linspace(self.t1,self.t2,n)], [m], [4]).getJacobian(0,0)
         self.Bdot = MBI(np.zeros(n), [np.linspace(self.t1,self.t2,n)], [m], [4]).getJacobian(1,0)
         self.BT = self.B.transpose()
@@ -29,6 +31,7 @@ class BsplineParameters(Component):
         self.add('Isetpt',Array(0.2*np.ones((12,n)), size=(12,n), dtype=float, iotype='out'))
 
     def execute(self):
+        self.h = (self.t2 - self.t1)/(self.n - 1)
         self.P_comm[:] = self.B.dot(self.CP_P_comm[:])
         self.Gamma[:] = self.B.dot(self.CP_gamma[:])
         for k in range(12):
