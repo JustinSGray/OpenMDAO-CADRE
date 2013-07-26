@@ -136,9 +136,9 @@ class ReactionWheel_Torque(Component):
 
 class ReactionWheel_Dynamics(rk4.RK4):
     
-    def __init__(self, n_times, time_step=.01):
+    def __init__(self, n_times):
         super(ReactionWheel_Dynamics, self).__init__()
-        self.time_step = time_step
+        #self.time_step = time_step
         
         self.add('w_B', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))
         self.add('T_RW', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))#MAY NEED TO BE SIZE (n_times,)
@@ -156,8 +156,6 @@ class ReactionWheel_Dynamics(rk4.RK4):
         self.djy_dx[:,:,0] = [[0,0,0],[0,0,-1],[0,1,0]]
         self.djy_dx[:,:,1] = [[0,0,1],[0,0,0],[-1,0,0]]
         self.djy_dx[:,:,2] = [[0,-1,0],[1,0,0],[0,0,0]]
-
-        
 
         self.J_RW = 2.8e-5 #unit conversion of some kind
 

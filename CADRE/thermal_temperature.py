@@ -23,9 +23,9 @@ K = 5.6704e-8
 
 class ThermalTemperature(RK4): 
 
-    def __init__(self, n_times, time_step=28.819212808539024): 
+    def __init__(self, n_times): 
         super(ThermalTemperature, self).__init__()
-        self.time_step=time_step
+        #self.time_step=time_step
 
         self.add("temperature", Array(np.zeros((5,n_times)), shape=(5,n_times), dtype=np.float, 
             iotype="out", desc="temperature for the 4 fins and body over time")
