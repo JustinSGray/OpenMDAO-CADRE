@@ -9,7 +9,7 @@ from openmdao.lib.datatypes.api import Float, Array, Str
 
 class RK4(Component): 
 
-    time_step = Float(.01, units="s", iotype="in", 
+    h = Float(.01, units="s", iotype="in", 
         desc="time step used for the integration")
 
     state_var = Str("", iotype="in", 
@@ -24,11 +24,11 @@ class RK4(Component):
     fixed_external_vars = Array([], iotype="in", dtype=str, 
         desc="list of names of variables that are external to the system, but DO NOT vary with time")
 
-    def __init__(self, time_step=.01): 
+    def __init__(self): 
         super(RK4, self).__init__()
         #self.n = n
         #self.n_states = n_states
-        self.time_step = time_step
+        #self.time_step = time_step
         #self.n_external = n_external
 
         #self.ny = self.n_states*self.n
@@ -130,11 +130,11 @@ class RK4(Component):
             y = self.y[k1:k2]
 
             a = self.a[:,k] = self.f_dot(ex,y)
-            b = self.b[:,k] = self.f_dot(ex, y + self.time_step/2.*a)
-            c = self.c[:,k] = self.f_dot(ex, y + self.time_step/2.*b)
-            d = self.d[:,k] = self.f_dot(ex, y + self.time_step*c)
+            b = self.b[:,k] = self.f_dot(ex, y + self.h/2.*a)
+            c = self.c[:,k] = self.f_dot(ex, y + self.h/2.*b)
+            d = self.d[:,k] = self.f_dot(ex, y + self.h*c)
 
-            self.y[self.n_states+k1:self.n_states+k2] = y + self.time_step/6.*(a + 2*b + 2*c + d)
+            self.y[self.n_states+k1:self.n_states+k2] = y + self.h/6.*(a + 2*b + 2*c + d)
 
         state_var_name = self.name_map['y']
         setattr(self, state_var_name, self.y.T.reshape((self.n,self.n_states)).T)
@@ -165,16 +165,16 @@ class RK4(Component):
 
             #state vars
             df_dy = self.df_dy(ex,y)
-            dg_dy = self.df_dy(ex, y + self.time_step/2.*a)
-            dh_dy = self.df_dy(ex, y + self.time_step/2.*b)
-            di_dy = self.df_dy(ex, y + self.time_step*c)
+            dg_dy = self.df_dy(ex, y + self.h/2.*a)
+            dh_dy = self.df_dy(ex, y + self.h/2.*b)
+            di_dy = self.df_dy(ex, y + self.h*c)
 
             da_dy = df_dy        
-            db_dy = dg_dy + dg_dy.dot(self.time_step/2.*da_dy)
-            dc_dy = dh_dy + dh_dy.dot(self.time_step/2.*db_dy)
-            dd_dy = di_dy + di_dy.dot(self.time_step*dc_dy)
+            db_dy = dg_dy + dg_dy.dot(self.h/2.*da_dy)
+            dc_dy = dh_dy + dh_dy.dot(self.h/2.*db_dy)
+            dd_dy = di_dy + di_dy.dot(self.h*dc_dy)
 
-            dR_dy = - I - self.time_step/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
+            dR_dy = - I - self.h/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
 
             for i in xrange(self.n_states): 
                 for j in xrange(self.n_states): 
@@ -185,16 +185,16 @@ class RK4(Component):
 
             #external vars
             df_dx = self.df_dx(ex,y)
-            dg_dx = self.df_dx(ex, y + self.time_step/2.*a)
-            dh_dx = self.df_dx(ex, y + self.time_step/2.*b)
-            di_dx = self.df_dx(ex, y + self.time_step*c)
+            dg_dx = self.df_dx(ex, y + self.h/2.*a)
+            dh_dx = self.df_dx(ex, y + self.h/2.*b)
+            di_dx = self.df_dx(ex, y + self.h*c)
 
             da_dx = df_dx
-            db_dx = dg_dx + dg_dy.dot(self.time_step/2*da_dx)
-            dc_dx = dh_dx + dh_dy.dot(self.time_step/2*db_dx)
-            dd_dx = di_dx + di_dy.dot(self.time_step*dc_dx)
+            db_dx = dg_dx + dg_dy.dot(self.h/2*da_dx)
+            dc_dx = dh_dx + dh_dy.dot(self.h/2*db_dx)
+            dd_dx = di_dx + di_dy.dot(self.h*dc_dx)
 
-            self.Jx[k+1,:,:] = -self.time_step/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
+            self.Jx[k+1,:,:] = -self.h/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
 
         self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(self.ny,self.ny))
         self.JT = self.J.transpose()
