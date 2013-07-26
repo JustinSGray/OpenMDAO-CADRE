@@ -4,14 +4,20 @@ import numpy as np
 import pickle
 import pylab
 
-r_e2b_I0 = np.loadtxt("r_e2b_I0.dat")
-r_e2b_I = np.loadtxt("r_e2b_I.dat")
+data = pickle.load(open("data1346.pkl", 'rb'))
+pkloutput = data["0:r_e2b_I"]
+n=1500
+comp = Orbit_Dynamics(n)
+comp.time_step = 12*3600. / (n - 1)
+comp.r_e2b_I0[:3] = data["0:r_e2b_I0"]
+comp.r_e2b_I0[3:] = data["0:v_e2b_I0"]
+comp.run()
 
-od = Orbit_Dynamics(1500)
-od.r_e2b_I0 = r_e2b_I0
+print "loaded:",pkloutput
+print 
+print "calc:",comp.r_e2b_I
+print "error:", np.linalg.norm(comp.r_e2b_I - pkloutput) / np.linalg.norm(pkloutput)
 
-od.run()
 
-print np.linalg.norm(od.r_e2b_I - r_e2b_I)/np.linalg.norm(r_e2b_I)
 
 

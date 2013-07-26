@@ -29,10 +29,14 @@ class CADRE(Assembly):
     def __init__(self, n=2):
         super(CADRE, self).__init__()
 
+        # Parameters
+        self.add("BsplineParameters", BsplineParameters(n))
+        self.driver.workflow.add("BsplineParameters")
+        
         # Additude components
         self.add("Attitude_Angular", Attitude_Angular(n))
         self.driver.workflow.add("Attitude_Angular")
-
+        
         self.add("Attitude_AngularRates", Attitude_AngularRates(n))
         self.driver.workflow.add("Attitude_AngularRates")
 
@@ -41,19 +45,19 @@ class CADRE(Assembly):
 
         self.add("Attitude_Roll", Attitude_Roll(n))
         self.driver.workflow.add("Attitude_Roll")
-
+        
         self.add("Attitude_RotationMtx", Attitude_RotationMtx(n))
         self.driver.workflow.add("Attitude_RotationMtx")
-
+        
         self.add("Attitude_RotationMtxRates", Attitude_RotationMtxRates(n))
         self.driver.workflow.add("Attitude_RotationMtxRates")
-
+        
         self.add("Attitude_Sideslip", Attitude_Sideslip(n))
         self.driver.workflow.add("Attitude_Sideslip")
 
         self.add("Attitude_Torque", Attitude_Torque(n))
         self.driver.workflow.add("Attitude_Torque")
-
+        
         # Battery components
         self.add("BatteryConstraints", BatteryConstraints(n))
         self.driver.workflow.add("BatteryConstraints")
@@ -63,11 +67,7 @@ class CADRE(Assembly):
 
         self.add("BatterySOC", BatterySOC(n))
         self.driver.workflow.add("BatterySOC")
-
-        # Parameters
-        self.add("BsplineParameters", BsplineParameters(n))
-        self.driver.workflow.add("BsplineParameters")
-
+        
         # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))
         self.driver.workflow.add("Comm_AntRotation")
@@ -113,13 +113,14 @@ class CADRE(Assembly):
 
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
-
+        
         # Orbit components
-        self.add("Orbit_Initial", Orbit_Initial())
-        self.driver.workflow.add("Orbit_Initial")
+        #self.add("Orbit_Initial", Orbit_Initial())
+        #self.driver.workflow.add("Orbit_Initial")
         
         self.add("Orbit_Dynamics", Orbit_Dynamics(n))
         self.driver.workflow.add("Orbit_Dynamics")
+        
         
         # Power
         self.add("Power_CellVoltage", Power_CellVoltage(n))
@@ -160,11 +161,11 @@ class CADRE(Assembly):
 
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
-
+        
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
-
+        
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):

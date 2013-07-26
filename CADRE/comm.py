@@ -9,7 +9,7 @@ import rk4
 
 class Comm_DataDownloaded(rk4.RK4):
 
-    def __init__(self, n_times, time_step=.01):
+    def __init__(self, n_times, time_step=28.819212808539024):
         super(Comm_DataDownloaded, self).__init__()
         self.time_step = time_step
         
