@@ -30,10 +30,7 @@ class Solar_ExposedArea(Component):
         self.add('nc', 7)
         self.add('np', 12)
 
-<<<<<<< HEAD
-        self.add('finAngle', Float(iotype='in'))
-=======
->>>>>>> origin
+
         self.add('azimuth', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         self.add('elevation', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         
@@ -85,19 +82,10 @@ class Solar_ExposedArea(Component):
         self.Js = [None for i in range(3)]
     
     def setx(self):
-<<<<<<< HEAD
-        self.azimuth[:], self.elevation[:] = self.lib.fixangles(self.n, 
-                                                                self.azimuth[:], 
-                                                                self.elevation[:])
-        self.x[:,0] = self.finAngle
-        self.x[:,1] = self.azimuth
-        self.x[:,2] = self.elevation
-=======
         result = self.lib.fixangles(self.n, self.azimuth[:], self.elevation[:])
         self.x[:,0] = self.finAngle
         self.x[:,1] = result[0]
         self.x[:,2] = result[1]
->>>>>>> origin
     
 
     def linearize(self):

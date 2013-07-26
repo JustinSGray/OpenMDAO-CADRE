@@ -191,6 +191,7 @@ class Orbit_Initial(Component):
             self.J[3:,i] = v0_ECI.imag/h
     
     def execute(self):
+        import pdb; pdb.set_trace()
         r0_ECI, v0_ECI = self.compute(self.altPerigee, self.altApogee, self.RAAN, self.Inc, self.argPerigee, self.trueAnomaly)
         self.r_e2b_I0[:3] = r0_ECI.real
         self.r_e2b_I0[3:] = v0_ECI.real
