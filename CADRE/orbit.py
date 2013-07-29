@@ -19,9 +19,13 @@ C4 = 1.875*mu*J4*Re**4
 
 class Orbit_Dynamics(rk4.RK4): 
 
+<<<<<<< HEAD
     def __init__(self, n_times, time_step=28.819212808539024): 
+=======
+    def __init__(self, n_times): 
+>>>>>>> 763a137ee915413eb6e851d79486a3b524f32667
         super(Orbit_Dynamics, self).__init__()
-        self.time_step = time_step
+        #self.time_step = time_step
 
         self.add('r_e2b_I', Array(1000*np.ones((6,n_times)), size=(6, n_times), 
             dtype=np.float, iotype="out"))

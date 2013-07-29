@@ -26,13 +26,13 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=1500): #n was 2
+    def __init__(self, n=2):
         super(CADRE, self).__init__()
-        '''
+
         # Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
-        
+        """
         # Additude components
         self.add("Attitude_Angular", Attitude_Angular(n))
         self.driver.workflow.add("Attitude_Angular")
@@ -74,13 +74,13 @@ class CADRE(Assembly):
 
         self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         self.driver.workflow.add("Comm_AntRotationMtx")
-        '''
+
         self.add("Comm_BitRate", Comm_BitRate(n))
         self.driver.workflow.add("Comm_BitRate")
-        
+
         self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
         self.driver.workflow.add("Comm_DataDownloaded")
-        '''
+
         self.add("Comm_Distance", Comm_Distance(n))
         self.driver.workflow.add("Comm_Distance")
 
@@ -120,7 +120,7 @@ class CADRE(Assembly):
         
         self.add("Orbit_Dynamics", Orbit_Dynamics(n))
         self.driver.workflow.add("Orbit_Dynamics")
-        
+        """
         
         # Power
         self.add("Power_CellVoltage", Power_CellVoltage(n))
@@ -131,7 +131,7 @@ class CADRE(Assembly):
         
         self.add("Power_Total", Power_Total(n))
         self.driver.workflow.add("Power_Total")        
-
+        """
         # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
         self.driver.workflow.add("ReactionWheel_Motor")
@@ -144,7 +144,7 @@ class CADRE(Assembly):
         
         self.add("ReactionWheel_Dynamics", ReactionWheel_Dynamics(n))
         self.driver.workflow.add("ReactionWheel_Dynamics")
-
+        
         # Solar
         self.add("Solar_ExposedArea", Solar_ExposedArea(n))
         self.driver.workflow.add("Solar_ExposedArea")
@@ -165,7 +165,7 @@ class CADRE(Assembly):
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
-        '''
+        """
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):
@@ -205,7 +205,6 @@ class CADRE(Assembly):
                     print v[0], v[2], v[3]
                     if isinstance(tval, np.ndarray):
                         print "rel error:", np.linalg.norm(tval - v[1])/np.linalg.norm(tval)
-                        print tval, "\n", v[1] #I ADDED THIS
             else:
                 print v[0]
         

@@ -9,9 +9,13 @@ import rk4
 
 class Comm_DataDownloaded(rk4.RK4):
 
+<<<<<<< HEAD
     def __init__(self, n_times, time_step=28.819212808539024):
+=======
+    def __init__(self, n_times):
+>>>>>>> 763a137ee915413eb6e851d79486a3b524f32667
         super(Comm_DataDownloaded, self).__init__()
-        self.time_step = time_step
+        #self.time_step = time_step
         
         self.add('Data0', Array([0.0], iotype='in', shape=(1,)))
         self.add('Data', Array(np.zeros((1, n_times)), iotype='out', 

@@ -14,7 +14,12 @@ class BsplineParameters(Component):
         self.add('m', 300)
         m = self.m
         self.add('t1', 0.)
+<<<<<<< HEAD
         self.add('t2', 43200.)       
+=======
+        self.add('t2', 43200.)
+        
+>>>>>>> 763a137ee915413eb6e851d79486a3b524f32667
         self.add('h', Float(0.01, iotype='out'))
         
         self.B = MBI(np.zeros(n), [np.linspace(self.t1,self.t2,n)], [m], [4]).getJacobian(0,0)
