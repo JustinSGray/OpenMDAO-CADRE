@@ -159,7 +159,7 @@ class ReactionWheel_Dynamics(rk4.RK4):
 
     def f_dot(self, external, state):
         self.jy[0, :] = [0., -external[2], external[1]]
-        self.jy[1, :] = [external[2], 0., -external[0]]#was -ext[1]
+        self.jy[1, :] = [external[2], 0., -external[0]]
         self.jy[2, :] = [-external[1], external[0], 0.]
 
         #TODO sort out unit conversion here with T_RW
