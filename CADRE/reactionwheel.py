@@ -136,9 +136,10 @@ class ReactionWheel_Dynamics(rk4.RK4):
     def __init__(self, n_times):
         super(ReactionWheel_Dynamics, self).__init__()
         #self.time_step = time_step
+        self.lib = __import__('CADRE.lib.RWLib').lib.RWLib
         
         self.add('w_B', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))
-        self.add('T_RW', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))#MAY NEED TO BE SIZE (n_times,)
+        self.add('T_RW', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))
         
         self.add('w_RW', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='out'))
         self.add('w_RW0', Array(np.zeros((3,)), size=(3,), dtype=np.float, iotype='in'))        
@@ -157,9 +158,9 @@ class ReactionWheel_Dynamics(rk4.RK4):
         self.J_RW = 2.8e-5 #unit conversion of some kind
 
     def f_dot(self, external, state):
-        self.jy[0, :] = [0, -external[2], external[1]]
-        self.jy[1, :] = [external[2], 0, -external[1]]
-        self.jy[2, :] = [-external[1], external[0], 0]
+        self.jy[0, :] = [0., -external[2], external[1]]
+        self.jy[1, :] = [external[2], 0., -external[0]]#was -ext[1]
+        self.jy[2, :] = [-external[1], external[0], 0.]
 
         #TODO sort out unit conversion here with T_RW
         return (-external[3:]/2.8e-5 - self.jy.dot(state))

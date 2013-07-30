@@ -74,7 +74,7 @@ class CADRE(Assembly):
 
         self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         self.driver.workflow.add("Comm_AntRotationMtx")
-        
+    
         self.add("Comm_BitRate", Comm_BitRate(n))
         self.driver.workflow.add("Comm_BitRate")
         
@@ -129,8 +129,8 @@ class CADRE(Assembly):
         self.driver.workflow.add("Power_SolarPower")
         
         self.add("Power_Total", Power_Total(n))
-        self.driver.workflow.add("Power_Total")        
-
+        self.driver.workflow.add("Power_Total")
+        
         # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
         self.driver.workflow.add("ReactionWheel_Motor")

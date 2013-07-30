@@ -116,7 +116,7 @@ class RK4(Component):
     
     def execute(self):
         
-        #self.check_config()
+        self.check_config()
         
         self.y = self.y.reshape((self.ny, ))
         self.y[0:self.n_states] = self.y0[:]
