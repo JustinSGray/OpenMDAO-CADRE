@@ -26,13 +26,13 @@ class RK4(Component):
     
     def __init__(self):
         super(RK4, self).__init__()
-    #self.n = n
-    #self.n_states = n_states
-    #self.time_step = time_step
-    #self.n_external = n_external
-    
-    #self.ny = self.n_states*self.n
-    #self.nJ = self.n_states*self.n+self.n_states**2*(self.n-1)
+        #self.n = n
+        #self.n_states = n_states
+        #self.time_step = time_step
+        #self.n_external = n_external
+        
+        #self.ny = self.n_states*self.n
+        #self.nJ = self.n_states*self.n+self.n_states**2*(self.n-1)
     
     
     def check_config(self):
