@@ -49,7 +49,12 @@ class RK4(Component):
         for e in self.external_vars:
             var = self.get(e)
             self.ext_index_map[e] = len(ext)
-
+            
+            np.set_printoptions(threshold=np.nan)
+            import pprint
+            print "printing var for "
+            pprint.pprint( var )
+        
             #TODO: Check that shape[-1]==self.n
             ext.extend(var.reshape(-1,self.n))
     
