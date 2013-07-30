@@ -1,3 +1,4 @@
+from openmdao.main.api import set_as_top
 from CADRE.CADRE_assembly import CADRE
 from pprint import pprint
 import numpy as np
@@ -21,7 +22,7 @@ for key in data.keys():
             setd[shortkey] = data[key]
 
 n = setd['P_comm'].size
-assembly = CADRE(n=n)
+assembly = set_as_top(CADRE(n=n))
 
 setd['r_e2b_I0'] = np.zeros(6)
 setd['r_e2b_I0'][:3] = data[idx+":r_e2b_I0"]

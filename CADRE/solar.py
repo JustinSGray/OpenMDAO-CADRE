@@ -30,6 +30,7 @@ class Solar_ExposedArea(Component):
         self.add('nc', 7)
         self.add('np', 12)
 
+
         self.add('azimuth', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         self.add('elevation', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         

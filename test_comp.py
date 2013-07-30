@@ -1,11 +1,7 @@
 import numpy as np
 from numpy import array
 
-from CADRE.reactionwheel import ReactionWheel_Motor
-from CADRE.reactionwheel import ReactionWheel_Power
-from CADRE.reactionwheel import ReactionWheel_Torque
-from CADRE.orbit import Orbit_Initial
-from CADRE.BsplineParameters import BsplineParameters
+from CADRE.parameters import BsplineParameters
 
 SIZE = 5
 STEP = 1

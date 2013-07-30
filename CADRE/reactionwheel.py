@@ -54,11 +54,9 @@ class ReactionWheel_Motor(Component):
         
         for k in range(3):
             for j in range(3):
-                if 'T_RW' in arg:
+                if 'T_m' in arg:
                     result['T_RW'][j,:] += self.dT_dTm[:,k,j] * arg['T_m'][k,:]
-                if 'w_B' in arg:
                     result['w_B'][j,:] += self.dT_dwb[:,k,j] * arg['T_m'][k,:]
-                if 'w_RW' in arg:
                     result['w_RW'][j,:] += self.dT_dh[:,k,j] * arg['T_m'][k,:] * self.J_RW        
         return result
     
@@ -98,9 +96,8 @@ class ReactionWheel_Power(Component):
         result['T_RW'] = np.zeros((3,self.n))
         
         for k in range(3):
-            if 'w_RW' in arg:
+            if 'P_RW' in arg:
                 result['w_RW'][k,:] += self.dP_dw[:,k] * arg['P_RW'][k,:]
-            if 'T_RW' in arg:
                 result['T_RW'][k,:] += self.dP_dT[:,k] * arg['P_RW'][k,:]
         return result
 
@@ -129,7 +126,7 @@ class ReactionWheel_Torque(Component):
         if not result['T_tot']:
             result['T_tot'] = np.zeros((3,self.n))
         
-        if 'T_tot' in arg:
+        if 'T_RW' in arg:
             result['T_tot'][:] += arg['T_RW'][:]
         return result
 

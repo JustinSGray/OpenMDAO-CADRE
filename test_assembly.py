@@ -6,7 +6,7 @@ assembly = CADRE()
 
 pprint.pprint(assembly.varnames)
 
-assembly.get(assembly.varnames[var]).get(var)
+#assembly.get(assembly.varnames[var]).get(var)
 
 graph = assembly._depgraph._graph
 
