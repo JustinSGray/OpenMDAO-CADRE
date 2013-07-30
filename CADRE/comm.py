@@ -26,7 +26,7 @@ class Comm_DataDownloaded(rk4.RK4):
 
         self.dfdy = np.array([[0.]])
         self.dfdx = np.array([[1.]])
-
+    
     def f_dot(self, external, state):
         return external[0]
 
@@ -161,7 +161,7 @@ class Comm_BitRate(Component):
             result['GSdist'] = self.dD_dS * arg['Dr']
             result['CommLOS'] = self.dD_dLOS * arg['Dr']
         return result
-    
+
     
 class Comm_Distance(Component):
 

@@ -28,7 +28,7 @@ class CADRE(Assembly):
     """
     def __init__(self, n=2):
         super(CADRE, self).__init__()
-
+        
         # Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
@@ -74,13 +74,13 @@ class CADRE(Assembly):
 
         self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         self.driver.workflow.add("Comm_AntRotationMtx")
-
+        
         self.add("Comm_BitRate", Comm_BitRate(n))
         self.driver.workflow.add("Comm_BitRate")
-
+        
         self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
         self.driver.workflow.add("Comm_DataDownloaded")
-
+        
         self.add("Comm_Distance", Comm_Distance(n))
         self.driver.workflow.add("Comm_Distance")
 
@@ -120,7 +120,6 @@ class CADRE(Assembly):
         
         self.add("Orbit_Dynamics", Orbit_Dynamics(n))
         self.driver.workflow.add("Orbit_Dynamics")
-        """
         
         # Power
         self.add("Power_CellVoltage", Power_CellVoltage(n))
@@ -131,7 +130,7 @@ class CADRE(Assembly):
         
         self.add("Power_Total", Power_Total(n))
         self.driver.workflow.add("Power_Total")        
-        """
+
         # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
         self.driver.workflow.add("ReactionWheel_Motor")
@@ -161,11 +160,11 @@ class CADRE(Assembly):
 
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
-        
+        """
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
-        """
+        
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):
@@ -222,6 +221,12 @@ class CADRE(Assembly):
         self.varnames = {}
         for compname in self.list_components():
             if compname == "driver":
+                #TESTING:
+                #super(self.get('driver'), self).check_config()
+                #self._update_workflow()
+                #self.workflow.check_config()
+                self.check_config()
+                #END TESTING
                 continue
 
             comp_inputs = self.get(compname).list_inputs()
@@ -254,7 +259,8 @@ class CADRE(Assembly):
                     topath = '.'.join([compname, varname])
                     self.connect(frompath, topath)
                     print "Connecting", frompath, "to", topath, "..."
-                    
+
+
 if __name__ == "__main__":
     a = CADRE()
     a.print_vals()
