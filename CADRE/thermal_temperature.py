@@ -19,7 +19,8 @@ eps_c = 0.87
 eps_r = 0.88
 
 q_sol = 1360.0
-K = 5.6704e-8
+K = 5.67051e-8 #from Thermal_Temperature0.py -> lower error
+#K = 5.6704e-8 #from Thermal_Temperature.py and in original implementation
 
 class ThermalTemperature(RK4): 
 
@@ -27,15 +28,16 @@ class ThermalTemperature(RK4):
         super(ThermalTemperature, self).__init__()
         #self.time_step=time_step
 
-        self.add("temperature", Array(np.zeros((5,n_times)), shape=(5,n_times), dtype=np.float, 
-            iotype="out", desc="temperature for the 4 fins and body over time")
-        )
 
-        self.add("T0", Array(273*np.ones((5,)), shape=(5,), dtype=np.float, 
+        self.add("temperature", Array(np.zeros((5,n_times)), shape=(5,n_times), dtype=np.float,
+            iotype="out", desc="temperature for the 4 fins and body over time", low=50, high =400)
+        ) 
+
+        self.add("T0", Array(273.*np.ones((5,)), shape=(5,), dtype=np.float,
             iotype="in", desc="initial temperatures for the 4 fins and the body")
         )
 
-        self.add("exposedArea", Array(np.zeros((7,12,n_times)), size=(7,12,n_times), dtype=np.float, 
+        self.add("exposedArea", Array(np.zeros((7,12,n_times)), size=(7,12,n_times), dtype=np.float,
             iotype="in", desc="exposed area for each solar cell")
         )
 
@@ -49,23 +51,31 @@ class ThermalTemperature(RK4):
 
         self.add("P_comm", Array(np.ones((n_times, )), size=(n_times, ), dtype=np.float, 
             iotype="in", desc="Power required by the communication system", low=0, high=1)
-            )
+        )
 
         self.state_var = "temperature"
         self.init_state_var = "T0"
         self.external_vars = ["exposedArea","LOS","P_comm"]
         self.fixed_external_vars = ["cellInstd",]
-
-    def f_dot(self, external, state): 
-
+        
+        # implementation of fixTemps from Thermal_Temperature.f90
+        for i in range (0,n_times):
+            for k in range (0,5):
+                self.temperature[k,i] = self.T0[k]
+                if self.temperature[k,i] < 0:
+                    self.temperature[k,i] = 0.
+        
+    def f_dot(self, external, state):
+        '''
+        # original implementation
         f = np.zeros((5, ))
 
         exposedArea = external[:84]
         LOS = external[84]
         P_comm = external[85]
         cellInstd = external[86:]
-
-        for i,(A_exp,w) in enumerate(zip(exposedArea,cellInstd)): 
+        
+        for i,(A_exp,w) in enumerate(zip(exposedArea,cellInstd)):
             p_i = i/7
             c_i = i%7
 
@@ -78,7 +88,6 @@ class ThermalTemperature(RK4):
                 f_i = (p_i+1)%4
                 m = m_f
                 cp = cp_f
-
             alpha = alpha_c*w + alpha_r*(1-w)
             eps = eps_c*w + eps_r*(1-w)
 
@@ -88,8 +97,37 @@ class ThermalTemperature(RK4):
         f[4] += 4.0 * P_comm / m_b / cp_b
 
         return f
+        '''
+        # revised implementation from ThermalTemperature.f90
+        f = np.zeros((5, ))
+        exposedArea = external[:84]
+        LOS = external[84]
+        P_comm = external[85]
+        cellInstd = external[86:]
+        
+        for p in range(0,12): #panels
+            if p < 4: #body #lowest at p<8
+                f_i = 4
+                m = m_b
+                cp = cp_b
+            else: #fin
+                f_i = p%4 + 1
+                m = m_f
+                cp = cp_f
+            for c in range (0,7): #cells
+                idat = (p-1)*7 + c #lowest at p-2
+                A_exp = exposedArea[idat]
+                w = cellInstd[idat]
+                alpha = alpha_c*w + alpha_r*(1-w)
+                eps = eps_c*w + eps_r*(1-w)
+                f[f_i] += alpha * q_sol * A_exp * LOS / m / cp
+                f[f_i] -= eps * K * A_T * state[f_i]**4 / m / cp
 
-    def df_dy(self, external, state): 
+        f[4] += 4.0 * P_comm / m_b / cp_b
+        return f
+        
+    
+    def df_dy(self, external, state):
 
         exposedArea = external[:84]
         LOS = external[84]
@@ -110,7 +148,6 @@ class ThermalTemperature(RK4):
                 f_i = (p_i+1)%4
                 m = m_f
                 cp = cp_f
-
             alpha = alpha_c*w + alpha_r*(1-w)
             eps = eps_c*w + eps_r*(1-w)
 
@@ -118,7 +155,7 @@ class ThermalTemperature(RK4):
 
         return dfdy
 
-    def df_dx(self, external, state): 
+    def df_dx(self, external, state):
 
         exposedArea = external[:84]
         LOS = external[84]
