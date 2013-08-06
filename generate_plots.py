@@ -1,15 +1,15 @@
+from openmdao.main.api import set_as_top
 from CADRE.CADRE_assembly import CADRE
+from test_assembly_pkl import assembly
 
 from pylab import *
 import cPickle
 
 class generate_plots(object):
     
-    def __init__(self, testAssembly, assembly):
-        self.assembly = assembly
+    def __init__(self):
         self.npts = 6 # This value was specified in kwargs
-        self.set_vals()
-        self.assembly.run()
+
         #self.__initFigures()
         #self.__drawAxes()
         #self.plot('plot')
@@ -20,26 +20,7 @@ class generate_plots(object):
         self.plot_from_pkl()
         
         self.testData()
-        
-    def set_vals(self):
-        for comp in assembly.list_components():
-            for input_name in assembly.get(comp).list_inputs():
-                for var_name in testAssembly:
-                    if var_name[0] == '5' or not var_name[0].isdigit():
-                        if var_name[0].isdigit(): #do one at a time
-                            var_name_short = var_name[2:]
-                        if input_name == var_name_short:
-                            try:
-                                if isinstance(assembly.get(comp).get(input_name), float) and shape(testAssembly[var_name]) == (1,):
-                                    assembly.get(comp).set(input_name, testAssembly[var_name][0])
-                                elif isinstance(assembly.get(comp).get(input_name), ndarray) and shape(testAssembly[var_name]) == (1,):
-                                    for i in range(len(assembly.get(comp).get(input_name))):
-                                        assembly.get(comp).set(input_name, testAssembly[var_name]) #This may not work, but probably does
-                                else:
-                                    assembly.get(comp).set(input_name, testAssembly[var_name])
-                                break
-                            except RuntimeError:
-                                pass
+
                
     def __initFigures(self):
         fig_width = 20  # width in inches
@@ -385,35 +366,6 @@ class generate_plots(object):
         savefig('plot_from_pkl.pdf')      
 
 
-    def testData(self):
-        for comp in assembly.list_components():
-            for output_name in assembly.get(comp).list_outputs():
-                for var_name in testAssembly:
-                    if var_name[0] == '5' or not var_name[0].isdigit():
-                        if var_name[0].isdigit():
-                            var_name_short = var_name[2:]    
-                        if output_name == var_name_short:
-                            if testAssembly[var_name].shape == (7,12) and assembly.get(assembly.varnames[output_name]).get(output_name).shape ==(7,12,1500):
-                                for k in range (1500):
-                                    res = zeros(1500)
-                                    if allclose(testAssembly[var_name][:,:], assembly.get(assembly.varnames[output_name]).get(output_name)[:,:,k]):
-                                        #print output_name, " [",k, "]\t\tOK"
-                                        pass
-                                    else:
-                                        res[k] = average(abs(testAssembly[var_name][:,:] - assembly.get(assembly.varnames[output_name]).get(output_name)[:,:,k]) / testAssembly[var_name][:,:])
-                                print output_name, "\t\t%Error:",average(res)
-                            elif len(testAssembly[var_name]) == (3) and len(assembly.get(assembly.varnames[output_name]).get(output_name)) == (6):
-                                print var_name, testAssembly[var_name], assembly.get(assembly.varnames[output_name]).get(output_name)
-                                pass
-                            else:
-                                if np.allclose(testAssembly[var_name], assembly.get(assembly.varnames[output_name]).get(output_name)):
-                                    print output_name, "\t\tOK"
-                                else:
-                                    print output_name, "\t\t%Error:", average(abs(testAssembly[var_name] - assembly.get(assembly.varnames[output_name]).get(output_name)) / testAssembly[var_name])
-
-
 
 if __name__ == "__main__":
-    testAssembly = cPickle.load(open('data1346.pkl', 'r'))
-    assembly = CADRE()
-    generate_plots(testAssembly, assembly)
+    generate_plots()
