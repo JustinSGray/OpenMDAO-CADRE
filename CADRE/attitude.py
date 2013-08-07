@@ -18,11 +18,22 @@ class Attitude_Angular(Component):
                                   shape=(3, 3, n)))
 
     def linearize(self):
-        self.dw_dO, self.dw_dOdot = self.lib.computejacobianw(self.n, self.O_BI,
-                                                              self.Odot_BI)
+        for i in range(0,self.n):
+            self.dw_dOdot[i,0,2,:] = self.O_BI[1,:,i]
+            self.dw_dO[i,0,1,:] = self.Odot_BI[2,:,i]
+                    
+            self.dw_dOdot[i,1,0,:] = self.O_BI[2,:,i]
+            self.dw_dO[i,1,2,:] = self.Odot_BI[0,:,i]
+                    
+            self.dw_dOdot[i,2,1,:] = self.O_BI[0,:,i]
+            self.dw_dO[i,2,0,:] = self.Odot_BI[1,:,i]
+
 
     def execute(self):
-        self.w_B = self.lib.computew(self.n, self.O_BI, self.Odot_BI)
+        for i in range(0,self.n):
+            self.w_B[0,i] = np.dot(self.Odot_BI[2,:,i] , self.O_BI[1,:,i])
+            self.w_B[1,i] = np.dot(self.Odot_BI[0,:,i] , self.O_BI[2,:,i])
+            self.w_B[2,i] = np.dot(self.Odot_BI[1,:,i] , self.O_BI[0,:,i])
 
     def applyDer(self, arg, result):
         if 'O_BI' in arg and 'Odot_BI' in arg:
@@ -107,10 +118,90 @@ class Attitude_Attitude(Component):
         self.add('r_e2b_I', Array(np.zeros((6, n)), iotype='in', shape=(6, n)))
 
     def linearize(self):
-        self.dO_dr = self.lib.computejacobianori(self.n, self.r_e2b_I)
+        for i in range(0,self.n):
+            r = r_e2b_I[0:3,i]
+            v = r_e2b_I[3:6,i]
+            
+            normr = np.sqrt(np.dot(r,r))
+            normv = np.sqrt(np.dot(v,v))
+            if normr < 1e-10:
+                normr = 1e-10
+            if normv < 1e-10:
+                normv = 1e-10
+            
+            r = r / normr
+            v = v / normv
+
+            for k in range(0,3):
+                dr_dr[k,k] = dr_dr[k,k] + 1.0 / normr
+                dv_dv[k,k] = dv_dv[k,k] + 1.0 / normv
+                dr_dr[:,k] = dr_dr[:,k] - r_e2b_I[0:3,i] / normr**2 * r_e2b_I[k,i] / normr
+                dv_dv[:,k] = dv_dv[:,k] - r_e2b_I[3:6,i] / normv**2 * r_e2b_I[2+k,i]/ normv
+
+            vx[0,:] = (0., -v[2], v[1])
+            vx[1,:] = (v[2], 0., -v[0])
+            vx[2,:] = (-v[1], v[0], 0.)
+    
+            dvx_dv[0,:,0] = (0., 0., 0.)
+            dvx_dv[1,:,0] = (0., 0., -1.)
+            dvx_dv[2,:,0] = (0., 1., 0.)
+    
+            dvx_dv[0,:,1] = (0., 0., 1.)
+            dvx_dv[1,:,1] = (0., 0., 0.)
+            dvx_dv[2,:,1] = (-1., 0., 0.)
+    
+            dvx_dv[0,:,2] = (0., -1., 0.)
+            dvx_dv[1,:,2] = (1., 0., 0.)
+            dvx_dv[2,:,2] = (0., 0., 0.)
+    
+            iB =  np.matmul(vx, r)
+            jB = -np.matmul(vx, iB)
+    
+            diB_dr = vx
+            diB_dv[:,0] = np.matmul(dvx_dv[:,:,0],r)
+            diB_dv[:,1] = np.matmul(dvx_dv[:,:,1],r)
+            diB_dv[:,3] = np.matmul(dvx_dv[:,:,2],r)
+    
+            djB_diB = -vx
+            djB_dv[:,0] = -np.matmul(dvx_dv[:,:,0],iB)
+            djB_dv[:,1] = -np.matmul(dvx_dv[:,:,1],iB)
+            djB_dv[:,2] = -np.matmul(dvx_dv[:,:,2],iB)
+            
+            dO_dr[i,0,:,0:3] = np.matmul(diB_dr , dr_dr)
+            dO_dr[i,0,:,3:6] = np.matmul(diB_dv , dv_dv)
+            
+            dO_dr[i,1,:,0:3] = np.matmul(matmul(djB_diB, diB_dr) , dr_dr)
+            dO_dr[i,1,:,3:6] = np.matmul(matmul(djB_diB, diB_dv) + djB_dv , dv_dv)
+            
+            dO_dr[i,2,:,3:6] = -dv_dv
+
 
     def execute(self):
-        self.O_RI = self.lib.computeori(self.n, self.r_e2b_I)
+        for i in range(0,self.n):
+            r = self.r_e2b_I[0:3,i]
+            v = self.r_e2b_I[3:6,i]
+            
+            normr = np.sqrt(np.dot(r,r))
+            normv = np.sqrt(np.dot(v,v))
+            if normr < 1e-10:
+                normr = 1e-10
+            if normv < 1e-10:
+                normv = 1e-10
+            
+            r = r / normr
+            v = v / normv
+
+            vx = np.zeros((3,3))
+            vx[0,:] = (0., -v[2], v[1])
+            vx[1,:] = (v[2], 0., -v[0])
+            vx[2,:] = (-v[1], v[0], 0.)
+            
+            iB =  np.dot(vx,r)
+            jB = -np.dot(vx,iB)
+
+            self.O_RI[0,:,i] = iB
+            self.O_RI[1,:,i] = jB
+            self.O_RI[2,:,i] = -v
 
     def applyDer(self, arg, result):
         if 'r_e2b_I' in arg:
@@ -144,10 +235,16 @@ class Attitude_Roll(Component):
         self.add('Gamma', Array(np.zeros(n), iotype='in', shape=(n,)))
 
     def linearize(self):
-        self.dO_dg = self.lib.computejacobianobr(self.n, self.Gamma)
+        for i in range(0,self.n):
+            self.dO_dg[i,0,:] = (-np.sin(Gamma[i]), np.cos(Gamma[i]), 0.)
+            self.dO_dg[i,1,:] = (-np.cos(Gamma[i]), -np.sin(Gamma[i]), 0.)
+            self.dO_dg[i,2,:] = (0., 0., 0.)
 
     def execute(self):
-        self.O_BR = self.lib.computeobr(self.n, self.Gamma)
+        for i in range(0,self.n):
+            self.O_BR[0,:,i] = (np.cos(self.Gamma[i]), np.sin(self.Gamma[i]), 0.)
+            self.O_BR[1,:,i] = (-np.sin(self.Gamma[i]), np.cos(self.Gamma[i]), 0.)
+            self.O_BR[2,:,i] = (0., 0., 1.)
 
     def applyDer(self, arg, result):
         if 'Gamma' in arg:
@@ -182,10 +279,11 @@ class Attitude_RotationMtx(Component):
                                shape=(3, 3, n)))
     
     def linearize(self):
-        return
+        pass
     
     def execute(self):
-        self.O_BI = self.lib.computeobi(self.n, self.O_BR, self.O_RI)
+        for i in range(0,self.n):
+            self.O_BI[:,:,i] = np.dot(self.O_BR[:,:,i], self.O_RI[:,:,i])
 
     def applyDer(self, arg, result):
         if 'O_RI' in arg and 'O_BR' in arg:

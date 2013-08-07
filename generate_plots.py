@@ -10,17 +10,15 @@ class generate_plots(object):
     def __init__(self):
         self.npts = 6 # This value was specified in kwargs
 
-        #self.__initFigures()
-        #self.__drawAxes()
-        #self.plot('plot')
-        #self.plot0('plot')
-        #self.savePickled('data')
+        self.__initFigures()
+        self.__drawAxes()
+        self.plot('plot')
+        self.plot0('plot')
+        self.savePickled('data')
 
         self.myplot()
         self.plot_from_pkl()
         
-        self.testData()
-
                
     def __initFigures(self):
         fig_width = 20  # width in inches
@@ -73,7 +71,7 @@ class generate_plots(object):
         self.curves = curves
     
     def __drawAxes(self):
-        time = linspace(0,43200.0,1500)
+        time = assembly.get(assembly.varnames['t']).get('t')
         xlim = [time.min()/3600.0, time.max()/3600.0]
         
         for curve in self.curves:
@@ -144,9 +142,7 @@ class generate_plots(object):
         fig = figure(0)
         
         curves = []
-        
-        
-        
+
         for pt in range(self.npts):
             figure(pt+1)
             self.r, self.c = 4, 3
@@ -171,8 +167,7 @@ class generate_plots(object):
             savefig(filename + '-' + pre + '.pdf')
 
     def addSubplot(self, index, data, yLabel, ylim):
-        time = linspace(0,43200.0,1500)
-
+        time = assembly.get(assembly.varnames['t']).get('t')
         xlim = [time.min()/3600.0, time.max()/3600.0]
         
         ax = subplot(self.r, self.c, index)
@@ -197,8 +192,7 @@ class generate_plots(object):
 
 
     def myplot(self):
-        time = linspace(0,43200.0,1500)
-        #time = assembly.get(assembly.varnames['t']).get('t')
+        time = assembly.get(assembly.varnames['t']).get('t')
         xlim = [time.min()/3600.0, time.max()/3600.0]
 
         figure()
@@ -279,92 +273,6 @@ class generate_plots(object):
         plot(time, assembly.get(assembly.varnames['LOS']).get('LOS'))
         
         savefig('myplot.pdf')
-
-
-    def plot_from_pkl(self):
-        time = linspace(0,43200.0,1500)
-        #time = assembly.get(assembly.varnames['t']).get('t')
-        xlim = [time.min()/3600.0, time.max()/3600.0]
-        
-        figure()
-        
-        subplot(4,3,1)
-        xlabel = "Time"
-        ylabel = "Roll Angle [deg]"
-        ylim([0,90])
-        plot(time, 180./pi*testAssembly['5:gamma'])
-        
-        subplot(4,3,2)
-        xlabel = "Time"
-        ylabel = "Set pt. current [A]"
-        ylim([0,0.4])
-        for k in range(12):
-            plot(time, testAssembly['5:Isetpt'][k,:])
-        
-        subplot(4,3,3)
-        xlabel = "Time"
-        ylabel = "Comm. power [W]"
-        ylim([-5,5])
-        plot(time, testAssembly['5:P_comm'])
-        
-        subplot(4,3,4)
-        xlabel = "Time"
-        ylabel = "Gain"
-        ylim([0,2])
-        plot(time, testAssembly['5:gain'])
-        
-        subplot(4,3,5)
-        xlabel = "Time"
-        ylabel = "Temp [K]"
-        ylim([230,350])
-        for k in range(5):
-            plot(time, testAssembly['5:temperature'][k])
-        
-        subplot(4,3,6)
-        xlabel = "Time"
-        ylabel = "Solar power [W]"
-        ylim([-8,8])
-        plot(time, testAssembly['5:P_sol'])
-        
-        subplot(4,3,7)
-        xlabel = "Time"
-        ylabel = "Total data [Gb]"
-        ylim([0,10])
-        plot(time, 1e-3*testAssembly['5:Data'][0,:])
-        
-        subplot(4,3,8)
-        xlabel = "Time"
-        ylabel = "Cell voltage [V]"
-        ylim([-2,6])
-        for k in range(12):
-            plot(time, testAssembly['5:V_sol'][k,:])
-        
-        subplot(4,3,9)
-        xlabel = "Time"
-        ylabel = "State of charge"
-        ylim([0,1])
-        plot(time, testAssembly['5:SOC'][0,:])
-        
-        subplot(4,3,10)
-        xlabel = "Time"
-        ylabel = "Comm. line of sight"
-        ylim([0,1])
-        plot(time, testAssembly['5:CommLOS'])
-        
-        subplot(4,3,11)
-        xlabel = "Time"
-        ylabel = "Solar line of sight"
-        ylim([0,1])
-        plot(time, testAssembly['5:LOS'])
-        
-        subplot(4,3,12)
-        xlabel = "Time"
-        ylabel = "Solar line of sight"
-        ylim([0,1])
-        plot(time, testAssembly['5:LOS'])
-        
-        savefig('plot_from_pkl.pdf')      
-
 
 
 if __name__ == "__main__":
