@@ -242,6 +242,10 @@ class Sun_PositionBody( Component ):
         return result
 
 class Sun_PositionECI( Component ):
+    
+    #constants
+    d2r = pi/180.
+    
     LD = Float(0., iotype="in", copy=None)
     def __init__(self, n=2): 
         super(Sun_PositionECI, self).__init__()
@@ -257,7 +261,15 @@ class Sun_PositionECI( Component ):
         self.lib = __import__('CADRE.lib.SunLib').lib.SunLib
 
     def execute(self): 
-        self.r_e2s_I += self.lib.computeposition(self.n, self.LD + self.t[:]/3600.0/24.0)
+        #self.r_e2s_I += self.lib.computeposition(self.n, self.LD + self.t[:]/3600.0/24.0)
+        for i in range(0,self.n):
+            L = self.d2r*280.460 + self.d2r*0.9856474*self.t[i]
+            g = self.d2r*357.528 + self.d2r*0.9856003*self.t[i]
+            Lambda = L + self.d2r*1.914666*np.sin(g) + self.d2r*0.01999464*np.sin(2*g)
+            eps = self.d2r*23.439 - self.d2r*3.56e-7*self.t[i]
+            self.r_e2s_I[0,i] = np.cos(Lambda)
+            self.r_e2s_I[1,i] = np.sin(Lambda)*np.cos(eps)
+            self.r_e2s_I[2,i] = np.sin(Lambda)*np.sin(eps)
 
     def linearize(self): 
         self.Ja, self.Ji, self.Jj = self.lib.computepositionjacobian(self.n, 3*self.n, self.LD + self.t[:]/3600.0/24.0)

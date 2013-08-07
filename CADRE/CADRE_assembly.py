@@ -143,7 +143,7 @@ class CADRE(Assembly):
         
         self.add("ReactionWheel_Dynamics", ReactionWheel_Dynamics(n))
         self.driver.workflow.add("ReactionWheel_Dynamics")
-        """
+        
         # Solar
         self.add("Solar_ExposedArea", Solar_ExposedArea(n))
         self.driver.workflow.add("Solar_ExposedArea")
@@ -154,10 +154,10 @@ class CADRE(Assembly):
 
         self.add("Sun_PositionBody", Sun_PositionBody(n))
         self.driver.workflow.add("Sun_PositionBody")
-
+        """
         self.add("Sun_PositionECI", Sun_PositionECI(n))
         self.driver.workflow.add("Sun_PositionECI")
-
+        """
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
         
