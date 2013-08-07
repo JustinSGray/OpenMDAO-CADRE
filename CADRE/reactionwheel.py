@@ -22,17 +22,45 @@ class ReactionWheel_Motor(Component):
         self.add('T_m', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out'))
 
     def linearize(self): 
-        self.dT_dTm, self.dT_dwb, self.dT_dh = self.lib.computejacobiant(self.n, 
-                                                                         self.T_RW[:], 
-                                                                         self.w_B[:], 
-                                                                         self.J_RW * self.w_RW[:])
-        self.dT_dTm, self.dT_dwb, self.dT_dh = self.lib.computejacobiant(self.n, 
-                                                                         self.T_RW[:], 
-                                                                         self.w_B[:], 
-                                                                         self.J_RW * self.w_RW[:])
+        #self.dT_dTm, self.dT_dwb, self.dT_dh = self.lib.computejacobiant(self.n,
+        #                                                                 self.T_RW[:],
+        #                                                                 self.w_B[:],
+        #                                                                 self.J_RW * self.w_RW[:])
+        w_Bx = np.zeros((3,3))
+        dwx_dwb = np.zeros((3,3))
+        h_RW = self.J_RW * self.w_RW[:]
+        for i in range(0,self.n):
+            w_Bx[0,:] = (0., -self.w_B[2,i] , self.w_B(1,i))
+            w_Bx[1,:] = (self.w_B[2,i], 0., -self.w_B[0,i])
+            w_Bx[2,:] = (-self.w_B[1,i], w_B[0,i], 0.)
+            
+            dwx_dwb[0,:,0] = (0., 0., 0.)
+            dwx_dwb[1,:,0] = (0., 0., -1.)
+            dwx_dwb[2,:,0] = (0., 1., 0.)
+            
+            dwx_dwb[0,:,1] = (0., 0., 1.)
+            dwx_dwb[1,:,1] = (0., 0., 0.)
+            dwx_dwb[2,:,1] = (-1., 0., 0.)
+            
+            dwx_dwb[0,:,2] = (0., -1., 0.)
+            dwx_dwb[1,:,2] = (1., 0., 0.)
+            dwx_dwb[2,:,2] = (0., 0., 0.)
+            
+            for k in range(0,3):
+                self.dT_dTm[i,k,k] = -1.
+                self.dT_dwb[i,:,k] = -np.dot(dwx_dwb[:,:,k] , h_RW[:,i])
+            self.dT_dh[i,:,:] = -w_Bx
 
     def execute(self):
-        self.T_m = self.lib.computet(self.n, self.T_RW[:], self.w_B[:], self.J_RW * self.w_RW[:])
+        #self.T_m = self.lib.computet(self.n, self.T_RW[:], self.w_B[:], self.J_RW * self.w_RW[:])
+        w_Bx = np.zeros((3,3))
+        h_RW = self.J_RW * self.w_RW[:]
+        for i in range(0,self.n):
+            w_Bx[0,:] = (0., -self.w_B[2,i], self.w_B[1,i])
+            w_Bx[1,:] = (self.w_B[2,i], 0., -self.w_B[0,i])
+            w_Bx[2,:] = (-self.w_B[1,i], self.w_B[0,i], 0.)
+            
+            self.T_m[:,i] = -self.T_RW[:,i] - np.dot(w_Bx , h_RW[:,i])
         
     def applyDer(self, arg, result):
         result['T_m'] = np.zeros((3,self.n))
@@ -62,6 +90,12 @@ class ReactionWheel_Motor(Component):
     
     
 class ReactionWheel_Power(Component):
+    
+    #constants
+    V = 4.0
+    a = 4.9e-4
+    b = 4.5e2
+    I0 = 0.017
 
     def __init__(self, n):
         super(ReactionWheel_Power, self).__init__()
@@ -74,12 +108,17 @@ class ReactionWheel_Power(Component):
         self.add('P_RW', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out')) 
              
     def linearize(self):
-        self.dP_dw, self.dP_dT = self.lib.computejacobianp(self.n, 
-                                                           self.w_RW[:], 
-                                                           self.T_RW[:])   
+        #self.dP_dw, self.dP_dT = self.lib.computejacobianp(self.n, self.w_RW[:], self.T_RW[:])
+        for i in range(0,self.n):
+            for k in range(0,3):
+                self.dP_dw[i,k] = 2 * self.V * self.a * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
+                self.dP_dT[i,k] = 2 * self.V * self.b * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
 
     def execute(self):
-        self.P_RW[:] = self.lib.computep(self.n, self.w_RW[:], self.T_RW[:])       
+        #self.P_RW[:] = self.lib.computep(self.n, self.w_RW[:], self.T_RW[:])
+        for i in range(0,self.n):
+            for k in range(0,3):
+                self.P_RW[k,i] = self.V * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])**2 + self.V * self.I0
 
     def applyDer(self, arg, result):
         result['P_RW'] = np.zeros((3,self.n))

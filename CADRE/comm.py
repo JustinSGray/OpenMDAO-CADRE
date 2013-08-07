@@ -115,6 +115,18 @@ class Comm_AntRotationMtx(Component):
     
     
 class Comm_BitRate(Component):
+    
+    #constants
+    pi = 2*np.arccos(0.)
+    c = 299792458
+    Gr = 10**(12.9/10.)
+    Ll = 10**(-2.0/10.)
+    f = 437e6
+    k = 1.3806503e-23
+    SNR = 10**(5.0/10.)
+    T = 500.
+    alpha = c**2 * Gr * Ll / 16.0 / pi**2 / f**2 / k / SNR / T / 1e6
+
 
     def __init__(self, n):
         super(Comm_BitRate, self).__init__()
@@ -129,19 +141,26 @@ class Comm_BitRate(Component):
         self.add('CommLOS', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        response = self.lib.computejacobiandr(self.n, 
-                                              self.P_comm, 
-                                              self.gain, 
-                                              self.GSdist, 
-                                              self.CommLOS)
-        self.dD_dP, self.dD_dGt, self.dD_dS, self.dD_dLOS = response
+        S2 = 0.
+        for i in range(0,self.n):
+            if np.abs(self.GSdist[i]) > 1e-10:
+                S2 = self.GSdist[i] * 1e3
+            else:
+                S2 = 1e-10
+
+            self.dD_dP[i] = self.alpha * self.gain[i] * self.CommLOS[i] / S2**2
+            self.dD_dGt[i] = self.alpha * self.P_comm[i] * self.CommLOS[i] / S2**2
+            self.dD_dS[i] = -2. * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3 * 1e3
+            self.dD_dLOS[i] = self.alpha * sefl.P_comm[i] * self.gain[i] / S2**2
         
     def execute(self):
-        self.Dr = self.lib.computedr(self.n, 
-                                           self.P_comm, 
-                                           self.gain, 
-                                           self.GSdist, 
-                                           self.CommLOS)
+        S2 = 0.
+        for i in range(0,self.n):
+            if np.abs(self.GSdist[i]) > 1e-10:
+                S2 = self.GSdist[i] * 1e3
+            else:
+                S2 = 1e-10
+            self.Dr[i] = self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**2
 
     def applyDer(self, arg, result):
         if 'P_comm' in arg:
@@ -175,10 +194,17 @@ class Comm_Distance(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        self.J = self.lib.computejacobiand(self.n, self.r_b2g_A)
+        for i in range(0,self.n):
+            norm = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
+            if norm > 1e-10:
+                self.J[i,:] = self.r_b2g_A[:,i] / norm
+            else:
+                self.J[i,:] = 0.
+
 
     def execute(self):
-        self.GSdist = self.lib.computed(self.n, self.r_b2g_A)
+        for i in range(0,self.n):
+            self.GSdist[i] = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
 
     def applyDer(self, arg, result):
         if 'r_b2g_A' in arg:
@@ -207,11 +233,18 @@ class Comm_EarthsSpin(Component):
         self.add('t', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        self.dq_dt = self.lib.computejacobianqe(self.n, self.t)
-
+        for i in range(0,n):
+            theta = np.pi * self.t[i] / 3600.0 / 24.0
+            dtheta_dt = np.pi / 3600.0 / 24.0
+            self.dq_dt[i,0] = -np.sin(theta) * dtheta_dt
+            self.dq_dt[i,3] = -np.cos(theta) * dtheta_dt
+    
     def execute(self):
-        self.q_E = self.lib.computeqe(self.n, self.t)
-
+        for i in range(0,self.n):
+            theta = np.pi * self.t[i] / 3600.0 / 24.0
+            self.q_E[0,i] = np.cos(theta)
+            self.q_E[3,i] = -np.sin(theta)
+    
     def applyDer(self, arg, result):
         if 't' in arg:
             result['q_E'] = np.zeros((4, self.n))
@@ -322,6 +355,10 @@ class Comm_GainPattern(Component):
 
 class Comm_GSposEarth(Component):
     
+    #constants
+    Re = 6378.137
+    d2r = np.pi/180.
+    
     lon = Float(0, iotype="in")
     lat = Float(0, iotype="in")
     alt = Float(0, iotype="in")
@@ -334,12 +371,23 @@ class Comm_GSposEarth(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        result = self.lib.computejacobiangs(self.lon, self.lat, self.alt)
-        self.dr_dlon, self.dr_dlat, self.dr_dalt = result
-
+        self.dr_dlon[0] = -self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.dr_dlat[0] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.dr_dalt[0] = np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+            
+        self.dr_dlon[1] =  self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.dr_dlat[1] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.dr_dalt[1] = np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+            
+        self.dr_dlon[2] = 0.
+        self.dr_dlat[2] = self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat)
+        self.dr_dalt[2] = np.sin(self.d2r*self.lat)
+            
     def execute(self):
-        self.r_e2g_E = self.lib.computegs(self.n, self.lon, self.lat, self.alt)
-
+        self.r_e2g_E[0,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.r_e2g_E[1,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.r_e2g_E[2,:] = (self.Re + self.alt) * np.sin(self.d2r*self.lat)
+    
     def applyDer(self, arg, result):
         result['r_e2g_E'] = np.zeros((3, self.n))
         if 'lon' in arg:
@@ -417,6 +465,9 @@ class Comm_GSposECI(Component):
 
 class Comm_LOS(Component):
 
+    #constants
+    Re = 6378.137
+    
     def __init__(self, n):
         super(Comm_LOS, self).__init__()
         self.n = n
@@ -430,11 +481,36 @@ class Comm_LOS(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        result = self.lib.computejacobianlos(self.n, self.r_b2g_I, self.r_e2g_I)
-        self.dLOS_drb, self.dLOS_dre = result
+        Rb = 10.0
+        for i in range(0,self.n):
+            proj = np.dot(self.r_b2g_I[:,i], r_e2g_I[:,i]) / self.Re
+            dproj_drb[:] = self.r_e2g_I[:,i]
+            dproj_dre[:] = r_b2g_I[:,i]
+            if proj > 0:
+                dLOS_drb[i,:] = 0.
+                dLOS_dre[i,:] = 0.
+            elif proj < -Rb:
+                dLOS_drb[i,:] = 0.
+                dLOS_dre[i,:] = 0.
+            else:
+                x = (proj - 0) / (-Rb - 0)
+                dx_dproj = -1. / Rb
+                dLOS_dx = 6*x - 6*x**2
+                self.dLOS_drb[i,:] = dLOS_dx * dx_dproj * dproj_drb[:]
+                self.dLOS_dre[i,:] = dLOS_dx * dx_dproj * dproj_dre[:]
+
 
     def execute(self):
-        self.CommLOS = self.lib.computelos(self.n, self.r_b2g_I, self.r_e2g_I)
+        Rb = 100.0
+        for i in range(0,self.n):
+            proj = np.dot(self.r_b2g_I[:,i], self.r_e2g_I[:,i]) / self.Re
+            if proj > 0:
+                self.CommLOS[i] = 0.
+            elif proj < -Rb:
+                self.CommLOS[i] = 1.
+            else:
+                x = (proj - 0) / (-Rb - 0)
+                self.CommLOS[i] = 3*x**2 - 2*x**3
 
     def applyDer(self, arg, result):
         if 'r_b2g_I' in arg:

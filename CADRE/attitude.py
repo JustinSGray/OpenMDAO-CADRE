@@ -408,6 +408,11 @@ class Attitude_Sideslip(Component):
 
 class Attitude_Torque(Component):
 
+    J = np.zeros((3,3))
+    J[0,:] = (0.018, 0., 0.)
+    J[1,:] = (0., 0.018, 0.)
+    J[2,:] = (0., 0., 0.006)
+
     def __init__(self, n=2):
         super(Attitude_Torque, self).__init__()
         self.n = n
@@ -418,12 +423,39 @@ class Attitude_Torque(Component):
         self.add('w_B', Array(np.zeros((3, n)), iotype='in', shape=(3, n)))
         self.add('wdot_B', Array(np.zeros((3, n)), iotype='in', shape=(3, n)))
         
-    def linearize(self):
-        self.dT_dw, self.dT_dwdot = self.lib.computejacobiant(self.n, self.w_B, 
-                                                              self.wdot_B)
+    def linearize(self):    
+        dwx_dw = np.zeros((3,3,3))
+        
+        dwx_dw[0,:,0] = (0., 0., 0.)
+        dwx_dw[1,:,0] = (0., 0., -1.)
+        dwx_dw[2,:,0] = (0., 1., 0.)
+        
+        dwx_dw[0,:,1] = (0., 0., 1.)
+        dwx_dw[1,:,1] = (0., 0., 0.)
+        dwx_dw[2,:,1] = (-1., 0, 0.)
+        
+        dwx_dw[0,:,2] = (0., -1., 0)
+        dwx_dw[1,:,2] = (1., 0., 0.)
+        dwx_dw[2,:,2] = (0., 0., 0.)
+
+        for i in range(0,self.n):
+            wx[0,:] = (0., -w_B[2,i], w_B[1,i])
+            wx[1,:] = (w_B[2,i], 0., -w_B[0,i])
+            wx[2,:] = (-w_B[1,i], w_B[0,i], 0.)
+            
+            dT_dwdot[i,:,:] = self.J
+            dT_dw[i,:,:] = np.dot(wx, self.J)
+            for k in range(0,3):
+                dT_dw[i,:,k] = dT_dw[i,:,k] + np.dot(dwx_dw[:,:,k], np.dot(self.J,w_B[:,i]))
+
 
     def execute(self):
-        self.T_tot = self.lib.computet(self.n, self.w_B, self.wdot_B)
+        wx = np.zeros((3,3))
+        for i in range(0,self.n):
+            wx[0,:] = (0., -self.w_B[2,i], self.w_B[1,i])
+            wx[1,:] = (self.w_B[2,i], 0., -self.w_B[0,i])
+            wx[2,:] = (-self.w_B[1,i], self.w_B[0,i], 0.)
+            self.T_tot[:,i] = np.dot(self.J,self.wdot_B[:,i]) + np.dot(wx, np.dot(self.J,self.w_B[:,i]))
 
     def applyDer(self, arg, result):
         if 'w_B' in arg and 'wdot_B' in arg:
