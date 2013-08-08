@@ -32,7 +32,7 @@ class CADRE(Assembly):
         # Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
-        """
+        
         # Additude components
         self.add("Attitude_Angular", Attitude_Angular(n))
         self.driver.workflow.add("Attitude_Angular")
@@ -67,7 +67,7 @@ class CADRE(Assembly):
         
         self.add("BatterySOC", BatterySOC(n))
         self.driver.workflow.add("BatterySOC")
-        """
+        
         # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))
         self.driver.workflow.add("Comm_AntRotation")
@@ -113,7 +113,7 @@ class CADRE(Assembly):
 
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
-        """
+        
         # Orbit components
         #self.add("Orbit_Initial", Orbit_Initial())
         #self.driver.workflow.add("Orbit_Initial")
@@ -164,7 +164,7 @@ class CADRE(Assembly):
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
-        """
+        
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):
