@@ -5,7 +5,6 @@ import numpy as np
 import rk4
 
 
-
 mu = 398600.44
 Re = 6378.137
 J2 = 1.08264e-3
@@ -123,8 +122,6 @@ class Orbit_Dynamics(rk4.RK4):
     def df_dx(self, external, state): 
         
         return self.dfdx
-
-
 
 
 class Orbit_Initial(Component):

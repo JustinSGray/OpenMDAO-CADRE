@@ -90,10 +90,86 @@ class Comm_AntRotationMtx(Component):
         self.J = np.empty((self.n, 3, 3, 4))
 
     def linearize(self):
-        self.J = self.lib.computerotmtxjacobian(self.n, self.q_A)
+        #self.J = self.lib.computerotmtxjacobian(self.n, self.q_A)
+        A = np.zeros((4,3))
+        B = np.zeros((4,3))
+        dA_dq = np.zeros((4,3,4))
+        dB_dq = np.zeros((4,3,4))
+        
+        dA_dq[0,:,0] = (1, 0, 0)
+        dA_dq[1,:,0] = (0, 1, 0)
+        dA_dq[2,:,0] = (0, 0, 1)
+        dA_dq[3,:,0] = (0, 0, 0)
+        
+        dA_dq[0,:,1] = (0, 0, 0)
+        dA_dq[1,:,1] = (0, 0,-1)
+        dA_dq[2,:,1] = (0, 1, 0)
+        dA_dq[3,:,1] = (1, 0, 0)
+        
+        dA_dq[0,:,2] = (0, 0, 1)
+        dA_dq[1,:,2] = (0, 0, 0)
+        dA_dq[2,:,2] = (-1, 0, 0)
+        dA_dq[3,:,2] = (0, 1, 0)
+        
+        dA_dq[0,:,3] = (0,-1, 0)
+        dA_dq[1,:,3] = (1, 0, 0)
+        dA_dq[2,:,3] = (0, 0, 0)
+        dA_dq[3,:,3] = (0, 0, 1)
+    
+        
+        dB_dq[0,:,0] = (1, 0, 0)
+        dB_dq[1,:,0] = (0, 1, 0)
+        dB_dq[2,:,0] = (0, 0, 1)
+        dB_dq[3,:,0] = (0, 0, 0)
+        
+        dB_dq[0,:,1] = (0, 0, 0)
+        dB_dq[1,:,1] = (0, 0, 1)
+        dB_dq[2,:,1] = (0,-1, 0)
+        dB_dq[3,:,1] = (1, 0, 0)
+        
+        dB_dq[0,:,2] = (0, 0,-1)
+        dB_dq[1,:,2] = (0, 0, 0)
+        dB_dq[2,:,2] = (1, 0, 0)
+        dB_dq[3,:,2] = (0, 1, 0)
+        
+        dB_dq[0,:,3] = (0, 1, 0)
+        dB_dq[1,:,3] = (-1, 0, 0)
+        dB_dq[2,:,3] = (0, 0, 0)
+        dB_dq[3,:,3] = (0, 0, 1)
+        
+        for i in range(0,self.n):
+            A[0,:] = (self.q_A[0,i], -self.q_A[3,i], self.q_A[2,i])
+            A[1,:] = (self.q_A[3,i], self.q_A[0,i], -self.q_A[1,i])
+            A[2,:] = (-self.q_A[2,i], self.q_A[1,i], self.q_A[0,i])
+            A[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
+            
+            B[0,:] = (self.q_A[0,i], self.q_A[3,i], -self.q_A[2,i])
+            B[1,:] = (-self.q_A[3,i], self.q_A[0,i], self.q_A[1,i])
+            B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
+            B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
+            
+            for k in range(0,4):
+                J[i,:,:,k] = np.dot(np.transpose(dA_dq[:,:,k]),B) + np.dot(np.transpose(A),dB_dq[:,:,k])
+
 
     def execute(self):
-        self.O_AB = self.lib.computerotationmtx(self.n, self.q_A)
+        #self.O_AB = self.lib.computerotationmtx(self.n, self.q_A)
+        A = np.zeros((4,3))
+        B = np.zeros((4,3))
+        
+        for i in range(0,self.n):
+            A[0,:] = (self.q_A[0,i], -self.q_A[3,i], self.q_A[2,i])
+            A[1,:] = (self.q_A[3,i], self.q_A[0,i], -self.q_A[1,i])
+            A[2,:] = (-self.q_A[2,i], self.q_A[1,i], self.q_A[0,i])
+            A[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
+            
+            B[0,:] = (self.q_A[0,i], self.q_A[3,i], -self.q_A[2,i])
+            B[1,:] = (-self.q_A[3,i], self.q_A[0,i], self.q_A[1,i])
+            B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
+            B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
+            
+            self.O_AB[:,:,i] = np.dot(np.transpose(A),B)
+        
 
     def applyDer(self, arg, result):
         if 'q_A' in arg:
@@ -115,6 +191,18 @@ class Comm_AntRotationMtx(Component):
     
     
 class Comm_BitRate(Component):
+    
+    #constants
+    pi = 2*np.arccos(0.)
+    c = 299792458
+    Gr = 10**(12.9/10.)
+    Ll = 10**(-2.0/10.)
+    f = 437e6
+    k = 1.3806503e-23
+    SNR = 10**(5.0/10.)
+    T = 500.
+    alpha = c**2 * Gr * Ll / 16.0 / pi**2 / f**2 / k / SNR / T / 1e6
+
 
     def __init__(self, n):
         super(Comm_BitRate, self).__init__()
@@ -129,19 +217,26 @@ class Comm_BitRate(Component):
         self.add('CommLOS', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        response = self.lib.computejacobiandr(self.n, 
-                                              self.P_comm, 
-                                              self.gain, 
-                                              self.GSdist, 
-                                              self.CommLOS)
-        self.dD_dP, self.dD_dGt, self.dD_dS, self.dD_dLOS = response
+        S2 = 0.
+        for i in range(0,self.n):
+            if np.abs(self.GSdist[i]) > 1e-10:
+                S2 = self.GSdist[i] * 1e3
+            else:
+                S2 = 1e-10
+
+            self.dD_dP[i] = self.alpha * self.gain[i] * self.CommLOS[i] / S2**2
+            self.dD_dGt[i] = self.alpha * self.P_comm[i] * self.CommLOS[i] / S2**2
+            self.dD_dS[i] = -2. * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3 * 1e3
+            self.dD_dLOS[i] = self.alpha * sefl.P_comm[i] * self.gain[i] / S2**2
         
     def execute(self):
-        self.Dr = self.lib.computedr(self.n, 
-                                           self.P_comm, 
-                                           self.gain, 
-                                           self.GSdist, 
-                                           self.CommLOS)
+        S2 = 0.
+        for i in range(0,self.n):
+            if np.abs(self.GSdist[i]) > 1e-10:
+                S2 = self.GSdist[i] * 1e3
+            else:
+                S2 = 1e-10
+            self.Dr[i] = self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**2
 
     def applyDer(self, arg, result):
         if 'P_comm' in arg:
@@ -175,10 +270,17 @@ class Comm_Distance(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        self.J = self.lib.computejacobiand(self.n, self.r_b2g_A)
+        for i in range(0,self.n):
+            norm = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
+            if norm > 1e-10:
+                self.J[i,:] = self.r_b2g_A[:,i] / norm
+            else:
+                self.J[i,:] = 0.
+
 
     def execute(self):
-        self.GSdist = self.lib.computed(self.n, self.r_b2g_A)
+        for i in range(0,self.n):
+            self.GSdist[i] = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
 
     def applyDer(self, arg, result):
         if 'r_b2g_A' in arg:
@@ -207,11 +309,20 @@ class Comm_EarthsSpin(Component):
         self.add('t', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        self.dq_dt = self.lib.computejacobianqe(self.n, self.t)
-
+        #self.dq_dt = self.lib.computejacobianqe(self.n, self.t)
+        for i in range(0,n):
+            theta = np.pi * self.t[i] / 3600.0 / 24.0
+            dtheta_dt = np.pi / 3600.0 / 24.0
+            self.dq_dt[i,0] = -np.sin(theta) * dtheta_dt
+            self.dq_dt[i,3] = -np.cos(theta) * dtheta_dt
+    
     def execute(self):
-        self.q_E = self.lib.computeqe(self.n, self.t)
-
+        #self.q_E = self.lib.computeqe(self.n, self.t)
+        for i in range(0,self.n):
+            theta = np.pi * self.t[i] / 3600.0 / 24.0
+            self.q_E[0,i] = np.cos(theta)
+            self.q_E[3,i] = -np.sin(theta)
+    
     def applyDer(self, arg, result):
         if 't' in arg:
             result['q_E'] = np.zeros((4, self.n))
@@ -240,10 +351,87 @@ class Comm_EarthsSpinMtx(Component):
                                shape=(3, 3, self.n)))
 
     def linearize(self):
-        self.J = self.lib.computerotmtxjacobian(self.n, self.q_E)
+        #self.J = self.lib.computerotmtxjacobian(self.n, self.q_E)
+        A = np.zeros((4,3))
+        B = np.zeros((4,3))
+        dA_dq = np.zeros((4,3,4))
+        dB_dq = np.zeros((4,3,4))
+        
+        dA_dq[0,:,0] = (1, 0, 0)
+        dA_dq[1,:,0] = (0, 1, 0)
+        dA_dq[2,:,0] = (0, 0, 1)
+        dA_dq[3,:,0] = (0, 0, 0)
+        
+        dA_dq[0,:,1] = (0, 0, 0)
+        dA_dq[1,:,1] = (0, 0,-1)
+        dA_dq[2,:,1] = (0, 1, 0)
+        dA_dq[3,:,1] = (1, 0, 0)
+        
+        dA_dq[0,:,2] = (0, 0, 1)
+        dA_dq[1,:,2] = (0, 0, 0)
+        dA_dq[2,:,2] = (-1, 0, 0)
+        dA_dq[3,:,2] = (0, 1, 0)
+        
+        dA_dq[0,:,3] = (0,-1, 0)
+        dA_dq[1,:,3] = (1, 0, 0)
+        dA_dq[2,:,3] = (0, 0, 0)
+        dA_dq[3,:,3] = (0, 0, 1)
+        
+        
+        dB_dq[0,:,0] = (1, 0, 0)
+        dB_dq[1,:,0] = (0, 1, 0)
+        dB_dq[2,:,0] = (0, 0, 1)
+        dB_dq[3,:,0] = (0, 0, 0)
+        
+        dB_dq[0,:,1] = (0, 0, 0)
+        dB_dq[1,:,1] = (0, 0, 1)
+        dB_dq[2,:,1] = (0,-1, 0)
+        dB_dq[3,:,1] = (1, 0, 0)
+        
+        dB_dq[0,:,2] = (0, 0,-1)
+        dB_dq[1,:,2] = (0, 0, 0)
+        dB_dq[2,:,2] = (1, 0, 0)
+        dB_dq[3,:,2] = (0, 1, 0)
+        
+        dB_dq[0,:,3] = (0, 1, 0)
+        dB_dq[1,:,3] = (-1, 0, 0)
+        dB_dq[2,:,3] = (0, 0, 0)
+        dB_dq[3,:,3] = (0, 0, 1)
+        
+        for i in range(0,self.n):
+            A[0,:] = (self.q_E[0,i], -self.q_E[3,i], self.q_E[2,i])
+            A[1,:] = (self.q_E[3,i], self.q_E[0,i], -self.q_E[1,i])
+            A[2,:] = (-self.q_E[2,i], self.q_E[1,i], self.q_E[0,i])
+            A[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
+            
+            B[0,:] = (self.q_E[0,i], self.q_E[3,i], -self.q_E[2,i])
+            B[1,:] = (-self.q_E[3,i], self.q_E[0,i], self.q_E[1,i])
+            B[2,:] = (self.q_E[2,i], -self.q_E[1,i], self.q_E[0,i])
+            B[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
+            
+            for k in range(0,4):
+                J[i,:,:,k] = np.dot(np.transpose(dA_dq[:,:,k]),B) + np.dot(np.transpose(A),dB_dq[:,:,k])
+    
+
 
     def execute(self):
-        self.O_IE = self.lib.computerotationmtx(self.n, self.q_E)
+        #self.O_IE = self.lib.computerotationmtx(self.n, self.q_E)
+        A = np.zeros((4,3))
+        B = np.zeros((4,3))
+        
+        for i in range(0,self.n):
+            A[0,:] = (self.q_E[0,i], -self.q_E[3,i], self.q_E[2,i])
+            A[1,:] = (self.q_E[3,i], self.q_E[0,i], -self.q_E[1,i])
+            A[2,:] = (-self.q_E[2,i], self.q_E[1,i], self.q_E[0,i])
+            A[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
+            
+            B[0,:] = (self.q_E[0,i], self.q_E[3,i], -self.q_E[2,i])
+            B[1,:] = (-self.q_E[3,i], self.q_E[0,i], self.q_E[1,i])
+            B[2,:] = (self.q_E[2,i], -self.q_E[1,i], self.q_E[0,i])
+            B[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
+            
+            self.O_IE[:,:,i] = np.dot(np.transpose(A),B)
+
 
     def applyDer(self, arg, result):
         if 'q_E' in arg:
@@ -322,6 +510,10 @@ class Comm_GainPattern(Component):
 
 class Comm_GSposEarth(Component):
     
+    #constants
+    Re = 6378.137
+    d2r = np.pi/180.
+    
     lon = Float(0, iotype="in")
     lat = Float(0, iotype="in")
     alt = Float(0, iotype="in")
@@ -334,12 +526,25 @@ class Comm_GSposEarth(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        result = self.lib.computejacobiangs(self.lon, self.lat, self.alt)
-        self.dr_dlon, self.dr_dlat, self.dr_dalt = result
-
+        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n,self.r_e2g_E,self.O_IE)
+        self.dr_dlon[0] = -self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.dr_dlat[0] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.dr_dalt[0] = np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+            
+        self.dr_dlon[1] =  self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.dr_dlat[1] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.dr_dalt[1] = np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+            
+        self.dr_dlon[2] = 0.
+        self.dr_dlat[2] = self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat)
+        self.dr_dalt[2] = np.sin(self.d2r*self.lat)
+            
     def execute(self):
-        self.r_e2g_E = self.lib.computegs(self.n, self.lon, self.lat, self.alt)
-
+        #self.r_e2g_I[:] = self.lib.computepositionrotd(self.n,self.r_e2g_E,self.O_IE)
+        self.r_e2g_E[0,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
+        self.r_e2g_E[1,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
+        self.r_e2g_E[2,:] = (self.Re + self.alt) * np.sin(self.d2r*self.lat)
+    
     def applyDer(self, arg, result):
         result['r_e2g_E'] = np.zeros((3, self.n))
         if 'lon' in arg:
@@ -381,15 +586,20 @@ class Comm_GSposECI(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        result = self.lib.computepositionrotdjacobian(self.n, 
-                                                      self.r_e2g_E, 
-                                                      self.O_IE)
-        self.J1, self.J2 = result
-
+        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n,self.r_e2g_E, self.O_IE)
+        eye = np.eye(3,dtype = double)
+        for i in range(0,n):
+            for k in rannge(0,3):
+                for u in range(0,3):
+                    for v in range(0,3):
+                        self.J1[i,k,u,v] = eye[k,u]*self.r_e2g_E[v,i]
+                for j in range(0,3):
+                    self.J2[i,k,j] = self.O_IE[k,j,i]
+    
     def execute(self):
-        self.r_e2g_I[:] = self.lib.computepositionrotd(self.n, 
-                                                      self.r_e2g_E, 
-                                                       self.O_IE)
+        #self.r_e2g_I[:] = self.lib.computepositionrotd(self.n,self.r_e2g_E,self.O_IE)
+        for i in range(0,self.n):
+            self.r_e2g_I[:,i] = np.dot(self.O_IE[:,:,i],self.r_e2g_E[:,i])
 
     def applyDer(self, arg, result):
         if 'O_IE' in arg and 'r_e2g_E' in arg:
@@ -417,6 +627,9 @@ class Comm_GSposECI(Component):
 
 class Comm_LOS(Component):
 
+    #constants
+    Re = 6378.137
+    
     def __init__(self, n):
         super(Comm_LOS, self).__init__()
         self.n = n
@@ -430,11 +643,36 @@ class Comm_LOS(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        result = self.lib.computejacobianlos(self.n, self.r_b2g_I, self.r_e2g_I)
-        self.dLOS_drb, self.dLOS_dre = result
+        Rb = 10.0
+        for i in range(0,self.n):
+            proj = np.dot(self.r_b2g_I[:,i], r_e2g_I[:,i]) / self.Re
+            dproj_drb[:] = self.r_e2g_I[:,i]
+            dproj_dre[:] = r_b2g_I[:,i]
+            if proj > 0:
+                dLOS_drb[i,:] = 0.
+                dLOS_dre[i,:] = 0.
+            elif proj < -Rb:
+                dLOS_drb[i,:] = 0.
+                dLOS_dre[i,:] = 0.
+            else:
+                x = (proj - 0) / (-Rb - 0)
+                dx_dproj = -1. / Rb
+                dLOS_dx = 6*x - 6*x**2
+                self.dLOS_drb[i,:] = dLOS_dx * dx_dproj * dproj_drb[:]
+                self.dLOS_dre[i,:] = dLOS_dx * dx_dproj * dproj_dre[:]
+
 
     def execute(self):
-        self.CommLOS = self.lib.computelos(self.n, self.r_b2g_I, self.r_e2g_I)
+        Rb = 100.0
+        for i in range(0,self.n):
+            proj = np.dot(self.r_b2g_I[:,i], self.r_e2g_I[:,i]) / self.Re
+            if proj > 0:
+                self.CommLOS[i] = 0.
+            elif proj < -Rb:
+                self.CommLOS[i] = 1.
+            else:
+                x = (proj - 0) / (-Rb - 0)
+                self.CommLOS[i] = 3*x**2 - 2*x**3
 
     def applyDer(self, arg, result):
         if 'r_b2g_I' in arg:
@@ -468,13 +706,20 @@ class Comm_VectorAnt(Component):
                                shape=(3, 3, n)))
 
     def linearize(self):
-        result = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_B, 
-                                                      self.O_AB)
-        self.J1, self.J2 = result
+        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_B,self.O_AB)
+        eye = np.eye(3,dtype = double)
+        for i in range(0,n):
+            for k in rannge(0,3):
+                for u in range(0,3):
+                    for v in range(0,3):
+                        self.J1[i,k,u,v] = eye[k,u]*self.r_b2g_B[v,i]
+                for j in range(0,3):
+                    self.J2[i,k,j] = self.O_AB[k,j,i]
 
     def execute(self):
-        self.r_b2g_A = self.lib.computepositionrotd(self.n, self.r_b2g_B, 
-                                                        self.O_AB)
+        #self.r_b2g_A = self.lib.computepositionrotd(self.n, self.r_b2g_B,self.O_AB)
+        for i in range(0,self.n):
+            self.r_b2g_A[:,i] = np.dot(self.O_AB[:,:,i],self.r_b2g_B[:,i])
 
     def applyDer(self, arg, result):
         if 'O_AB' in arg and 'r_b2g_B' in arg:
@@ -514,13 +759,20 @@ class Comm_VectorBody(Component):
                                shape=(3, 3, n)))
 
     def linearize(self):
-        result = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_I, 
-                                                      self.O_BI)
-        self.J1, self.J2 = result
+        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_I, self.O_BI)
+        eye = np.eye(3,dtype = double)
+        for i in range(0,n):
+            for k in rannge(0,3):
+                for u in range(0,3):
+                    for v in range(0,3):
+                        self.J1[i,k,u,v] = eye[k,u]*self.r_b2g_I[v,i]
+                for j in range(0,3):
+                    self.J2[i,k,j] = self.O_BI[k,j,i]
 
     def execute(self):
-        self.r_b2g_B = self.lib.computepositionrotd(self.n, self.r_b2g_I, 
-                                                       self.O_BI)
+        #self.r_b2g_B = self.lib.computepositionrotd(self.n, self.r_b2g_I, self.O_BI)
+        for i in range(0,self.n):
+            self.r_b2g_B[:,i] = np.dot(self.O_BI[:,:,i],self.r_b2g_I[:,i])
 
     def applyDer(self, arg, result):
         if 'O_BI' in arg and 'r_b2g_I' in arg:
@@ -589,23 +841,79 @@ class Comm_VectorSpherical(Component):
         
         self.add('r_b2g_A', Array(np.zeros((3, n)), iotype='in', 
                                   shape=(3, self.n)))
+    
+    def arctan(self, x, y):
+        if x == 0:
+            if y > 0:
+                arctan = np.pi/2.0
+            elif y < 0:
+                arctan = 3*np.pi/2.0
+            else:
+                arctan = 0.
+        elif y == 0:
+            if x > 0:
+                arctan = 0.0
+            elif x < 0:
+                arctan = np.pi
+            else:
+                arctan = 0.0
+        elif x < 0:
+            arctan = np.arctan(y/x) + np.pi
+        elif y < 0:
+            arctan = np.arctan(y/x) + 2*np.pi
+        elif y > 0:
+            arctan = np.arctan(y/x)
+        else:
+            arctan = 0.0
+        return arctan
 
     def linearize(self):
-        result = self.lib.computepositionsphericaljacobian(self.n, 3*self.n, 
-                                                           self.r_b2g_A)
-        self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2  = result
-        self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)), 
-                                          shape=(self.n,3*self.n))
-        self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)), 
-                                          shape=(self.n,3*self.n))
-        self.J1T = self.J1.transpose()
-        self.J2T = self.J2.transpose()
+        #self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = self.lib.computepositionsphericaljacobian(self.n, 3*self.n,self.r_b2g_A)
+        #self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)),shape=(self.n,3*self.n))
+        #self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)),shape=(self.n,3*self.n))
+        #self.J1T = self.J1.transpose()
+        #self.J2T = self.J2.transpose()
+        for i in range(0,self.n):
+            x = self.r_b2g_A[0,i]
+            y = self.r_b2g_A[1,i]
+            z = self.r_b2g_A[2,i]
+            r = (x**2 + y**2 + z**2)**0.5
+            if r < 1.e-15:
+                r = 1.e-5
+            
+            a = arctan(x, y)
+            e = np.arccos(z/r)
+            
+            if e < 1.e-15:
+                e = 1.e-5
+            if e > (2*np.arccos(0.0) - 1e-15):
+                e = 2*np.arccos(0.0) - 1e-5
+            
+            da_dr = 1.0/r * (-np.sin(a)/np.sin(e), np.cos(a)/np.sin(e), 0.)
+            de_dr = 1.0/r * (np.cos(a)*np.cos(e), np.sin(a)*np.cos(e), -np.sin(e))
+            
+            for k in range(0,3):
+                iJ = i*3 + k #changed from i-1
+                Ja1[iJ] = da_dr[k]
+                Ji1[iJ] = i - 1
+                Jj1[iJ] = iJ - 1
+                Ja2[iJ] = de_dr[k]
+                Ji2[iJ] = i - 1
+                Jj2[iJ] = iJ - 1
 
     def execute(self):
-        azimuthGS, elevationGS = self.lib.computepositionspherical(self.n, 
-                                                                   self.r_b2g_A)
-        self.azimuthGS = azimuthGS
-        self.elevationGS = elevationGS
+        #azimuthGS, elevationGS = self.lib.computepositionspherical(self.n,self.r_b2g_A)
+        #self.azimuthGS = azimuthGS
+        #self.elevationGS = elevationGS
+        for i in range(0,self.n):
+            x = self.r_b2g_A[0,i]
+            y = self.r_b2g_A[1,i]
+            z = self.r_b2g_A[2,i]
+            r = (x**2 + y**2 + z**2)**0.5
+            if r < 1e-15:
+                r = 1.e-5
+            self.azimuthGS[i] = self.arctan(x, y)
+            self.elevationGS[i] = np.arccos(z/r)
 
     def applyDer(self, arg, result):
         if 'r_b2g_A' in arg:
