@@ -3,9 +3,9 @@ from CADRE.CADRE_assembly import CADRE
 from pprint import pprint
 import numpy as np
 import pickle
-import pylab
+#import pylab
 
-idx = '0'
+idx = '5'
 
 setd = {}
 data = pickle.load(open("data1346.pkl", 'rb'))

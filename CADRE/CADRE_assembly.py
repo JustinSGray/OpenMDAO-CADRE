@@ -32,17 +32,17 @@ class CADRE(Assembly):
         # Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
-        """
+        
         # Additude components
         self.add("Attitude_Angular", Attitude_Angular(n))
         self.driver.workflow.add("Attitude_Angular")
         
         self.add("Attitude_AngularRates", Attitude_AngularRates(n))
         self.driver.workflow.add("Attitude_AngularRates")
-
+        
         self.add("Attitude_Attitude", Attitude_Attitude(n))
         self.driver.workflow.add("Attitude_Attitude")
-
+    
         self.add("Attitude_Roll", Attitude_Roll(n))
         self.driver.workflow.add("Attitude_Roll")
         
@@ -54,7 +54,7 @@ class CADRE(Assembly):
         
         self.add("Attitude_Sideslip", Attitude_Sideslip(n))
         self.driver.workflow.add("Attitude_Sideslip")
-
+        
         self.add("Attitude_Torque", Attitude_Torque(n))
         self.driver.workflow.add("Attitude_Torque")
         
@@ -71,10 +71,10 @@ class CADRE(Assembly):
         # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))
         self.driver.workflow.add("Comm_AntRotation")
-
+        
         self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         self.driver.workflow.add("Comm_AntRotationMtx")
-    
+        
         self.add("Comm_BitRate", Comm_BitRate(n))
         self.driver.workflow.add("Comm_BitRate")
         
@@ -83,25 +83,25 @@ class CADRE(Assembly):
         
         self.add("Comm_Distance", Comm_Distance(n))
         self.driver.workflow.add("Comm_Distance")
-
+        
         self.add("Comm_EarthsSpin", Comm_EarthsSpin(n))
         self.driver.workflow.add("Comm_EarthsSpin")
-
+        
         self.add("Comm_EarthsSpinMtx", Comm_EarthsSpinMtx(n))
         self.driver.workflow.add("Comm_EarthsSpinMtx")
 
         self.add("Comm_GainPattern", Comm_GainPattern(n))
         self.driver.workflow.add("Comm_GainPattern")
-
+        
         self.add("Comm_GSposEarth", Comm_GSposEarth(n))
         self.driver.workflow.add("Comm_GSposEarth")
-
+        
         self.add("Comm_GSposECI", Comm_GSposECI(n))
         self.driver.workflow.add("Comm_GSposECI")
-
+        
         self.add("Comm_LOS", Comm_LOS(n))
         self.driver.workflow.add("Comm_LOS")
-
+        
         self.add("Comm_VectorAnt", Comm_VectorAnt(n))
         self.driver.workflow.add("Comm_VectorAnt")
 
@@ -134,10 +134,10 @@ class CADRE(Assembly):
         # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
         self.driver.workflow.add("ReactionWheel_Motor")
-
+        
         self.add("ReactionWheel_Power", ReactionWheel_Power(n))
         self.driver.workflow.add("ReactionWheel_Power")
-
+        
         self.add("ReactionWheel_Torque", ReactionWheel_Torque(n))
         self.driver.workflow.add("ReactionWheel_Torque")
         
@@ -147,20 +147,20 @@ class CADRE(Assembly):
         # Solar
         self.add("Solar_ExposedArea", Solar_ExposedArea(n))
         self.driver.workflow.add("Solar_ExposedArea")
-
+        
         # Sun components
         self.add("Sun_LOS", Sun_LOS(n))
         self.driver.workflow.add("Sun_LOS")
-
+        
         self.add("Sun_PositionBody", Sun_PositionBody(n))
         self.driver.workflow.add("Sun_PositionBody")
-
+        
         self.add("Sun_PositionECI", Sun_PositionECI(n))
         self.driver.workflow.add("Sun_PositionECI")
-
+        
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
-        """
+        
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
