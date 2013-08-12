@@ -3,7 +3,7 @@ from CADRE.CADRE_assembly import CADRE
 from pprint import pprint
 import numpy as np
 import pickle
-import pylab
+#import pylab
 
 idx = '5'
 
