@@ -256,11 +256,11 @@ class RK4(Component):
                                                shape[-1]))
             
         # Time-varying inputs
-        for k in xrange(n_time):
-            for name in self.external_vars:
-                if name in arg:
-                    i_ext = self.ext_index_map[name]
-                    ext_length = np.prod(arg[name][:, 0].shape)
+        for name in self.external_vars:
+            if name in arg:
+                i_ext = self.ext_index_map[name]
+                ext_length = np.prod(arg[name][:, 0].shape)
+                for k in xrange(n_time):
                     for j in xrange(k):
                         Jsub = self.Jx[j+1, i_ext:i_ext+ext_length, :]
                         result[:, k] += Jsub.T.dot(arg[name][:, j])
@@ -276,7 +276,6 @@ class RK4(Component):
                 for k in xrange(n_time):
                     for j in xrange(k):
                         result[:, k] += self.Jx[j+1, i_ext:i_ext+ext_length, :].T.dot(arg[name])
-        #print 'Jx', self.Jx[1:, i_ext:i_ext+ext_length, :]
         return result
 
     def apply_derivT(self, arg, result):
@@ -317,21 +316,24 @@ class RK4(Component):
                 if name in required_results:
                     ext_var = getattr(self, name)
                     i_ext = self.ext_index_map[name]
-                    ext_length = np.prod(ext_var.shape)
-                    result[name] = np.zeros((n_state, n_time))
+                    ext_length = np.prod(ext_var.shape)/n_time
+                    result[name] = np.zeros((ext_length, n_time))
                     for k in xrange(n_time):
                         for j in xrange(k+1, n_time):
-                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :].T
+                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :]
                             result[name][:, k] += Jsub.dot(argsv[:, j])
             
             # Time-invariant inputs
             for name in self.fixed_external_vars:
-                ext_var = getattr(self, name)
-                i_ext = self.ext_index_map[name]
-                ext_length = np.prod(ext_var.shape)
-                result[name] = np.zeros((ext_length, ))
-                for k in xrange(n_state): 
-                    result[name] += self.Jx[1:, i_ext:i_ext+ext_length, k].dot(argsv[k,1:])
+                if name in required_results:
+                    ext_var = getattr(self, name)
+                    i_ext = self.ext_index_map[name]
+                    ext_length = np.prod(ext_var.shape)
+                    result[name] = np.zeros((ext_length))
+                    for k in xrange(n_time):
+                        for j in xrange(k+1, n_time):
+                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :]
+                            result[name] += Jsub.dot(argsv[:, j])
             
             
             #result[self.init_state_var] = -arg[self.state_var][:,0]
