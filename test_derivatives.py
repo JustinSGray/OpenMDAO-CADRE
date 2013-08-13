@@ -370,7 +370,40 @@ class Testcase_CADRE(unittest.TestCase):
         
         self.setup(compname, inputs, state0)
         self.run_model()
-        self.compare_derivatives(inputs, outputs)                         
+        self.compare_derivatives(inputs, outputs)     
+
+    def test_Sun_LOS(self):
+        
+        compname = 'Sun_LOS'
+        inputs = ['r_e2b_I', 'r_e2s_I']
+        outputs = ['LOS']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)      
+
+    def test_Sun_PositionBody(self):
+        
+        compname = 'Sun_PositionBody'
+        inputs = ['O_BI', 'r_e2s_I']
+        outputs = ['r_e2s_B']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)   
+
+    def test_Sun_PositionECI(self):
+        
+        compname = 'Sun_PositionECI'
+        inputs = ['t', 'LD']
+        outputs = ['r_e2s_I']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)                                 
         
 if __name__ == "__main__":
     
