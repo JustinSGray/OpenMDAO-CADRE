@@ -126,7 +126,7 @@ class RK4(Component):
             # Next state a function of current input
             ex = self.external[:, k] if self.external.shape[0] else np.array([])
             
-            # Next state a function of current state
+            # Next state a function of previous state
             y = self.y[k1:k2]
             
             a = self.a[:,k] = self.f_dot(ex, y)
@@ -273,9 +273,10 @@ class RK4(Component):
                     arg[name] = arg[name].flatten()
                 i_ext = self.ext_index_map[name]
                 ext_length = np.prod(ext_var.shape)
-                for k in xrange(self.n_states):
-                    result[k, 1:] += self.Jx[1:, i_ext:i_ext+ext_length, k].dot(arg[name])
-        print 'Jx', self.Jx[1:, i_ext:i_ext+ext_length, :]
+                for k in xrange(n_time):
+                    for j in xrange(k):
+                        result[:, k] += self.Jx[j+1, i_ext:i_ext+ext_length, :].T.dot(arg[name])
+        #print 'Jx', self.Jx[1:, i_ext:i_ext+ext_length, :]
         return result
 
     def apply_derivT(self, arg, result):

@@ -66,38 +66,7 @@ class ThermalTemperature(RK4):
                     self.temperature[k, i] = 0.
         
     def f_dot(self, external, state):
-        '''
-        # original implementation
-        f = np.zeros((5, ))
-
-        exposedArea = external[:84]
-        LOS = external[84]
-        P_comm = external[85]
-        cellInstd = external[86:]
         
-        for i,(A_exp,w) in enumerate(zip(exposedArea,cellInstd)):
-            p_i = i/7
-            c_i = i%7
-
-            if p_i < 4: #body
-                f_i = 4
-                m = m_b
-                cp = cp_b
-
-            else: #fin
-                f_i = (p_i+1)%4
-                m = m_f
-                cp = cp_f
-            alpha = alpha_c*w + alpha_r*(1-w)
-            eps = eps_c*w + eps_r*(1-w)
-
-            f[f_i] += alpha * q_sol * A_exp * LOS / m / cp
-            f[f_i] -= eps * K * A_T * state[f_i]**4 / m / cp
-
-        f[4] += 4.0 * P_comm / m_b / cp_b
-
-        return f
-        '''
         # revised implementation from ThermalTemperature.f90
         exposedArea = external[:84]
         LOS = external[84]
@@ -105,21 +74,32 @@ class ThermalTemperature(RK4):
         cellInstd = external[86:]
         
         f = np.zeros((5, ))
-        for p in range(0,12): #panels
-            if p < 4: #body #lowest at p<8
+        
+        # Panels
+        for p in range(0, 12): 
+            
+            # Body
+            if p < 4: 
                 f_i = 4
                 m = m_b
                 cp = cp_b
-            else: #fin
-                f_i = p%4 + 1
+                
+            # Fin
+            else: 
+                f_i = p%4
                 m = m_f
                 cp = cp_f
-            for c in range(0,7): #cells
-                idat = p*7 + c #lowest at p-2
+                
+            # Cells    
+            for c in range(0, 7):
+                
+                idat = p + c*12 
                 A_exp = exposedArea[idat]
                 w = cellInstd[idat]
+                
                 alpha = alpha_c*w + alpha_r*(1-w)
                 eps = eps_c*w + eps_r*(1-w)
+                
                 f[f_i] += alpha * q_sol * A_exp * LOS / m / cp
                 f[f_i] -= eps * K * A_T * state[f_i]**4 / m / cp
 
@@ -169,17 +149,17 @@ class ThermalTemperature(RK4):
                 m = m_b
                 cp = cp_b
             else: #fin
-                f_i = p%4 + 1
+                f_i = p%4
                 m = m_f
                 cp = cp_f
             for c in range (0,7): #cells
-                idat = p*7 + c #lowest at p-2
+                idat = p + c*12 #lowest at p-2
                 A_exp = exposedArea[idat]
                 w = cellInstd[idat]
                 alpha = alpha_c*w + alpha_r*(1-w)
                 eps = eps_c*w + eps_r*(1-w)
 
-                dfdy[f_i, f_i] -= 4 * eps * K * A_T * state[f_i]**3 / m / cp
+                dfdy[f_i, f_i] -= 4.0 * eps * K * A_T * state[f_i]**3 / m / cp
 
         return dfdy
 
@@ -238,11 +218,11 @@ class ThermalTemperature(RK4):
                 m = m_b
                 cp = cp_b
             else: #fin
-                f_i = p%4 + 1
+                f_i = p%4
                 m = m_f
                 cp = cp_f
             for c in range (0,7): #cells
-                idat = p*7 + c #lowest at p-2
+                idat = p + c*12 #lowest at p-2
                 A_exp = exposedArea[idat]
                 w = cellInstd[idat]
                 iA = idat
@@ -258,6 +238,7 @@ class ThermalTemperature(RK4):
                 dfdx[f_i, iw] += dalpha_dw * q_sol * A_exp * LOS / m / cp
                 dfdx[f_i, iw] -= deps_dw * K * A_T * state[f_i]**4 / m / cp
                 dfdx[f_i, 84] += alpha * q_sol * A_exp / m / cp
+                #print f_i, iw, dfdx[f_i, iw]
 
         dfdx[4, 85] += 4.0 / m_b / cp_b
 

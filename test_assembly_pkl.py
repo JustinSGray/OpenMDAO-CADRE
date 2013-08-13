@@ -39,5 +39,8 @@ for key in setd.keys():
         assembly.print_set_vals(printvals=key, tval=setd[key])
         print
 
+print assembly.ThermalTemperature.temperature
+print data['3:temperature']
+
 
 

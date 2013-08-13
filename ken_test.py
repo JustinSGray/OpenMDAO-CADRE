@@ -55,7 +55,7 @@ cadre.run()
 inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.cellInstd', 
           'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
 #inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
-inputs = ['ThermalTemperature.cellInstd']
+#inputs = ['ThermalTemperature.cellInstd']
 outputs = ['ThermalTemperature.temperature']
 cadre.driver.workflow.check_gradient(inputs=inputs,
                                      outputs=outputs)
