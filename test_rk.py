@@ -81,19 +81,19 @@ baselines.append('comp_check_orbit_dynamics')
 
 comps = []
 
-comp = BatterySOC(n_times=SIZE, time_step=1)
+comp = BatterySOC(n_times=SIZE)
 comps.append(comp)
 
-comp = ThermalTemperature(n_times=SIZE, time_step=1)
+comp = ThermalTemperature(n_times=SIZE)
 comps.append(comp)
 
-comp = ReactionWheel_Dynamics(n_times=SIZE, time_step=1)
+comp = ReactionWheel_Dynamics(n_times=SIZE)
 comps.append(comp)
 
-comp = Comm_DataDownloaded(n_times=SIZE, time_step=1)
+comp = Comm_DataDownloaded(n_times=SIZE)
 comps.append(comp)
 
-comp = Orbit_Dynamics(n_times=SIZE, time_step=1)
+comp = Orbit_Dynamics(n_times=SIZE)
 comps.append(comp)
 
 

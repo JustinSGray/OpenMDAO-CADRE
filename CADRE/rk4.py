@@ -143,6 +143,7 @@ class RK4(Component):
         state_var_name = self.name_map['y']
         setattr(self, state_var_name, self.y.T.reshape((self.n,self.n_states)).T)
     
+        print "executed", self.name
     
     def linearize(self):
         
