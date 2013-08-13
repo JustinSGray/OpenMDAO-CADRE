@@ -206,7 +206,7 @@ class RK4(Component):
     
     
     
-    def applyJ(self, arg, result):
+    def apply_deriv(self, arg, result):
         
         r1 = self.applyJint(arg, result)
         #r2 = self.applyJext(arg, result)
@@ -262,7 +262,7 @@ class RK4(Component):
         
         return result
 
-    def applyJT(self, arg, result):
+    def apply_derivT(self, arg, result):
         
         r1 = self.applyJintT(arg, result)
         #r2 = self.applyJextT(arg, result)
