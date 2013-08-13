@@ -274,8 +274,8 @@ class RK4(Component):
                 i_ext = self.ext_index_map[name]
                 ext_length = np.prod(ext_var.shape)
                 for k in xrange(self.n_states):
-                    result[k, 1:] += self.Jx[1, i_ext:i_ext+ext_length, k].dot(arg[name])
-        
+                    result[k, 1:] += self.Jx[1:, i_ext:i_ext+ext_length, k].dot(arg[name])
+        print 'Jx', self.Jx[1:, i_ext:i_ext+ext_length, :]
         return result
 
     def apply_derivT(self, arg, result):
@@ -330,7 +330,7 @@ class RK4(Component):
                 ext_length = np.prod(ext_var.shape)
                 result[name] = np.zeros((ext_length, ))
                 for k in xrange(n_state): 
-                    result[name] += self.Jx[1:, i_ext:i_ext+ext_length, k].T.dot(argsv[k,1:])
+                    result[name] += self.Jx[1:, i_ext:i_ext+ext_length, k].dot(argsv[k,1:])
             
             
             #result[self.init_state_var] = -arg[self.state_var][:,0]

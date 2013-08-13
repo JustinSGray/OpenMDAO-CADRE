@@ -59,11 +59,11 @@ class ThermalTemperature(RK4):
         self.fixed_external_vars = ["cellInstd",]
         
         # implementation of fixTemps from Thermal_Temperature.f90
-        for i in range (0,n_times):
-            for k in range (0,5):
-                self.temperature[k,i] = self.T0[k]
-                if self.temperature[k,i] < 0:
-                    self.temperature[k,i] = 0.
+        for i in range (0, n_times):
+            for k in range (0, 5):
+                self.temperature[k, i] = self.T0[k]
+                if self.temperature[k, i] < 0:
+                    self.temperature[k, i] = 0.
         
     def f_dot(self, external, state):
         '''
