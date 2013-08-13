@@ -264,15 +264,17 @@ class RK4(Component):
                     for j in xrange(k):
                         Jsub = self.Jx[j+1, i_ext:i_ext+ext_length, :]
                         result[:, k] += Jsub.T.dot(arg[name][:, j])
-        
+
         # Time-invariant inputs
         for name in self.fixed_external_vars:
             if name in arg:
                 ext_var = getattr(self, name)
+                if len(ext_var) > 1:
+                    arg[name] = arg[name].flatten()
                 i_ext = self.ext_index_map[name]
                 ext_length = np.prod(ext_var.shape)
                 for k in xrange(self.n_states):
-                    result[k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
+                    result[k, 1:] += self.Jx[1, i_ext:i_ext+ext_length, k].dot(arg[name])
         
         return result
 
@@ -322,13 +324,13 @@ class RK4(Component):
                             result[name][:, k] += Jsub.dot(argsv[:, j])
             
             # Time-invariant inputs
-            for ext_var_name in self.fixed_external_vars:
-                ext_var = getattr(self,ext_var_name)
-                i_ext = self.ext_index_map[ext_var_name]
+            for name in self.fixed_external_vars:
+                ext_var = getattr(self, name)
+                i_ext = self.ext_index_map[name]
                 ext_length = np.prod(ext_var.shape)
-                result[ext_var_name] = np.zeros((ext_length, ))
-                for k in xrange(self.n_states): 
-                    result[ext_var_name] += self.Jx[1:,i_ext:i_ext+ext_length,k].T.dot(arg[self.state_var][k,1:])
+                result[name] = np.zeros((ext_length, ))
+                for k in xrange(n_state): 
+                    result[name] += self.Jx[1:, i_ext:i_ext+ext_length, k].T.dot(argsv[k,1:])
             
             
             #result[self.init_state_var] = -arg[self.state_var][:,0]

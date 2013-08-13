@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 from CADRE.CADRE_assembly import CADRE
 from openmdao.main.api import Dataflow
@@ -37,8 +38,24 @@ cadre.run()
                                              #'Comm_BitRate.CommLOS'],
                                      #outputs=['Comm_BitRate.Dr'])
 
+shape = cadre.ThermalTemperature.exposedArea.shape
+cadre.ThermalTemperature.exposedArea = np.random.random(shape)
+shape = cadre.ThermalTemperature.cellInstd.shape
+cadre.ThermalTemperature.cellInstd = np.random.random(shape)
+shape = cadre.ThermalTemperature.LOS.shape
+cadre.ThermalTemperature.LOS = np.random.random(shape)
+shape = cadre.ThermalTemperature.P_comm.shape
+cadre.ThermalTemperature.P_comm = np.random.random(shape)
+#data = pickle.load(open("data1346.pkl", 'rb'))
+#cadre.ThermalTemperature.set('exposedArea', data['5:exposedArea'])
+#cadre.ThermalTemperature.set('cellInstd', data['cellInstd'])
+#cadre.ThermalTemperature.set('LOS', data['5:LOS'])
+#cadre.ThermalTemperature.set('P_comm', data['5:P_comm'])
+cadre.run()
 inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.cellInstd', 
           'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
+#inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
+inputs = ['ThermalTemperature.P_comm']
 outputs = ['ThermalTemperature.temperature']
 cadre.driver.workflow.check_gradient(inputs=inputs,
                                      outputs=outputs)
