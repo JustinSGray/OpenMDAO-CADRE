@@ -320,7 +320,7 @@ class RK4(Component):
                     result[name] = np.zeros((ext_length, n_time))
                     for k in xrange(n_time):
                         for j in xrange(k+1, n_time):
-                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :]
+                            Jsub = self.Jx[k+1, i_ext:i_ext+ext_length, :]
                             result[name][:, k] += Jsub.dot(argsv[:, j])
             
             # Time-invariant inputs
