@@ -143,6 +143,7 @@ class RK4(Component):
         state_var_name = self.name_map['y']
         setattr(self, state_var_name, self.y.T.reshape((self.n,self.n_states)).T)
     
+        print "executed", self.name
     
     def linearize(self):
         
@@ -206,7 +207,7 @@ class RK4(Component):
     
     
     
-    def applyJ(self, arg, result):
+    def apply_deriv(self, arg, result):
         
         r1 = self.applyJint(arg, result)
         #r2 = self.applyJext(arg, result)
@@ -262,7 +263,7 @@ class RK4(Component):
         
         return result
 
-    def applyJT(self, arg, result):
+    def apply_derivT(self, arg, result):
         
         r1 = self.applyJintT(arg, result)
         #r2 = self.applyJextT(arg, result)

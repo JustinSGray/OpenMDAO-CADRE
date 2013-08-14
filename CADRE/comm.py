@@ -915,14 +915,14 @@ class Comm_VectorSpherical(Component):
             self.azimuthGS[i] = self.arctan(x, y)
             self.elevationGS[i] = np.arccos(z/r)
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
         if 'r_b2g_A' in arg:
             r_b2g_A = arg['r_b2g_A'].reshape((3*self.n),order='F')
             result['azimuthGS'] = self.J1.dot(r_b2g_A)
             result['elevationGS'] = self.J2.dot(r_b2g_A)
         return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
         if 'azimuthGS' in arg and 'elevationGS' in arg:
             azimuthGS = arg['azimuthGS']
             elevationGS = arg['elevationGS']
