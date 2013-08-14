@@ -1,4 +1,4 @@
-from operator import mul
+""" RK4 time integration component """
 
 import numpy as np
 import scipy.sparse, scipy.sparse.linalg
@@ -8,6 +8,11 @@ from openmdao.lib.datatypes.api import Float, Array, Str
 
 
 class RK4(Component):
+    """Inherit from this component to use.
+    
+    State variable dimension: (num_states, num_time_points)
+    External input dimension: (input width, num_time_points)
+    """
     
     h = Float(.01, units="s", iotype="in",
               desc="time step used for the integration")
@@ -24,26 +29,16 @@ class RK4(Component):
     fixed_external_vars = Array([], iotype="in", dtype=str,
                                 desc="list of names of variables that are external to the system, but DO NOT vary with time")
     
-    def __init__(self):
-        super(RK4, self).__init__()
-        #self.n = n
-        #self.n_states = n_states
-        #self.time_step = time_step
-        #self.n_external = n_external
+    def initialize(self):
+        """Set up dimensions and other data structures."""
         
-        #self.ny = self.n_states*self.n
-        #self.nJ = self.n_states*self.n+self.n_states**2*(self.n-1)
-    
-    
-    def check_config(self):
-        super(RK4, self).check_config()
-
-        y = self.y = self.get(self.state_var)
-        y0 = self.y0 = self.get(self.init_state_var)
+        self.y = self.get(self.state_var)
+        self.y0 = self.get(self.init_state_var)
         
-        self.n_states = y.shape[0]
-        self.n = y.shape[1]
-
+        self.n_states, self.n = self.y.shape
+        self.ny = self.n_states*self.n
+        self.nJ = self.n_states*(self.n + self.n_states*(self.n-1))
+    
         ext = []
         self.ext_index_map = {}
         for e in self.external_vars:
@@ -51,7 +46,7 @@ class RK4(Component):
             self.ext_index_map[e] = len(ext)
             
             #TODO: Check that shape[-1]==self.n
-            ext.extend(var.reshape(-1,self.n))
+            ext.extend(var.reshape(-1, self.n))
     
         
         for e in self.fixed_external_vars:
@@ -72,7 +67,7 @@ class RK4(Component):
             self.state_var:'y',
             self.init_state_var:'y0'
         }
-        e_vars = np.hstack((self.external_vars,self.fixed_external_vars))
+        e_vars = np.hstack((self.external_vars, self.fixed_external_vars))
         for i,var in enumerate(e_vars):
             self.reverse_name_map[var] = i
     
@@ -86,20 +81,16 @@ class RK4(Component):
         #check that length of state var and external
         # vars are the same length
         
-        self.ny = self.n_states*self.n
-        self.nJ = self.n_states*self.n+self.n_states**2*(self.n-1)
-    
         print "TESTING HERE"
     
-    
-    def f_dot(self,external,state):
+    def f_dot(self, external, state):
         """time rate of change of state variables
             external: array or external variables for a single time step
             state: array of state variables for a single time step
             """
         raise NotImplementedError
 
-    def df_dy(self,external,state):
+    def df_dy(self, external, state):
         """derivatives of states with respect to states
             external: array or external variables for a single time step
             state: array of state variables for a single time step
@@ -107,7 +98,7 @@ class RK4(Component):
         
         raise NotImplementedError
     
-    def df_dx(self,external,state):
+    def df_dx(self, external, state):
         """derivatives of states with respect to external vars
             external: array or external variables for a single time step
             state: array of state variables for a single time step
@@ -115,10 +106,13 @@ class RK4(Component):
         raise NotImplementedError
     
     def execute(self):
+        """Solve for the states."""
         
-        self.check_config()
+        self.initialize()
         
         self.y = self.y.reshape((self.ny, ))
+        
+        # Copy initial state into state array for t=0
         self.y[0:self.n_states] = self.y0[:]
         
         size = (self.n_states, self.n)
@@ -127,7 +121,7 @@ class RK4(Component):
         self.c = np.zeros(size)
         self.d = np.zeros(size)
         
-        for k in xrange(0,self.n-1):
+        for k in xrange(0, self.n-1):
             k1 = (k)*self.n_states
             k2 = (k+1)*self.n_states
             ex = self.external[:,k] if self.external.shape[0] else np.array([])
@@ -146,30 +140,36 @@ class RK4(Component):
         print "executed", self.name
     
     def linearize(self):
+        """Linearize about current point."""
         
-        I = np.eye(self.n_states)
+        n_state = self.n_states
+        I = np.eye(n_state)
+        
+        # Sparse Jacobian with respect to states
         self.Ja = np.zeros((self.nJ, ))
         self.Ji = np.zeros((self.nJ, ))
         self.Jj = np.zeros((self.nJ, ))
+        
+        # Full Jacobian with respect to inputs
         self.Jx = np.zeros((self.n, self.n_external, self.n_states))
         
         self.Ja[:self.ny] = np.ones((self.ny, ))
         self.Ji[:self.ny] = np.arange(self.ny)
         self.Jj[:self.ny] = np.arange(self.ny)
         
-        for k in xrange(0,self.n-1):
-            k1 = (k)*self.n_states
-            k2 = (k+1)*self.n_states
-            ex = self.external[:,k] if self.external.shape[0] else np.array([])
+        for k in xrange(0, self.n-1):
+            k1 = (k)*n_state
+            k2 = (k+1)*n_state
+            ex = self.external[:, k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
             
-            a = self.a[:,k]
-            b = self.b[:,k]
-            c = self.c[:,k]
-            d = self.d[:,k]
+            a = self.a[:, k]
+            b = self.b[:, k]
+            c = self.c[:, k]
+            d = self.d[:, k]
             
-            #state vars
-            df_dy = self.df_dy(ex,y)
+            # State vars
+            df_dy = self.df_dy(ex, y)
             dg_dy = self.df_dy(ex, y + self.h/2.*a)
             dh_dy = self.df_dy(ex, y + self.h/2.*b)
             di_dy = self.df_dy(ex, y + self.h*c)
@@ -179,17 +179,17 @@ class RK4(Component):
             dc_dy = dh_dy + dh_dy.dot(self.h/2.*db_dy)
             dd_dy = di_dy + di_dy.dot(self.h*dc_dy)
             
-            dR_dy = - I - self.h/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
+            dR_dy = -I - self.h/6.*(da_dy + 2*db_dy + 2*dc_dy + dd_dy)
             
-            for i in xrange(self.n_states):
-                for j in xrange(self.n_states):
-                    iJ = self.ny + (k)*self.n_states**2 + (j)*self.n_states + i
-                    self.Ja[iJ] = dR_dy[i,j]
-                    self.Ji[iJ] = (k+1)*self.n_states + i
-                    self.Jj[iJ] = (k)*self.n_states + j
+            for i in xrange(n_state):
+                for j in xrange(n_state):
+                    iJ = self.ny + i + n_state*(j + n_state*k)
+                    self.Ja[iJ] = dR_dy[i, j]
+                    self.Ji[iJ] = (k+1)*n_state + i
+                    self.Jj[iJ] = (k)*n_state + j
             
-            #external vars
-            df_dx = self.df_dx(ex,y)
+            # External vars
+            df_dx = self.df_dx(ex, y)
             dg_dx = self.df_dx(ex, y + self.h/2.*a)
             dh_dx = self.df_dx(ex, y + self.h/2.*b)
             di_dx = self.df_dx(ex, y + self.h*c)
@@ -201,28 +201,30 @@ class RK4(Component):
             
             self.Jx[k+1,:,:] = -self.h/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
         
-        self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(self.ny,self.ny))
+        self.J = scipy.sparse.csc_matrix((self.Ja, (self.Ji, self.Jj)),
+                                         shape=(self.ny, self.ny))
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve
     
     
-    
     def apply_deriv(self, arg, result):
-        
-        r1 = self.applyJint(arg, result)
-        #r2 = self.applyJext(arg, result)
-        r2 = self._applyJext(arg, result)
-        
-        r3 = dict(r1)
-        for k,v in r2.iteritems():
-            if k in r3 and r3[k] is not None:
-                r3[k] += v
-            else:
-                r3[k] = v
-        return r3
+        """Matrix-vector product between Jacobian and arg. Result placed in
+        result.
+        """
+        #result = self._applyJint(arg, result)
+        result_ext = self._applyJext(arg)
+        print result, result_ext
+        svar = self.state_var
+        if svar in result:
+            result[svar] += result_ext
+        else:
+            result[svar] = result_ext
+        print 'after', result
 
     
-    def applyJint(self, arg, result):
+    def _applyJint(self, arg, result):
+        """Apply derivatives with respect to state variables."""
+        
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
         result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
         
@@ -233,22 +235,22 @@ class RK4(Component):
         result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])
         return result
 
-    def applyJext(self, arg, result):
-        raise NotImplementedError
-    
-    def _applyJext(self, arg, result):
+    def _applyJext(self, arg):
+        """Apply derivatives with respect to inputs"""
+        
         #Jx --> (n_times,n_external,n_states)
-        state_var = getattr(self,self.state_var)
-        result[self.state_var] = np.zeros(state_var.shape)
+        state_var = getattr(self, self.state_var)
+        result = np.zeros(self.ny)
+        n_state = self.n_states
         
         for ext_var_name in self.external_vars:
             if ext_var_name in arg:
-                ext_var = getattr(self,ext_var_name)
+                ext_var = getattr(self, ext_var_name)
                 i_ext = self.ext_index_map[ext_var_name]
                 ext_length = np.prod(ext_var.shape)/self.n
-                for k in xrange(self.n_states):
-                    for j in xrange(ext_length):
-                        result[self.state_var][k,1:] += self.Jx[1:,j+i_ext,k] * self.external[j+i_ext,:-1]
+                for j in xrange(ext_length):
+                    for k in xrange(n_state):
+                        result[k, 1:] += self.Jx[1:,j+i_ext,k] * arg[ext_var_name][j+i_ext].flatten()
         
         for ext_var_name in self.fixed_external_vars:
             if ext_var_name in arg:
@@ -256,27 +258,20 @@ class RK4(Component):
                 i_ext = self.ext_index_map[ext_var_name]
                 ext_length = np.prod(ext_var.shape)
                 for k in xrange(self.n_states):
-                    result[self.state_var][k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
-        if self.init_state_var in arg:
-            result[self.state_var][:,0] -= arg[self.init_state_var][0]
-        
+                    result[k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
         
         return result
 
     def apply_derivT(self, arg, result):
         
         r1 = self.applyJintT(arg, result)
-        #r2 = self.applyJextT(arg, result)
         r2 = self._applyJextT(arg, result)
         
-        
-        r3 = dict(r1)
         for k,v in r2.iteritems():
-            if k in r3 and r3[k] is not None:
-                r3[k] += v
+            if k in r1 and r1[k] is not None:
+                r1[k] += v
             else:
-                r3[k] = v
-        return r3
+                r1[k] = v
 
     def applyJintT(self, arg, result):
         
