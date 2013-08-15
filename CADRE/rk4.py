@@ -124,7 +124,11 @@ class RK4(Component):
         for k in xrange(0, self.n-1):
             k1 = (k)*self.n_states
             k2 = (k+1)*self.n_states
-            ex = self.external[:,k] if self.external.shape[0] else np.array([])
+            
+            # Next state a function of current input
+            ex = self.external[:, k] if self.external.shape[0] else np.array([])
+            
+            # Next state a function of current state
             y = self.y[k1:k2]
             
             a = self.a[:,k] = self.f_dot(ex, y)
@@ -247,6 +251,7 @@ class RK4(Component):
         n_state = self.n_states
         n_time = self.n
         
+        # Time-varying inputs
         for k in xrange(n_state):
             
             # Location in result
@@ -267,9 +272,12 @@ class RK4(Component):
                         m0 = j*n_time
                         m1 = m0 + n_time
                         
-                        result[k1:k2] += np.diag(self.Jx[:, j+j0, k]) \
-                            .dot(arg[name][m0:m1])
+                        Jsub = np.tril(np.tile(self.Jx[:, j+j0, k], 
+                                               (n_time, 1)).T, -1)
+                        result[k1:k2] += Jsub.dot(arg[name][m0:m1])
+                        print "Jsub", Jsub
         
+        # Time-invariant inputs
         for ext_var_name in self.fixed_external_vars:
             if ext_var_name in arg:
                 ext_var = getattr(self,ext_var_name)
@@ -279,7 +287,7 @@ class RK4(Component):
                     result[k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
         
         print "Jx", self.Jx
-        print "result", result
+        print "arg, result", arg, result
         return result
 
     def apply_derivT(self, arg, result):

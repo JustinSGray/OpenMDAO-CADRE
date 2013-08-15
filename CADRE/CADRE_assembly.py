@@ -26,7 +26,7 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=2):
+    def __init__(self, n=5):
         super(CADRE, self).__init__()
         
         # Parameters
