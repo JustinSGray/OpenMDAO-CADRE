@@ -127,7 +127,7 @@ class RK4(Component):
             ex = self.external[:,k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
             
-            a = self.a[:,k] = self.f_dot(ex,y)
+            a = self.a[:,k] = self.f_dot(ex, y)
             b = self.b[:,k] = self.f_dot(ex, y + self.h/2.*a)
             c = self.c[:,k] = self.f_dot(ex, y + self.h/2.*b)
             d = self.d[:,k] = self.f_dot(ex, y + self.h*c)
@@ -135,7 +135,8 @@ class RK4(Component):
             self.y[self.n_states+k1:self.n_states+k2] = y + self.h/6.*(a + 2*b + 2*c + d)
         
         state_var_name = self.name_map['y']
-        setattr(self, state_var_name, self.y.T.reshape((self.n,self.n_states)).T)
+        setattr(self, state_var_name, 
+                self.y.T.reshape((self.n, self.n_states)).T)
     
         print "executed", self.name
     
@@ -158,8 +159,8 @@ class RK4(Component):
         self.Jj[:self.ny] = np.arange(self.ny)
         
         for k in xrange(0, self.n-1):
-            k1 = (k)*n_state
-            k2 = (k+1)*n_state
+            k1 = k*n_state
+            k2 = k1 + n_state
             ex = self.external[:, k] if self.external.shape[0] else np.array([])
             y = self.y[k1:k2]
             
@@ -188,7 +189,7 @@ class RK4(Component):
                     self.Ji[iJ] = (k+1)*n_state + i
                     self.Jj[iJ] = (k)*n_state + j
             
-            # External vars
+            # External vars (Inputs)
             df_dx = self.df_dx(ex, y)
             dg_dx = self.df_dx(ex, y + self.h/2.*a)
             dh_dx = self.df_dx(ex, y + self.h/2.*b)
@@ -199,7 +200,9 @@ class RK4(Component):
             dc_dx = dh_dx + dh_dy.dot(self.h/2*db_dx)
             dd_dx = di_dx + di_dy.dot(self.h*dc_dx)
             
-            self.Jx[k+1,:,:] = -self.h/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
+            # Input-State Jacobian at each time point.
+            # No Jacobian with respect to previous time points.
+            self.Jx[k+1,:,:] = self.h/6*(da_dx + 2*db_dx + 2*dc_dx + dd_dx).T
         
         self.J = scipy.sparse.csc_matrix((self.Ja, (self.Ji, self.Jj)),
                                          shape=(self.ny, self.ny))
@@ -238,19 +241,34 @@ class RK4(Component):
     def _applyJext(self, arg):
         """Apply derivatives with respect to inputs"""
         
-        #Jx --> (n_times,n_external,n_states)
+        #Jx --> (n_times, n_external, n_states)
         state_var = getattr(self, self.state_var)
         result = np.zeros(self.ny)
         n_state = self.n_states
+        n_time = self.n
         
-        for ext_var_name in self.external_vars:
-            if ext_var_name in arg:
-                ext_var = getattr(self, ext_var_name)
-                i_ext = self.ext_index_map[ext_var_name]
-                ext_length = np.prod(ext_var.shape)/self.n
-                for j in xrange(ext_length):
-                    for k in xrange(n_state):
-                        result[k, 1:] += self.Jx[1:,j+i_ext,k] * arg[ext_var_name][j+i_ext].flatten()
+        for k in xrange(n_state):
+            
+            # Location in result
+            k1 = k*n_time
+            k2 = k1 + n_time
+            
+            for name in self.external_vars:
+                if name in arg:
+                    ext_var = getattr(self, name)
+                    
+                    # Location in Jacobian (Jx)
+                    j0 = self.ext_index_map[name]
+                    ext_length = np.prod(ext_var.shape)/n_time
+                    
+                    for j in xrange(ext_length):
+                        
+                        # Location in arg
+                        m0 = j*n_time
+                        m1 = m0 + n_time
+                        
+                        result[k1:k2] += np.diag(self.Jx[:, j+j0, k]) \
+                            .dot(arg[name][m0:m1])
         
         for ext_var_name in self.fixed_external_vars:
             if ext_var_name in arg:
@@ -260,6 +278,8 @@ class RK4(Component):
                 for k in xrange(self.n_states):
                     result[k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
         
+        print "Jx", self.Jx
+        print "result", result
         return result
 
     def apply_derivT(self, arg, result):
