@@ -69,8 +69,8 @@ class CADRE(Assembly):
         #self.driver.workflow.add("BatterySOC")
         
         ## Comm components
-        #self.add("Comm_AntRotation", Comm_AntRotation(n))
-        #self.driver.workflow.add("Comm_AntRotation")
+        self.add("Comm_AntRotation", Comm_AntRotation(n))
+        self.driver.workflow.add("Comm_AntRotation")
         
         #self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         #self.driver.workflow.add("Comm_AntRotationMtx")
@@ -78,8 +78,8 @@ class CADRE(Assembly):
         #self.add("Comm_BitRate", Comm_BitRate(n))
         #self.driver.workflow.add("Comm_BitRate")
         
-        self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
-        self.driver.workflow.add("Comm_DataDownloaded")
+        #self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
+        #self.driver.workflow.add("Comm_DataDownloaded")
         
         #self.add("Comm_Distance", Comm_Distance(n))
         #self.driver.workflow.add("Comm_Distance")

@@ -1,8 +1,9 @@
-from openmdao.lib.datatypes.api import Float, Dict, Array, List
-from openmdao.main.api import Component
 import numpy as np
 import scipy.sparse
 import MBI
+
+from openmdao.lib.datatypes.api import Float, Dict, Array, List
+from openmdao.main.api import Component
 
 import rk4
 
@@ -43,7 +44,7 @@ class Comm_AntRotation(Component):
 
     def __init__(self, n):
         super(Comm_AntRotation, self).__init__()
-        self.add('q_A', Array(np.zeros((4, n)), iotype='out', shape=(4,n)))
+        self.add('q_A', Array(np.zeros((4, n)), iotype='out', shape=(4, n)))
         self.dq_dt = np.zeros(4)
         self.n = n
 
@@ -64,17 +65,14 @@ class Comm_AntRotation(Component):
     def apply_deriv(self, arg, result):
         
         if 'antAngle' in arg:
-            result['q_A'] = np.zeros((4, self.n))
             for k in xrange(4):
-                result['q_A'][k,:] += self.dq_dt[k] * arg['antAngle']
-
+                result['q_A'][k, :] += self.dq_dt[k] * arg['antAngle']
+        
     def apply_derivT(self, arg, result):
         
         if 'q_A' in arg:
-            result['antAngle'] = 0.
             for k in xrange(4):
                 result['antAngle'] += self.dq_dt[k] * np.sum(arg['q_A'][k,:])
-        return result
 
 
 class Comm_AntRotationMtx(Component):
