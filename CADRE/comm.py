@@ -38,6 +38,7 @@ class Comm_DataDownloaded(rk4.RK4):
    
 
 class Comm_AntRotation(Component):
+    
     antAngle = Float(0., iotype="in", copy=None)
 
     def __init__(self, n):
@@ -55,19 +56,20 @@ class Comm_AntRotation(Component):
 
     def execute(self):
         rt2 = np.sqrt(2)
-        self.q_A[0,:] = np.cos(self.antAngle/2.)
-        self.q_A[1,:] = np.sin(self.antAngle/2.) / rt2
-        self.q_A[2,:] = - np.sin(self.antAngle/2.) / rt2
-        self.q_A[3,:] = 0.0
+        self.q_A[0, :] = np.cos(self.antAngle/2.)
+        self.q_A[1, :] = np.sin(self.antAngle/2.) / rt2
+        self.q_A[2, :] = - np.sin(self.antAngle/2.) / rt2
+        self.q_A[3, :] = 0.0
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'antAngle' in arg:
             result['q_A'] = np.zeros((4, self.n))
             for k in xrange(4):
                 result['q_A'][k,:] += self.dq_dt[k] * arg['antAngle']
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'q_A' in arg:
             result['antAngle'] = 0.
             for k in xrange(4):

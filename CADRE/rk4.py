@@ -246,36 +246,25 @@ class RK4(Component):
         """Apply derivatives with respect to inputs"""
         
         #Jx --> (n_times, n_external, n_states)
-        state_var = getattr(self, self.state_var)
-        result = np.zeros(self.ny)
         n_state = self.n_states
         n_time = self.n
+        state_var = getattr(self, self.state_var)
+        result = np.zeros((n_state, n_time))
+        
+        # Collapse incoming a*b*...*c*n down to (ab...c)*n
+        for name in self.external_vars:
+            if name in arg:
+                var = self.get(name)
+                arg[name] = arg[name].reshape((np.prod(var.shape[:-1]), 
+                                               var.shape[-1]))
         
         # Time-varying inputs
-        for k in xrange(n_state):
-            
-            # Location in result
-            k1 = k*n_time
-            k2 = k1 + n_time
-            
+        for k in xrange(n_time):
             for name in self.external_vars:
                 if name in arg:
-                    ext_var = getattr(self, name)
-                    
-                    # Location in Jacobian (Jx)
-                    j0 = self.ext_index_map[name]
-                    ext_length = np.prod(ext_var.shape)/n_time
-                    
-                    for j in xrange(ext_length):
-                        
-                        # Location in arg
-                        m0 = j*n_time
-                        m1 = m0 + n_time
-                        
-                        Jsub = np.tril(np.tile(self.Jx[:, j+j0, k], 
-                                               (n_time, 1)).T, -1)
-                        result[k1:k2] += Jsub.dot(arg[name][m0:m1])
-                        print "Jsub", Jsub
+                    for j in xrange(k):
+                        Jsub = self.Jx[j+1, :, :]
+                        result[:, k] += Jsub.dot(arg[name][:, j])
         
         # Time-invariant inputs
         for ext_var_name in self.fixed_external_vars:
