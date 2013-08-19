@@ -32,7 +32,7 @@ class CADRE(Assembly):
         # Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
-        """
+        
         # Additude components
         self.add("Attitude_Angular", Attitude_Angular(n))
         self.driver.workflow.add("Attitude_Angular")
@@ -51,10 +51,10 @@ class CADRE(Assembly):
         
         self.add("Attitude_RotationMtxRates", Attitude_RotationMtxRates(n))
         self.driver.workflow.add("Attitude_RotationMtxRates")
-        """
+        
         self.add("Attitude_Sideslip", Attitude_Sideslip(n))
         self.driver.workflow.add("Attitude_Sideslip")
-        """
+        
         self.add("Attitude_Torque", Attitude_Torque(n))
         self.driver.workflow.add("Attitude_Torque")
         
@@ -104,13 +104,13 @@ class CADRE(Assembly):
         
         self.add("Comm_VectorAnt", Comm_VectorAnt(n))
         self.driver.workflow.add("Comm_VectorAnt")
-
+        
         self.add("Comm_VectorBody", Comm_VectorBody(n))
         self.driver.workflow.add("Comm_VectorBody")
 
         self.add("Comm_VectorECI", Comm_VectorECI(n))
         self.driver.workflow.add("Comm_VectorECI")
-
+        
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
         
@@ -160,7 +160,7 @@ class CADRE(Assembly):
         
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
-        
+        """
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")

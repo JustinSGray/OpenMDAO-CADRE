@@ -110,7 +110,6 @@ class Attitude_Attitude(Component):
     def __init__(self, n=2):
         super(Attitude_Attitude, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
 
         self.add('O_RI', Array(np.zeros((3, 3, n)), iotype='out', 
                                shape=(3, 3, n)))

@@ -3,7 +3,8 @@ from openmdao.main.api import Component
 import numpy as np
 import scipy.sparse
 import MBI
-from fixAngles import fixangles
+from kinematics import fixangles, computepositionspherical, computepositionsphericaljacobian
+from kinematics import computepositionrotd, computepositionrotdjacobian
 import rk4
 
 
@@ -80,7 +81,6 @@ class Comm_AntRotationMtx(Component):
 
     def __init__(self, n):
         super(Comm_AntRotationMtx, self).__init__()
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         self.n = n
         self.add('O_AB', Array(np.zeros((3, 3, self.n)), 
                                iotype='out', shape=(3, 3, self.n)))
@@ -90,7 +90,6 @@ class Comm_AntRotationMtx(Component):
         self.J = np.empty((self.n, 3, 3, 4))
 
     def linearize(self):
-        #self.J = self.lib.computerotmtxjacobian(self.n, self.q_A)
         A = np.zeros((4,3))
         B = np.zeros((4,3))
         dA_dq = np.zeros((4,3,4))
@@ -153,7 +152,6 @@ class Comm_AntRotationMtx(Component):
 
 
     def execute(self):
-        #self.O_AB = self.lib.computerotationmtx(self.n, self.q_A)
         A = np.zeros((4,3))
         B = np.zeros((4,3))
         
@@ -207,7 +205,6 @@ class Comm_BitRate(Component):
     def __init__(self, n):
         super(Comm_BitRate, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
 
         self.add('Dr', Array(np.zeros(self.n), iotype='out', shape=(self.n,)))
 
@@ -263,7 +260,6 @@ class Comm_Distance(Component):
     def __init__(self, n):
         super(Comm_Distance, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         self.add('GSdist', Array(np.zeros(self.n), iotype='out', 
                                  shape=(self.n,)))
         self.add('r_b2g_A', Array(np.zeros((3, self.n)), iotype='in', 
@@ -302,14 +298,12 @@ class Comm_EarthsSpin(Component):
     def __init__(self, n):
         super(Comm_EarthsSpin, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         
         self.add('q_E', Array(np.zeros((4, self.n)), iotype='out', 
                               shape=(4, self.n)))
         self.add('t', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        #self.dq_dt = self.lib.computejacobianqe(self.n, self.t)
         for i in range(0,n):
             theta = np.pi * self.t[i] / 3600.0 / 24.0
             dtheta_dt = np.pi / 3600.0 / 24.0
@@ -317,7 +311,6 @@ class Comm_EarthsSpin(Component):
             self.dq_dt[i,3] = -np.cos(theta) * dtheta_dt
     
     def execute(self):
-        #self.q_E = self.lib.computeqe(self.n, self.t)
         for i in range(0,self.n):
             theta = np.pi * self.t[i] / 3600.0 / 24.0
             self.q_E[0,i] = np.cos(theta)
@@ -343,7 +336,6 @@ class Comm_EarthsSpinMtx(Component):
     def __init__(self, n):
         super(Comm_EarthsSpinMtx, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         
         self.add('q_E', Array(np.zeros((4, self.n)), iotype='in', 
                               shape=(4, self.n)))
@@ -351,7 +343,6 @@ class Comm_EarthsSpinMtx(Component):
                                shape=(3, 3, self.n)))
 
     def linearize(self):
-        #self.J = self.lib.computerotmtxjacobian(self.n, self.q_E)
         A = np.zeros((4,3))
         B = np.zeros((4,3))
         dA_dq = np.zeros((4,3,4))
@@ -415,7 +406,6 @@ class Comm_EarthsSpinMtx(Component):
 
 
     def execute(self):
-        #self.O_IE = self.lib.computerotationmtx(self.n, self.q_E)
         A = np.zeros((4,3))
         B = np.zeros((4,3))
         
@@ -520,12 +510,10 @@ class Comm_GSposEarth(Component):
     def __init__(self, n):
         super(Comm_GSposEarth, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         self.add('r_e2g_E', Array(np.zeros((3, self.n)), iotype='out', 
                                   shape=(3, self.n)))
 
     def linearize(self):
-        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n,self.r_e2g_E,self.O_IE)
         self.dr_dlon[0] = -self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
         self.dr_dlat[0] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
         self.dr_dalt[0] = np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
@@ -539,7 +527,6 @@ class Comm_GSposEarth(Component):
         self.dr_dalt[2] = np.sin(self.d2r*self.lat)
             
     def execute(self):
-        #self.r_e2g_I[:] = self.lib.computepositionrotd(self.n,self.r_e2g_E,self.O_IE)
         self.r_e2g_E[0,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
         self.r_e2g_E[1,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
         self.r_e2g_E[2,:] = (self.Re + self.alt) * np.sin(self.d2r*self.lat)
@@ -574,7 +561,6 @@ class Comm_GSposECI(Component):
     def __init__(self, n):
         super(Comm_GSposECI, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
         self.add('r_e2g_I', Array(np.zeros((3, self.n)), iotype='out', 
                                   shape=(3, self.n)))
@@ -585,7 +571,6 @@ class Comm_GSposECI(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n,self.r_e2g_E, self.O_IE)
         eye = np.eye(3,dtype = double)
         for i in range(0,n):
             for k in rannge(0,3):
@@ -596,7 +581,6 @@ class Comm_GSposECI(Component):
                     self.J2[i,k,j] = self.O_IE[k,j,i]
     
     def execute(self):
-        #self.r_e2g_I[:] = self.lib.computepositionrotd(self.n,self.r_e2g_E,self.O_IE)
         for i in range(0,self.n):
             self.r_e2g_I[:,i] = np.dot(self.O_IE[:,:,i],self.r_e2g_E[:,i])
 
@@ -632,7 +616,6 @@ class Comm_LOS(Component):
     def __init__(self, n):
         super(Comm_LOS, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.CommLib').lib.CommLib
         
         self.add('CommLOS', Array(np.zeros(n), iotype='out', shape=(self.n,)))
         
@@ -696,7 +679,6 @@ class Comm_VectorAnt(Component):
     def __init__(self, n):
         super(Comm_VectorAnt, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
         self.add('r_b2g_A', Array(np.zeros((3, n)), iotype='out', shape=(3, n)))
         
@@ -705,20 +687,10 @@ class Comm_VectorAnt(Component):
                                shape=(3, 3, n)))
 
     def linearize(self):
-        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_B,self.O_AB)
-        eye = np.eye(3,dtype = double)
-        for i in range(0,n):
-            for k in rannge(0,3):
-                for u in range(0,3):
-                    for v in range(0,3):
-                        self.J1[i,k,u,v] = eye[k,u]*self.r_b2g_B[v,i]
-                for j in range(0,3):
-                    self.J2[i,k,j] = self.O_AB[k,j,i]
+        self.J1, self.J2 = computepositionrotdjacobian(self.n, self.r_b2g_B,self.O_AB)
 
     def execute(self):
-        #self.r_b2g_A = self.lib.computepositionrotd(self.n, self.r_b2g_B,self.O_AB)
-        for i in range(0,self.n):
-            self.r_b2g_A[:,i] = np.dot(self.O_AB[:,:,i],self.r_b2g_B[:,i])
+        self.r_b2g_A = computepositionrotd(self.n, self.r_b2g_B,self.O_AB)
 
     def applyDer(self, arg, result):
         if 'O_AB' in arg and 'r_b2g_B' in arg:
@@ -749,7 +721,6 @@ class Comm_VectorBody(Component):
     def __init__(self, n):
         super(Comm_VectorBody, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         
         self.add('r_b2g_B', Array(np.zeros((3, n)), iotype='out', shape=(3, n)))
         
@@ -758,7 +729,6 @@ class Comm_VectorBody(Component):
                                shape=(3, 3, n)))
 
     def linearize(self):
-        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n, self.r_b2g_I, self.O_BI)
         eye = np.eye(3,dtype = double)
         for i in range(0,n):
             for k in rannge(0,3):
@@ -769,7 +739,6 @@ class Comm_VectorBody(Component):
                     self.J2[i,k,j] = self.O_BI[k,j,i]
 
     def execute(self):
-        #self.r_b2g_B = self.lib.computepositionrotd(self.n, self.r_b2g_I, self.O_BI)
         for i in range(0,self.n):
             self.r_b2g_B[:,i] = np.dot(self.O_BI[:,:,i],self.r_b2g_I[:,i])
 
@@ -833,86 +802,24 @@ class Comm_VectorSpherical(Component):
     def __init__(self, n):
         super(Comm_VectorSpherical, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         
         self.add('azimuthGS', Array(np.zeros(n), iotype='out', shape=(n,)))
         self.add('elevationGS', Array(np.zeros(n), iotype='out', shape=(n,)))
         
         self.add('r_b2g_A', Array(np.zeros((3, n)), iotype='in', 
                                   shape=(3, self.n)))
-    
-    def arctan(self, x, y):
-        if x == 0:
-            if y > 0:
-                arctan = np.pi/2.0
-            elif y < 0:
-                arctan = 3*np.pi/2.0
-            else:
-                arctan = 0.
-        elif y == 0:
-            if x > 0:
-                arctan = 0.0
-            elif x < 0:
-                arctan = np.pi
-            else:
-                arctan = 0.0
-        elif x < 0:
-            arctan = np.arctan(y/x) + np.pi
-        elif y < 0:
-            arctan = np.arctan(y/x) + 2*np.pi
-        elif y > 0:
-            arctan = np.arctan(y/x)
-        else:
-            arctan = 0.0
-        return arctan
 
     def linearize(self):
-        #self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = self.lib.computepositionsphericaljacobian(self.n, 3*self.n,self.r_b2g_A)
-        #self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)),shape=(self.n,3*self.n))
-        #self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)),shape=(self.n,3*self.n))
-        #self.J1T = self.J1.transpose()
-        #self.J2T = self.J2.transpose()
-        for i in range(0,self.n):
-            x = self.r_b2g_A[0,i]
-            y = self.r_b2g_A[1,i]
-            z = self.r_b2g_A[2,i]
-            r = (x**2 + y**2 + z**2)**0.5
-            if r < 1.e-15:
-                r = 1.e-5
-            
-            a = arctan(x, y)
-            e = np.arccos(z/r)
-            
-            if e < 1.e-15:
-                e = 1.e-5
-            if e > (2*np.arccos(0.0) - 1e-15):
-                e = 2*np.arccos(0.0) - 1e-5
-            
-            da_dr = 1.0/r * (-np.sin(a)/np.sin(e), np.cos(a)/np.sin(e), 0.)
-            de_dr = 1.0/r * (np.cos(a)*np.cos(e), np.sin(a)*np.cos(e), -np.sin(e))
-            
-            for k in range(0,3):
-                iJ = i*3 + k #changed from i-1
-                Ja1[iJ] = da_dr[k]
-                Ji1[iJ] = i - 1
-                Jj1[iJ] = iJ - 1
-                Ja2[iJ] = de_dr[k]
-                Ji2[iJ] = i - 1
-                Jj2[iJ] = iJ - 1
+        self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = computepositionsphericaljacobian(self.n, 3*self.n,self.r_b2g_A)
+        self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)),shape=(self.n,3*self.n))
+        self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)),shape=(self.n,3*self.n))
+        self.J1T = self.J1.transpose()
+        self.J2T = self.J2.transpose()
 
     def execute(self):
-        #azimuthGS, elevationGS = self.lib.computepositionspherical(self.n,self.r_b2g_A)
-        #self.azimuthGS = azimuthGS
-        #self.elevationGS = elevationGS
-        for i in range(0,self.n):
-            x = self.r_b2g_A[0,i]
-            y = self.r_b2g_A[1,i]
-            z = self.r_b2g_A[2,i]
-            r = (x**2 + y**2 + z**2)**0.5
-            if r < 1e-15:
-                r = 1.e-5
-            self.azimuthGS[i] = self.arctan(x, y)
-            self.elevationGS[i] = np.arccos(z/r)
+        azimuthGS, elevationGS = computepositionspherical(self.n,self.r_b2g_A)
+        self.azimuthGS = azimuthGS
+        self.elevationGS = elevationGS
 
     def apply_deriv(self, arg, result):
         if 'r_b2g_A' in arg:

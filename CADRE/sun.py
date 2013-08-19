@@ -5,6 +5,7 @@ from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
 
 from kinematics import computepositionrotd, computepositionrotdjacobian
+from kinematics import computepositionspherical, computepositionsphericaljacobian
 
 class Sun_LOS( Component ):
 
@@ -222,10 +223,8 @@ class Sun_PositionECI( Component ):
 
         self.add('r_e2s_I', Array(np.zeros((3,n, ), order='F'), size=(3,n, ),
                                   dtype=np.float, iotype="out"))
-        self.lib = __import__('CADRE.lib.SunLib').lib.SunLib
 
     def execute(self): 
-        #self.r_e2s_I += self.lib.computeposition(self.n, self.LD + self.t[:]/3600.0/24.0)
         T = self.LD + self.t[:]/3600./24.
         for i in range(0,self.n):
             L = self.d2r*280.460 + self.d2r*0.9856474*T[i]
@@ -237,10 +236,6 @@ class Sun_PositionECI( Component ):
             self.r_e2s_I[2,i] = np.sin(Lambda)*np.sin(eps)
 
     def linearize(self): 
-        #self.Ja, self.Ji, self.Jj = self.lib.computepositionjacobian(self.n, 3*self.n, self.LD + self.t[:]/3600.0/24.0)
-        #self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(3*self.n,self.n))
-        #self.JT = self.J.transpose()
-        #return
         T = self.LD + self.t[:]/3600./24.
         for i in range(0,self.n):
             L = self.d2r*280.460 + self.d2r*0.9856474*T[i]
@@ -309,17 +304,15 @@ class Sun_PositionSpherical( Component ):
         self.add('azimuth', Array(np.zeros((n,), order='F'), size=(n,), dtype=np.float, iotype="out"))
         self.add('elevation', Array(np.zeros((n,), order='F'), size=(n,), dtype=np.float, iotype="out"))
 
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
-
     def execute(self): 
-        azimuth, elevation = self.lib.computepositionspherical(self.n, self.r_e2s_B[:])
-
-        self.azimuth += azimuth
-        self.elevation += elevation
+        azimuth, elevation = computepositionspherical(self.n, self.r_e2s_B[:])
+        
+        self.azimuth = azimuth
+        self.elevation = elevation
 
     def linearize(self): 
         self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = \
-                  self.lib.computepositionsphericaljacobian(self.n, 3*self.n, self.r_e2s_B)
+                  computepositionsphericaljacobian(self.n, 3*self.n, self.r_e2s_B)
         self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)),shape=(self.n,3*self.n))
         self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)),shape=(self.n,3*self.n))
         self.J1T = self.J1.transpose()

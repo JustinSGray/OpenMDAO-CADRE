@@ -30,3 +30,77 @@ def computepositionrotdjacobian(n, v1, O_21):
                     J1[i,k,u,v] = eye[k,u]*v1[v,i]
                 J2[i,k,u] = O_21[k,u,i]
     return J1, J2
+
+def computepositionspherical(n, v):
+    azimuth, elevation = np.empty(n), np.empty(n)
+    for i in xrange(n):
+        x = v[0,i]
+        y = v[1,i]
+        z = v[2,i]
+        r = np.sqrt(x**2+y**2+z**2)
+        if r  < 1e-15:
+            r = 1e-5
+        azimuth[i] = arctan(x, y)
+        elevation[i] = np.arccos(z/r)
+    return azimuth, elevation
+
+def arctan(x, y):
+    if x==0:
+        if y > 0:
+           return np.pi/2.0
+        elif y <0 :
+           return 3*np.pi/2.0
+        else:
+           return 0.0
+    elif y==0.:
+        if x>0.:
+           return 0.0
+        elif x<0.:
+           return np.pi
+        else:
+           return 0.
+    elif x<0:
+       return np.arctan(y/x) + np.pi
+    elif y<0:
+       return np.arctan(y/x) + 2*np.pi
+    elif y>0.:
+       return np.arctan(y/x)
+    else:
+       return 0.0
+   
+def computepositionsphericaljacobian(n, nJ, v):
+    Ja1 = np.empty(nJ)
+    Ji1= np.empty(nJ)
+    Jj1 = np.empty(nJ)
+    Ja2 = np.empty(nJ)
+    Ji2 = np.empty(nJ)
+    Jj2 = np.empty(nJ)
+    
+    for i in xrange(n):
+        x = v[1,i]
+        y = v[2,i]
+        z = v[3,i]
+        r = np.sqrt(x**2 + y**2 + z**2)
+        if r < 1e-15:
+            r = 1e-5
+    
+        a = arctan(x, y)
+        e = np.arccos(z/r)
+    
+        if e < 1e-15:
+            e = 1e-5
+            
+        if (e > (2*np.arccos(0.0) - 1e-15)):
+            e = 2*acos(0.0) - 1e-5
+    
+        da_dr = 1.0/r * np.array([-sin(a)/sin(e), cos(a)/sin(e), dble(0)])
+        de_dr = 1.0/r * np.array([cos(a)*cos(e), sin(a)*cos(e), -sin(e)])
+    
+        for k in xrange(3):
+            iJ = i*3 + k
+            Ja1[iJ] = da_dr[k]
+            Ji1[iJ] = i - 1
+            Jj1[iJ] = iJ - 1
+            Ja2[iJ] = de_dr[k]
+            Ji2[iJ] = i - 1
+            Jj2[iJ] = iJ - 1
