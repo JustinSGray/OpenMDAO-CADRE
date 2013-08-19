@@ -332,7 +332,6 @@ class RK4(Component):
             
             
             #result[self.init_state_var] = -arg[self.state_var][:,0]
-        print 'rrr', result
         for k, v in result.iteritems(): 
             ext_var = getattr(self, k)
             result[k] = v.reshape(ext_var.shape, order='F')
