@@ -80,8 +80,6 @@ class RK4(Component):
         #TODO
         #check that length of state var and external
         # vars are the same length
-        
-        print "TESTING HERE"
     
     def f_dot(self, external, state):
         """time rate of change of state variables
@@ -220,27 +218,26 @@ class RK4(Component):
         """
         #result = self._applyJint(arg, result)
         result_ext = self._applyJext(arg)
-        print result, result_ext
+        
         svar = self.state_var
         if svar in result:
             result[svar] += result_ext
         else:
             result[svar] = result_ext
-        print 'after', result
 
     
     def _applyJint(self, arg, result):
         """Apply derivatives with respect to state variables."""
         
         arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
-        result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
+        res1 = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
         
         if "y" in arg:
             flat_y = arg['y'].reshape((self.n_states*self.n),order='F')
             result["y"] = self.J.dot(flat_y).reshape((self.n_states,self.n),order='F')
         
-        result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])
-        return result
+        res1 = dict([(self.name_map[k],v) for k,v in res1.iteritems()])
+        return res1
 
     def _applyJext(self, arg):
         """Apply derivatives with respect to inputs"""
@@ -248,7 +245,6 @@ class RK4(Component):
         #Jx --> (n_times, n_external, n_states)
         n_state = self.n_states
         n_time = self.n
-        state_var = getattr(self, self.state_var)
         result = np.zeros((n_state, n_time))
         
         # Collapse incoming a*b*...*c*n down to (ab...c)*n
@@ -262,25 +258,26 @@ class RK4(Component):
         for k in xrange(n_time):
             for name in self.external_vars:
                 if name in arg:
+                    ext_var = getattr(self, name)
+                    i_ext = self.ext_index_map[name]
+                    ext_length = np.prod(ext_var.shape)
                     for j in xrange(k):
-                        Jsub = self.Jx[j+1, :, :]
+                        Jsub = self.Jx[j+1, i_ext:i_ext+ext_length, :]
                         result[:, k] += Jsub.dot(arg[name][:, j])
         
         # Time-invariant inputs
-        for ext_var_name in self.fixed_external_vars:
-            if ext_var_name in arg:
-                ext_var = getattr(self,ext_var_name)
-                i_ext = self.ext_index_map[ext_var_name]
+        for name in self.fixed_external_vars:
+            if name in arg:
+                ext_var = getattr(self, name)
+                i_ext = self.ext_index_map[name]
                 ext_length = np.prod(ext_var.shape)
                 for k in xrange(self.n_states):
                     result[k,1:] += self.Jx[1,i_ext:i_ext+ext_length,k].dot(self.external[i_ext:i_ext+ext_length,0])
         
-        print "Jx", self.Jx
-        print "arg, result", arg, result
         return result
 
     def apply_derivT(self, arg, result):
-        
+        print arg
         r1 = self.applyJintT(arg, result)
         r2 = self._applyJextT(arg, result)
         
@@ -292,32 +289,39 @@ class RK4(Component):
 
     def applyJintT(self, arg, result):
         
-        arg = dict([(self.reverse_name_map[k],v) for k,v in arg.iteritems()])
-        result = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
+        res1 = dict([(self.reverse_name_map[k],v) for k,v in result.iteritems()])
         
-        if 'y' in arg:
-            flat_y = arg['y'].flatten()
-            result['y'] = self.JT.dot(flat_y).reshape((self.n_states,self.n))
+        if self.state_var in arg:
+            flat_y = arg[self.state_var].flatten()
+            res1['y'] = self.JT.dot(flat_y).reshape((self.n_states,self.n))
         
-        result =  dict([(self.name_map[k],v) for k,v in result.iteritems()])
-        return result
+        res1 =  dict([(self.name_map[k],v) for k,v in res1.iteritems()])
+        return res1
 
-    def applyJextT(self, arg, result):
-        raise NotImplementedError
-    
-    def _applyJextT(self, arg, result):
+    def _applyJextT(self, arg, required_results):
+        
+        #Jx --> (n_times, n_external, n_states)
+        n_state = self.n_states
+        n_time = self.n
+        result = {}
+        
         if self.state_var in arg:
             
-            for ext_var_name in self.external_vars:
-                ext_var = getattr(self,ext_var_name)
-                i_ext = self.ext_index_map[ext_var_name]
-                ext_length = np.prod(ext_var.shape)/self.n
-                result[ext_var_name] = np.zeros((ext_length,self.n))
-                for k in xrange(self.n_states):
-                    for j in xrange(ext_length):
-                        result[ext_var_name][j,:-1] += self.Jx[1:,j+i_ext,k] * arg[self.state_var][k,1:]
+            argsv = arg[self.state_var]
             
+            # Time-varying inputs
+            for name in self.external_vars:
+                if name in required_results:
+                    ext_var = getattr(self, name)
+                    i_ext = self.ext_index_map[name]
+                    ext_length = np.prod(ext_var.shape)
+                    result[name] = np.zeros((n_state, n_time))
+                    for k in xrange(n_time):
+                        for j in xrange(k+1, n_time):
+                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :].T
+                            result[name][:, k] += Jsub.dot(argsv[:, j])
             
+            # Time-invariant inputs
             for ext_var_name in self.fixed_external_vars:
                 ext_var = getattr(self,ext_var_name)
                 i_ext = self.ext_index_map[ext_var_name]
@@ -327,10 +331,10 @@ class RK4(Component):
                     result[ext_var_name] += self.Jx[1:,i_ext:i_ext+ext_length,k].T.dot(arg[self.state_var][k,1:])
             
             
-            result[self.init_state_var] = -arg[self.state_var][:,0]
-        
-        for k,v in result.iteritems(): 
-            ext_var = getattr(self,k)
+            #result[self.init_state_var] = -arg[self.state_var][:,0]
+        print 'rrr', result
+        for k, v in result.iteritems(): 
+            ext_var = getattr(self, k)
             result[k] = v.reshape(ext_var.shape, order='F')
         
         return result
