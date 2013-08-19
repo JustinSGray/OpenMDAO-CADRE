@@ -11,7 +11,6 @@ class ReactionWheel_Motor(Component):
     def __init__(self, n):
         super(ReactionWheel_Motor, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.RWLib').lib.RWLib
          
         self.add('J_RW', 2.8e-5)            
         
@@ -22,10 +21,6 @@ class ReactionWheel_Motor(Component):
         self.add('T_m', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out'))
 
     def linearize(self): 
-        #self.dT_dTm, self.dT_dwb, self.dT_dh = self.lib.computejacobiant(self.n,
-        #                                                                 self.T_RW[:],
-        #                                                                 self.w_B[:],
-        #                                                                 self.J_RW * self.w_RW[:])
         w_Bx = np.zeros((3,3))
         dwx_dwb = np.zeros((3,3))
         h_RW = self.J_RW * self.w_RW[:]
@@ -52,7 +47,6 @@ class ReactionWheel_Motor(Component):
             self.dT_dh[i,:,:] = -w_Bx
 
     def execute(self):
-        #self.T_m = self.lib.computet(self.n, self.T_RW[:], self.w_B[:], self.J_RW * self.w_RW[:])
         w_Bx = np.zeros((3,3))
         h_RW = self.J_RW * self.w_RW[:]
         for i in range(0,self.n):
@@ -100,7 +94,6 @@ class ReactionWheel_Power(Component):
     def __init__(self, n):
         super(ReactionWheel_Power, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.RWLib').lib.RWLib
         
         self.add('w_RW', Array(np.zeros((3,n)), size=(3,n), dtype=np.float, iotype='in'))
         self.add('T_RW', Array(np.zeros((3,n)), size=(3,n), dtype=np.float, iotype='in'))
@@ -108,14 +101,12 @@ class ReactionWheel_Power(Component):
         self.add('P_RW', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out')) 
              
     def linearize(self):
-        #self.dP_dw, self.dP_dT = self.lib.computejacobianp(self.n, self.w_RW[:], self.T_RW[:])
         for i in range(0,self.n):
             for k in range(0,3):
                 self.dP_dw[i,k] = 2 * self.V * self.a * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
                 self.dP_dT[i,k] = 2 * self.V * self.b * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
 
     def execute(self):
-        #self.P_RW[:] = self.lib.computep(self.n, self.w_RW[:], self.T_RW[:])
         for i in range(0,self.n):
             for k in range(0,3):
                 self.P_RW[k,i] = self.V * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])**2 + self.V * self.I0
@@ -175,7 +166,6 @@ class ReactionWheel_Dynamics(rk4.RK4):
     def __init__(self, n_times):
         super(ReactionWheel_Dynamics, self).__init__()
         #self.time_step = time_step
-        self.lib = __import__('CADRE.lib.RWLib').lib.RWLib
         
         self.add('w_B', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))
         self.add('T_RW', Array(np.zeros((3,n_times)), size=(3,n_times), dtype=np.float, iotype='in'))

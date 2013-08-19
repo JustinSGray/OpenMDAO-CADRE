@@ -89,7 +89,7 @@ class CADRE(Assembly):
         
         self.add("Comm_EarthsSpinMtx", Comm_EarthsSpinMtx(n))
         self.driver.workflow.add("Comm_EarthsSpinMtx")
-
+        
         self.add("Comm_GainPattern", Comm_GainPattern(n))
         self.driver.workflow.add("Comm_GainPattern")
         
@@ -104,13 +104,13 @@ class CADRE(Assembly):
         
         self.add("Comm_VectorAnt", Comm_VectorAnt(n))
         self.driver.workflow.add("Comm_VectorAnt")
-
+        
         self.add("Comm_VectorBody", Comm_VectorBody(n))
         self.driver.workflow.add("Comm_VectorBody")
 
         self.add("Comm_VectorECI", Comm_VectorECI(n))
         self.driver.workflow.add("Comm_VectorECI")
-
+        
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
         
@@ -160,11 +160,11 @@ class CADRE(Assembly):
         
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
-        
+        """
         # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
-        
+        """
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):
