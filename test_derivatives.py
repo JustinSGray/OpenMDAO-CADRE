@@ -267,6 +267,17 @@ class Testcase_CADRE(unittest.TestCase):
         self.run_model()
         self.compare_derivatives(inputs, outputs)
         
+    def test_ThermalTemperature(self):
+        
+        compname = 'ThermalTemperature'
+        inputs = ['exposedArea', 'cellInstd', 'LOS', 'P_comm']
+        outputs = ['temperature']
+        state0 = ['T0']
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
         
 if __name__ == "__main__":
     

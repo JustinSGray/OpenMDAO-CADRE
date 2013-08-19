@@ -140,7 +140,7 @@ class RK4(Component):
         setattr(self, state_var_name, 
                 self.y.T.reshape((self.n, self.n_states)).T)
     
-        print "executed", self.name
+        #print "executed", self.name
     
     def linearize(self):
         """Linearize about current point."""
@@ -251,19 +251,19 @@ class RK4(Component):
         for name in self.external_vars:
             if name in arg:
                 var = self.get(name)
-                arg[name] = arg[name].reshape((np.prod(var.shape[:-1]), 
-                                               var.shape[-1]))
-        
+                shape = var.shape
+                arg[name] = arg[name].reshape((np.prod(shape[:-1]), 
+                                               shape[-1]))
+            
         # Time-varying inputs
         for k in xrange(n_time):
             for name in self.external_vars:
                 if name in arg:
-                    ext_var = getattr(self, name)
                     i_ext = self.ext_index_map[name]
-                    ext_length = np.prod(ext_var.shape)
+                    ext_length = np.prod(arg[name][:, 0].shape)
                     for j in xrange(k):
                         Jsub = self.Jx[j+1, i_ext:i_ext+ext_length, :]
-                        result[:, k] += Jsub.dot(arg[name][:, j])
+                        result[:, k] += Jsub.T.dot(arg[name][:, j])
         
         # Time-invariant inputs
         for name in self.fixed_external_vars:

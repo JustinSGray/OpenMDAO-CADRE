@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse
 import MBI
 
-from openmdao.lib.datatypes.api import Float, Dict, Array, List
+from openmdao.lib.datatypes.api import Float, Array
 from openmdao.main.api import Component
 
 from kinematics import fixangles, computepositionspherical, computepositionsphericaljacobian
@@ -794,7 +794,7 @@ class Comm_VectorECI(Component):
         return
 
     def execute(self):
-        self.r_b2g_I = self.r_e2g_I - self.r_e2b_I[:3,:]
+        self.r_b2g_I = self.r_e2g_I - self.r_e2b_I[:3, :]
 
     def apply_deriv(self, arg, result):
         
@@ -848,4 +848,4 @@ class Comm_VectorSpherical(Component):
             azimuthGS = arg['azimuthGS']
             elevationGS = arg['elevationGS']
             result['r_b2g_A'] += (self.J1T.dot(azimuthGS) + 
-                                    self.J2T.dot(elevationGS)).reshape((3, self.n),order='F')
+                                  self.J2T.dot(elevationGS)).reshape((3, self.n), order='F')

@@ -26,14 +26,14 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=5):
+    def __init__(self, n=2):
         super(CADRE, self).__init__()
         
         # Parameters
-        #self.add("BsplineParameters", BsplineParameters(n))
-        #self.driver.workflow.add("BsplineParameters")
+        self.add("BsplineParameters", BsplineParameters(n))
+        self.driver.workflow.add("BsplineParameters")
         
-        ## Additude components
+        # Additude components
         #self.add("Attitude_Angular", Attitude_Angular(n))
         #self.driver.workflow.add("Attitude_Angular")
         
@@ -68,12 +68,12 @@ class CADRE(Assembly):
         #self.add("BatterySOC", BatterySOC(n))
         #self.driver.workflow.add("BatterySOC")
         
-        ## Comm components
+        ### Comm components
         #self.add("Comm_AntRotation", Comm_AntRotation(n))
         #self.driver.workflow.add("Comm_AntRotation")
         
-        self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
-        self.driver.workflow.add("Comm_AntRotationMtx")
+        #self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
+        #self.driver.workflow.add("Comm_AntRotationMtx")
         
         #self.add("Comm_BitRate", Comm_BitRate(n))
         #self.driver.workflow.add("Comm_BitRate")
@@ -162,8 +162,8 @@ class CADRE(Assembly):
         #self.driver.workflow.add("Sun_PositionSpherical")
         
         ## Thermal temp components
-        #self.add("ThermalTemperature", ThermalTemperature(n))
-        #self.driver.workflow.add("ThermalTemperature")
+        self.add("ThermalTemperature", ThermalTemperature(n))
+        self.driver.workflow.add("ThermalTemperature")
         
         self.make_connections()
         
