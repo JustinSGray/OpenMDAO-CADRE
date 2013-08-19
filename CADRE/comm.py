@@ -3,7 +3,7 @@ from openmdao.main.api import Component
 import numpy as np
 import scipy.sparse
 import MBI
-
+from fixAngles import fixangles
 import rk4
 
 
@@ -457,7 +457,6 @@ class Comm_GainPattern(Component):
     def __init__(self, n):
         super(Comm_GainPattern, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
         
         self.add('gain', Array(np.zeros(n), iotype='out', shape=(n,)))
         
@@ -480,7 +479,7 @@ class Comm_GainPattern(Component):
         self.x[:,1] = self.elevationGS
 
     def linearize(self):
-        result = self.lib.fixangles(self.n, self.azimuthGS, self.elevationGS)
+        result = fixangles(self.n, self.azimuthGS, self.elevationGS)
         self.azimuthGS, self.elevationGS = result
         self.x[:,0] = self.azimuthGS
         self.x[:,1] = self.elevationGS
@@ -488,7 +487,7 @@ class Comm_GainPattern(Component):
         self.dg_del = self.MBI.evaluate(self.x,2)[:,0]
 
     def execute(self):
-        result = self.lib.fixangles(self.n, self.azimuthGS, self.elevationGS)
+        result = fixangles(self.n, self.azimuthGS, self.elevationGS)
         self.x[:,0] = result[0]
         self.x[:,1] = result[1]
         self.gain = self.MBI.evaluate(self.x)[:,0]

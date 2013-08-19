@@ -1,14 +1,13 @@
 from openmdao.lib.datatypes.api import Float, Dict, Array, List
 from openmdao.main.api import Component, Assembly
 import numpy as np
-
+from kinematics import computepositionrotd, computepositionrotdjacobian
 
 class Attitude_Angular(Component):
 
     def __init__(self, n=2):
         super(Attitude_Angular, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
 
         self.add('w_B', Array(np.zeros((3, n)), iotype='out', shape=(3,n)))
         
@@ -18,7 +17,6 @@ class Attitude_Angular(Component):
                                   shape=(3, 3, n)))
 
     def linearize(self):
-        #self.dw_dO, self.dw_dOdot = self.lib.computejacobianw(self.n, self.O_BI,self.Odot_BI)
 
         for i in range(0,self.n):
             self.dw_dOdot[i,0,2,:] = self.O_BI[1,:,i]
@@ -32,7 +30,6 @@ class Attitude_Angular(Component):
 
 
     def execute(self):
-        #self.w_B = self.lib.computew(self.n, self.O_BI, self.Odot_BI)
         for i in range(0,self.n):
             self.w_B[0,i] = np.dot(self.Odot_BI[2,:,i] , self.O_BI[1,:,i])
             self.w_B[1,i] = np.dot(self.Odot_BI[0,:,i] , self.O_BI[2,:,i])
@@ -121,7 +118,6 @@ class Attitude_Attitude(Component):
         self.add('r_e2b_I', Array(np.zeros((6, n)), iotype='in', shape=(6, n)))
 
     def linearize(self):
-        #self.dO_dr = self.lib.computejacobianori(self.n, self.r_e2b_I)
         for i in range(0,self.n):
             r = r_e2b_I[0:3,i]
             v = r_e2b_I[3:6,i]
@@ -181,7 +177,6 @@ class Attitude_Attitude(Component):
 
 
     def execute(self):
-        #self.O_RI = self.lib.computeori(self.n, self.r_e2b_I)
         for i in range(0,self.n):
             r = self.r_e2b_I[0:3,i]
             v = self.r_e2b_I[3:6,i]
@@ -232,7 +227,6 @@ class Attitude_Roll(Component):
     def __init__(self, n=2):
         super(Attitude_Roll, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
 
         self.add('O_BR', Array(np.zeros((3, 3, n)), iotype='out', 
                                shape=(3, 3, n)))
@@ -240,14 +234,12 @@ class Attitude_Roll(Component):
         self.add('Gamma', Array(np.zeros(n), iotype='in', shape=(n,)))
 
     def linearize(self):
-        #self.dO_dg = self.lib.computejacobianobr(self.n, self.Gamma)
         for i in range(0,self.n):
             self.dO_dg[i,0,:] = (-np.sin(Gamma[i]), np.cos(Gamma[i]), 0.)
             self.dO_dg[i,1,:] = (-np.cos(Gamma[i]), -np.sin(Gamma[i]), 0.)
             self.dO_dg[i,2,:] = (0., 0., 0.)
 
     def execute(self):
-        #self.O_BR = self.lib.computeobr(self.n, self.Gamma)
         for i in range(0,self.n):
             self.O_BR[0,:,i] = (np.cos(self.Gamma[i]), np.sin(self.Gamma[i]), 0.)
             self.O_BR[1,:,i] = (-np.sin(self.Gamma[i]), np.cos(self.Gamma[i]), 0.)
@@ -275,7 +267,6 @@ class Attitude_RotationMtx(Component):
     def __init__(self, n=2):
         super(Attitude_RotationMtx, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
 
         self.add('O_BI', Array(np.zeros((3, 3, n)), iotype='out', 
                                shape=(3, 3, n)))
@@ -289,7 +280,6 @@ class Attitude_RotationMtx(Component):
         return
     
     def execute(self):
-        #self.O_BI = self.lib.computeobi(self.n, self.O_BR, self.O_RI)
         for i in range(0,self.n):
             self.O_BI[:,:,i] = np.dot(self.O_BR[:,:,i], self.O_RI[:,:,i])
 
@@ -374,7 +364,6 @@ class Attitude_Sideslip(Component):
     def __init__(self, n=2):
         super(Attitude_Sideslip, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
         self.add('v_e2b_B', Array(np.zeros((3, n)), iotype='out', shape=(3,n)))
         
@@ -382,21 +371,10 @@ class Attitude_Sideslip(Component):
         self.add('O_BI', Array(np.zeros((3, 3, n)), iotype='in', shape=(3, 3, n)))        
 
     def linearize(self):
-        #self.J1, self.J2 = self.lib.computepositionrotdjacobian(self.n,self.r_e2b_I[3:,:], self.O_BI)
-        eye = np.eye(3, dtype=double)
-        r = self.r_e2b_I[3:,:]
-        for i in range(0,n):
-            for k in range(0,3):
-                for u in range(0,3):
-                    for v in range(0,3):
-                        self.J1[i,k,u,v] = eye[k,u]*r[v,i]
-                for j in range(0,3):
-                    self.J2[i,k,j] = self.O_BI[k,j,i]
+        self.J1, self.J2 = computepositionrotdjacobian(self.n,self.r_e2b_I[3:,:], self.O_BI)
 
     def execute(self):
-        #self.v_e2b_B = self.lib.computepositionrotd(self.n, self.r_e2b_I[3:,:],self.O_BI)
-        for i in range(0,self.n):
-            self.v_e2b_B[:,i] = np.dot(self.O_BI[:,:,i],self.r_e2b_I[3:,i])
+        self.v_e2b_B = computepositionrotd(self.n, self.r_e2b_I[3:,:],self.O_BI)
 
     def applyDer(self, arg, result):
         if 'O_BI' in arg and 'r_e2b_I' in arg:
@@ -432,7 +410,6 @@ class Attitude_Torque(Component):
     def __init__(self, n=2):
         super(Attitude_Torque, self).__init__()
         self.n = n
-        self.lib = __import__('CADRE.lib.AttitudeLib').lib.AttitudeLib
 
         self.add('T_tot', Array(np.zeros((3, n)), iotype='out', shape=(3,n)))
 
@@ -440,7 +417,6 @@ class Attitude_Torque(Component):
         self.add('wdot_B', Array(np.zeros((3, n)), iotype='in', shape=(3, n)))
         
     def linearize(self):
-        #self.dT_dw, self.dT_dwdot = self.lib.computejacobiant(self.n, self.w_B, self.wdot_B)
         dwx_dw = np.zeros((3,3,3))
         
         dwx_dw[0,:,0] = (0., 0., 0.)
@@ -467,7 +443,6 @@ class Attitude_Torque(Component):
 
 
     def execute(self):
-        #self.T_tot = self.lib.computet(self.n, self.w_B, self.wdot_B)
         wx = np.zeros((3,3))
         for i in range(0,self.n):
             wx[0,:] = (0., -self.w_B[2,i], self.w_B[1,i])
