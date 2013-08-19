@@ -158,6 +158,7 @@ class CADRE(Assembly):
         #self.add("Sun_PositionECI", Sun_PositionECI(n))
         #self.driver.workflow.add("Sun_PositionECI")
         
+<<<<<<< HEAD
         #self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         #self.driver.workflow.add("Sun_PositionSpherical")
         
@@ -165,6 +166,15 @@ class CADRE(Assembly):
         #self.add("ThermalTemperature", ThermalTemperature(n))
         #self.driver.workflow.add("ThermalTemperature")
         
+=======
+        self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
+        self.driver.workflow.add("Sun_PositionSpherical")
+        """
+        # Thermal temp components
+        self.add("ThermalTemperature", ThermalTemperature(n))
+        self.driver.workflow.add("ThermalTemperature")
+        """
+>>>>>>> d393d3a7b23616eeafeb7d56028d1af9ddd0c4c7
         self.make_connections()
         
     def print_set_vals(self,setvals=None, printvals=None, tval=None):

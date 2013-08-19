@@ -1,6 +1,6 @@
 from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
-
+from kinematics import fixangles
 from MBI import MBI
 
 import numpy as np
@@ -25,7 +25,6 @@ class Solar_ExposedArea(Component):
         self.add('raw2', Array(dtype=np.float))
         raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
         raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
-        self.lib = __import__('CADRE.lib.KinematicsLib').lib.KinematicsLib
 
         self.add('nc', 7)
         self.add('np', 12)
@@ -82,7 +81,7 @@ class Solar_ExposedArea(Component):
         self.Js = [None for i in range(3)]
     
     def setx(self):
-        result = self.lib.fixangles(self.n, self.azimuth[:], self.elevation[:])
+        result = fixangles(self.n, self.azimuth[:], self.elevation[:])
         self.x[:,0] = self.finAngle
         self.x[:,1] = result[0]
         self.x[:,2] = result[1]
