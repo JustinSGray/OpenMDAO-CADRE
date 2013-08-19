@@ -1,0 +1,473 @@
+
+Connecting Comm_Distance.GSdist to Comm_BitRate.GSdist ...
+Connecting Comm_LOS.CommLOS to Comm_BitRate.CommLOS ...
+Connecting Attitude_Attitude.O_RI to Attitude_RotationMtx.O_RI ...
+Connecting Solar_ExposedArea.exposedArea to Power_CellVoltage.exposedArea ...
+Connecting Solar_ExposedArea.exposedArea to ThermalTemperature.exposedArea ...
+Connecting Comm_BitRate.Dr to Comm_DataDownloaded.Dr ...
+Connecting Sun_LOS.LOS to Power_CellVoltage.LOS ...
+Connecting Sun_LOS.LOS to ThermalTemperature.LOS ...
+Connecting Comm_VectorBody.r_b2g_B to Comm_VectorAnt.r_b2g_B ...
+Connecting Comm_VectorAnt.r_b2g_A to Comm_Distance.r_b2g_A ...
+Connecting Comm_VectorAnt.r_b2g_A to Comm_VectorSpherical.r_b2g_A ...
+Connecting Orbit_Dynamics.r_e2b_I to Comm_VectorECI.r_e2b_I ...
+Connecting Orbit_Dynamics.r_e2b_I to Attitude_Sideslip.r_e2b_I ...
+Connecting Orbit_Dynamics.r_e2b_I to Sun_LOS.r_e2b_I ...
+Connecting Orbit_Dynamics.r_e2b_I to Attitude_Attitude.r_e2b_I ...
+Connecting Comm_VectorECI.r_b2g_I to Comm_VectorBody.r_b2g_I ...
+Connecting Comm_VectorECI.r_b2g_I to Comm_LOS.r_b2g_I ...
+Connecting Power_CellVoltage.V_sol to Power_SolarPower.V_sol ...
+Connecting Comm_EarthsSpin.q_E to Comm_EarthsSpinMtx.q_E ...
+Connecting Attitude_AngularRates.wdot_B to Attitude_Torque.wdot_B ...
+Connecting ThermalTemperature.temperature to Power_CellVoltage.temperature ...
+Connecting ThermalTemperature.temperature to BatteryPower.temperature ...
+Connecting ThermalTemperature.temperature to BatterySOC.temperature ...
+Connecting Comm_AntRotation.q_A to Comm_AntRotationMtx.q_A ...
+Connecting Attitude_Angular.w_B to ReactionWheel_Motor.w_B ...
+Connecting Attitude_Angular.w_B to ReactionWheel_Dynamics.w_B ...
+Connecting Attitude_Angular.w_B to Attitude_Torque.w_B ...
+Connecting Attitude_Angular.w_B to Attitude_AngularRates.w_B ...
+Connecting BsplineParameters.Isetpt to Power_CellVoltage.Isetpt ...
+Connecting BsplineParameters.Isetpt to Power_SolarPower.Isetpt ...
+Connecting Comm_VectorSpherical.azimuthGS to Comm_GainPattern.azimuthGS ...
+Connecting Comm_AntRotationMtx.O_AB to Comm_VectorAnt.O_AB ...
+Connecting Sun_PositionSpherical.elevation to Solar_ExposedArea.elevation ...
+Connecting BatterySOC.SOC to BatteryConstraints.SOC ...
+Connecting BatterySOC.SOC to BatteryPower.SOC ...
+Connecting ReactionWheel_Power.P_RW to Power_Total.P_RW ...
+Connecting Sun_PositionECI.r_e2s_I to Sun_PositionBody.r_e2s_I ...
+Connecting Sun_PositionECI.r_e2s_I to Sun_LOS.r_e2s_I ...
+Connecting Comm_GainPattern.gain to Comm_BitRate.gain ...
+Connecting Power_SolarPower.P_sol to Power_Total.P_sol ...
+Connecting Attitude_Torque.T_tot to ReactionWheel_Torque.T_tot ...
+Connecting Comm_EarthsSpinMtx.O_IE to Comm_GSposECI.O_IE ...
+Connecting BsplineParameters.Gamma to Attitude_Roll.Gamma ...
+Connecting Sun_PositionBody.r_e2s_B to Sun_PositionSpherical.r_e2s_B ...
+Connecting ReactionWheel_Torque.T_RW to ReactionWheel_Motor.T_RW ...
+Connecting ReactionWheel_Torque.T_RW to ReactionWheel_Dynamics.T_RW ...
+Connecting ReactionWheel_Torque.T_RW to ReactionWheel_Power.T_RW ...
+Connecting Comm_GSposEarth.r_e2g_E to Comm_GSposECI.r_e2g_E ...
+Connecting ReactionWheel_Dynamics.w_RW to ReactionWheel_Motor.w_RW ...
+Connecting ReactionWheel_Dynamics.w_RW to ReactionWheel_Power.w_RW ...
+Connecting Comm_GSposECI.r_e2g_I to Comm_VectorECI.r_e2g_I ...
+Connecting Comm_GSposECI.r_e2g_I to Comm_LOS.r_e2g_I ...
+Connecting BsplineParameters.h to Attitude_RotationMtxRates.h ...
+Connecting BsplineParameters.h to ReactionWheel_Dynamics.h ...
+Connecting BsplineParameters.h to Comm_DataDownloaded.h ...
+Connecting BsplineParameters.h to ThermalTemperature.h ...
+Connecting BsplineParameters.h to Attitude_AngularRates.h ...
+Connecting BsplineParameters.h to Orbit_Dynamics.h ...
+Connecting BsplineParameters.h to BatterySOC.h ...
+Connecting Attitude_Roll.O_BR to Attitude_RotationMtx.O_BR ...
+Connecting Attitude_RotationMtxRates.Odot_BI to Attitude_Angular.Odot_BI ...
+Connecting BsplineParameters.P_comm to Power_Total.P_comm ...
+Connecting BsplineParameters.P_comm to Comm_BitRate.P_comm ...
+Connecting BsplineParameters.P_comm to ThermalTemperature.P_comm ...
+Connecting BatteryPower.I_bat to BatteryConstraints.I_bat ...
+Connecting Attitude_RotationMtx.O_BI to Comm_VectorBody.O_BI ...
+Connecting Attitude_RotationMtx.O_BI to Attitude_RotationMtxRates.O_BI ...
+Connecting Attitude_RotationMtx.O_BI to Attitude_Sideslip.O_BI ...
+Connecting Attitude_RotationMtx.O_BI to Sun_PositionBody.O_BI ...
+Connecting Attitude_RotationMtx.O_BI to Attitude_Angular.O_BI ...
+Connecting Power_Total.P_bat to BatteryPower.P_bat ...
+Connecting Power_Total.P_bat to BatterySOC.P_bat ...
+Connecting Sun_PositionSpherical.azimuth to Solar_ExposedArea.azimuth ...
+Connecting Comm_VectorSpherical.elevationGS to Comm_GainPattern.elevationGS ...
+setting: <CADRE.comm.Comm_AntRotation object at 0x34b9dd0> antAngle
+setting: <CADRE.sun.Sun_PositionECI object at 0x66fc050> LD
+setting: <CADRE.sun.Sun_PositionECI object at 0x66fc050> t
+setting: <CADRE.comm.Comm_EarthsSpin object at 0x34b9fb0> t
+setting: <CADRE.solar.Solar_ExposedArea object at 0x3565e90> finAngle
+setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> lat
+setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> lon
+setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> alt
+setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_Isetpt
+setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_P_comm
+setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_gamma
+setting: <CADRE.thermal_temperature.ThermalTemperature object at 0x66fc110> cellInstd
+setting: <CADRE.orbit.Orbit_Dynamics object at 0x3565b30> r_e2b_I0
+setting: <CADRE.battery.BatterySOC object at 0x34b9d70> iSOC
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+TESTING HERE
+checking r_e2b_I
+r_e2b_I Orbit_Dynamics out
+rel error: 3.52849348691e-07
+r_e2b_I Comm_VectorECI in
+rel error: 3.52849348691e-07
+r_e2b_I Attitude_Sideslip in
+rel error: 3.52849348691e-07
+r_e2b_I Sun_LOS in
+rel error: 3.52849348691e-07
+r_e2b_I Attitude_Attitude in
+rel error: 3.52849348691e-07
+
+checking CP_gamma
+CP_gamma BsplineParameters in
+rel error: 0.0
+
+checking GSdist
+GSdist Comm_Distance out
+rel error: 1.42156055595e-07
+GSdist Comm_BitRate in
+rel error: 1.42156055595e-07
+
+checking CommLOS
+CommLOS Comm_LOS out
+rel error: 3.74990938372e-06
+CommLOS Comm_BitRate in
+rel error: 3.74990938372e-06
+
+checking ConDs
+ConDs BatteryConstraints out
+
+checking exposedArea
+exposedArea Solar_ExposedArea out
+rel error: 2.67248724264e-05
+exposedArea Power_CellVoltage in
+rel error: 2.67248724264e-05
+exposedArea ThermalTemperature in
+rel error: 2.67248724264e-05
+
+checking Dr
+Dr Comm_BitRate out
+rel error: 5.06146343944e-06
+Dr Comm_DataDownloaded in
+rel error: 5.06146343944e-06
+
+checking LOS
+LOS Sun_LOS out
+rel error: 1.13081001968e-06
+LOS Power_CellVoltage in
+rel error: 1.13081001968e-06
+LOS ThermalTemperature in
+rel error: 1.13081001968e-06
+
+checking r_b2g_B
+r_b2g_B Comm_VectorBody out
+rel error: 2.27465431222e-07
+r_b2g_B Comm_VectorAnt in
+rel error: 2.27465431222e-07
+
+checking r_b2g_A
+r_b2g_A Comm_VectorAnt out
+rel error: 2.22071416115e-07
+r_b2g_A Comm_Distance in
+rel error: 2.22071416115e-07
+r_b2g_A Comm_VectorSpherical in
+rel error: 2.22071416115e-07
+
+checking alt
+alt Comm_GSposEarth in
+
+checking v_e2b_I0
+
+checking r_b2g_I
+r_b2g_I Comm_VectorECI out
+rel error: 2.61952272753e-07
+r_b2g_I Comm_VectorBody in
+rel error: 2.61952272753e-07
+r_b2g_I Comm_LOS in
+rel error: 2.61952272753e-07
+
+checking ConS0
+ConS0 BatteryConstraints out
+
+checking ConS1
+ConS1 BatteryConstraints out
+
+checking iSOC
+iSOC BatterySOC in
+rel error: 0.0
+
+checking temperature
+temperature ThermalTemperature out
+rel error: 0.0623566323095
+temperature Power_CellVoltage in
+rel error: 0.0623566323095
+temperature BatteryPower in
+rel error: 0.0623566323095
+temperature BatterySOC in
+rel error: 0.0623566323095
+
+checking q_A
+q_A Comm_AntRotation out
+rel error: 6.54934808825e-09
+q_A Comm_AntRotationMtx in
+rel error: 6.54934808825e-09
+
+checking cellInstd
+cellInstd ThermalTemperature in
+rel error: 0.0
+
+checking ConCh
+ConCh BatteryConstraints out
+
+checking lon
+lon Comm_GSposEarth in
+
+checking w_B
+w_B Attitude_Angular out
+rel error: 8.11264199166e-09
+w_B ReactionWheel_Motor in
+rel error: 8.11264199166e-09
+w_B ReactionWheel_Dynamics in
+rel error: 8.11264199166e-09
+w_B Attitude_Torque in
+rel error: 8.11264199166e-09
+w_B Attitude_AngularRates in
+rel error: 8.11264199166e-09
+
+checking antAngle
+antAngle Comm_AntRotation in
+
+checking Isetpt
+Isetpt BsplineParameters out
+rel error: 0.0
+Isetpt Power_CellVoltage in
+rel error: 0.0
+Isetpt Power_SolarPower in
+rel error: 0.0
+
+checking v_e2b_B
+v_e2b_B Attitude_Sideslip out
+rel error: 8.0882908298e-09
+
+checking azimuthGS
+azimuthGS Comm_VectorSpherical out
+rel error: 1.25119473583e-07
+azimuthGS Comm_GainPattern in
+rel error: 1.25119473583e-07
+
+checking Data
+Data Comm_DataDownloaded out
+rel error: 5.72156205289e-07
+
+checking V_sol
+V_sol Power_CellVoltage out
+rel error: 0.0600335569309
+V_sol Power_SolarPower in
+rel error: 0.0600335569309
+
+checking t
+t Sun_PositionECI in
+rel error: 0.0
+t Comm_EarthsSpin in
+rel error: 0.0
+
+checking O_RI
+O_RI Attitude_Attitude out
+rel error: 2.88102893644e-07
+O_RI Attitude_RotationMtx in
+rel error: 2.88102893644e-07
+
+checking O_AB
+O_AB Comm_AntRotationMtx out
+rel error: 1.10796868495e-08
+O_AB Comm_VectorAnt in
+rel error: 1.10796868495e-08
+
+checking elevation
+elevation Sun_PositionSpherical out
+rel error: 4.15403353386e-07
+elevation Solar_ExposedArea in
+rel error: 4.15403353386e-07
+
+checking CP_P_comm
+CP_P_comm BsplineParameters in
+rel error: 0.0
+
+checking T_m
+T_m ReactionWheel_Motor out
+rel error: 3.8092559583e-08
+
+checking LD
+LD Sun_PositionECI in
+
+checking P_RW
+P_RW ReactionWheel_Power out
+rel error: 5.43448916958e-08
+P_RW Power_Total in
+rel error: 5.43448916958e-08
+
+checking r_e2s_I
+r_e2s_I Sun_PositionECI out
+rel error: 7.85084414896e-07
+r_e2s_I Sun_PositionBody in
+rel error: 7.85084414896e-07
+r_e2s_I Sun_LOS in
+rel error: 7.85084414896e-07
+
+checking gain
+gain Comm_GainPattern out
+rel error: 1.51748920489e-06
+gain Comm_BitRate in
+rel error: 1.51748920489e-06
+
+checking P_sol
+P_sol Power_SolarPower out
+rel error: 0.0201202922779
+P_sol Power_Total in
+rel error: 0.0201202922779
+
+checking lat
+lat Comm_GSposEarth in
+
+checking T_tot
+T_tot Attitude_Torque out
+rel error: 3.39852088777e-08
+T_tot ReactionWheel_Torque in
+rel error: 3.39852088777e-08
+
+checking O_IE
+O_IE Comm_EarthsSpinMtx out
+rel error: 4.12183663381e-08
+O_IE Comm_GSposECI in
+rel error: 4.12183663381e-08
+
+checking Gamma
+Gamma BsplineParameters out
+rel error: 0.0
+Gamma Attitude_Roll in
+rel error: 0.0
+
+checking r_e2s_B
+r_e2s_B Sun_PositionBody out
+rel error: 9.82106325279e-07
+r_e2s_B Sun_PositionSpherical in
+rel error: 9.82106325279e-07
+
+checking T_RW
+T_RW ReactionWheel_Torque out
+rel error: 3.39852088777e-08
+T_RW ReactionWheel_Motor in
+rel error: 3.39852088777e-08
+T_RW ReactionWheel_Dynamics in
+rel error: 3.39852088777e-08
+T_RW ReactionWheel_Power in
+rel error: 3.39852088777e-08
+
+checking r_e2g_E
+r_e2g_E Comm_GSposEarth out
+rel error: 4.8790042965e-08
+r_e2g_E Comm_GSposECI in
+rel error: 4.8790042965e-08
+
+checking w_RW
+w_RW ReactionWheel_Dynamics out
+rel error: 1.03067353425e-07
+w_RW ReactionWheel_Motor in
+rel error: 1.03067353425e-07
+w_RW ReactionWheel_Power in
+rel error: 1.03067353425e-07
+
+checking r_e2g_I
+r_e2g_I Comm_GSposECI out
+rel error: 4.27704539895e-08
+r_e2g_I Comm_VectorECI in
+rel error: 4.27704539895e-08
+r_e2g_I Comm_LOS in
+rel error: 4.27704539895e-08
+
+checking wdot_B
+wdot_B Attitude_AngularRates out
+rel error: 1.6635885789e-09
+wdot_B Attitude_Torque in
+rel error: 1.6635885789e-09
+
+checking O_BR
+O_BR Attitude_Roll out
+rel error: 3.3100455406e-18
+O_BR Attitude_RotationMtx in
+rel error: 3.3100455406e-18
+
+checking Odot_BI
+Odot_BI Attitude_RotationMtxRates out
+rel error: 2.59042457541e-07
+Odot_BI Attitude_Angular in
+rel error: 2.59042457541e-07
+
+checking P_comm
+P_comm BsplineParameters out
+rel error: 0.0
+P_comm Power_Total in
+rel error: 0.0
+P_comm Comm_BitRate in
+rel error: 0.0
+P_comm ThermalTemperature in
+rel error: 0.0
+
+checking finAngle
+finAngle Solar_ExposedArea in
+
+checking SOC
+SOC BatterySOC out
+rel error: 0.0154185344806
+SOC BatteryConstraints in
+rel error: 0.0154185344806
+SOC BatteryPower in
+rel error: 0.0154185344806
+
+checking I_bat
+I_bat BatteryPower out
+rel error: 0.0388517547442
+I_bat BatteryConstraints in
+rel error: 0.0388517547442
+
+checking O_BI
+O_BI Attitude_RotationMtx out
+rel error: 2.88102893645e-07
+O_BI Comm_VectorBody in
+rel error: 2.88102893645e-07
+O_BI Attitude_RotationMtxRates in
+rel error: 2.88102893645e-07
+O_BI Attitude_Sideslip in
+rel error: 2.88102893645e-07
+O_BI Sun_PositionBody in
+rel error: 2.88102893645e-07
+O_BI Attitude_Angular in
+rel error: 2.88102893645e-07
+
+checking P_bat
+P_bat Power_Total out
+rel error: 0.0174154603079
+P_bat BatteryPower in
+rel error: 0.0174154603079
+P_bat BatterySOC in
+rel error: 0.0174154603079
+
+checking r_e2b_I0
+r_e2b_I0 Orbit_Dynamics in
+rel error: 0.0
+
+checking azimuth
+azimuth Sun_PositionSpherical out
+rel error: 4.30944948395e-07
+azimuth Solar_ExposedArea in
+rel error: 4.30944948395e-07
+
+checking elevationGS
+elevationGS Comm_VectorSpherical out
+rel error: 1.23151871135e-07
+elevationGS Comm_GainPattern in
+rel error: 1.23151871135e-07
+
+checking CP_Isetpt
+CP_Isetpt BsplineParameters in
+rel error: 0.0
+
+checking gamma
+
+checking q_E
+q_E Comm_EarthsSpin out
+rel error: 2.52409913904e-08
+q_E Comm_EarthsSpinMtx in
+rel error: 2.52409913904e-08
+

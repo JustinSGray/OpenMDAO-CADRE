@@ -69,6 +69,7 @@ def arctan(x, y):
        return 0.0
    
 def computepositionsphericaljacobian(n, nJ, v):
+    
     Ja1 = np.empty(nJ)
     Ji1= np.empty(nJ)
     Jj1 = np.empty(nJ)
@@ -77,9 +78,9 @@ def computepositionsphericaljacobian(n, nJ, v):
     Jj2 = np.empty(nJ)
     
     for i in xrange(n):
-        x = v[1,i]
-        y = v[2,i]
-        z = v[3,i]
+        x = v[0, i]
+        y = v[1, i]
+        z = v[2, i]
         r = np.sqrt(x**2 + y**2 + z**2)
         if r < 1e-15:
             r = 1e-5
@@ -93,14 +94,16 @@ def computepositionsphericaljacobian(n, nJ, v):
         if (e > (2*np.arccos(0.0) - 1e-15)):
             e = 2*acos(0.0) - 1e-5
     
-        da_dr = 1.0/r * np.array([-sin(a)/sin(e), cos(a)/sin(e), dble(0)])
-        de_dr = 1.0/r * np.array([cos(a)*cos(e), sin(a)*cos(e), -sin(e)])
+        da_dr = 1.0/r * np.array([-np.sin(a)/np.sin(e), np.cos(a)/np.sin(e), 0.0])
+        de_dr = 1.0/r * np.array([np.cos(a)*np.cos(e), np.sin(a)*np.cos(e), -np.sin(e)])
     
         for k in xrange(3):
             iJ = i*3 + k
             Ja1[iJ] = da_dr[k]
-            Ji1[iJ] = i - 1
-            Jj1[iJ] = iJ - 1
+            Ji1[iJ] = i 
+            Jj1[iJ] = iJ 
             Ja2[iJ] = de_dr[k]
-            Ji2[iJ] = i - 1
-            Jj2[iJ] = iJ - 1
+            Ji2[iJ] = i 
+            Jj2[iJ] = iJ 
+            
+    return Ja1, Ji1, Jj1, Ja2, Ji2, Jj2 

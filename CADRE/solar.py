@@ -1,6 +1,6 @@
 from openmdao.main.api import Component
 from openmdao.lib.datatypes.api import Float, Array
-from fixAngles import fixangles
+from kinematics import fixangles
 from MBI import MBI
 
 import numpy as np

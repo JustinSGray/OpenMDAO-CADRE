@@ -29,7 +29,7 @@ class ThermalTemperature(RK4):
         #self.time_step=time_step
 
 
-        self.add("temperature", Array(np.zeros((5,n_times)), shape=(5,n_times), dtype=np.float,
+        self.add("temperature", Array(np.zeros((5, n_times)), shape=(5, n_times), dtype=np.float,
             iotype="out", desc="temperature for the 4 fins and body over time", low=50, high =400)
         ) 
 

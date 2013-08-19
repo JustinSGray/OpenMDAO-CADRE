@@ -1,10 +1,13 @@
-from openmdao.lib.datatypes.api import Float, Dict, Array, List
-from openmdao.main.api import Component
 import numpy as np
 import scipy.sparse
 import MBI
+
+from openmdao.lib.datatypes.api import Float, Array
+from openmdao.main.api import Component
+
 from kinematics import fixangles, computepositionspherical, computepositionsphericaljacobian
 from kinematics import computepositionrotd, computepositionrotdjacobian
+
 import rk4
 
 
@@ -12,7 +15,6 @@ class Comm_DataDownloaded(rk4.RK4):
 
     def __init__(self, n_times):
         super(Comm_DataDownloaded, self).__init__()
-        #self.time_step = time_step
         
         self.add('Data0', Array([0.0], iotype='in', shape=(1,)))
         self.add('Data', Array(np.zeros((1, n_times)), iotype='out', 
@@ -40,11 +42,12 @@ class Comm_DataDownloaded(rk4.RK4):
    
 
 class Comm_AntRotation(Component):
+    
     antAngle = Float(0., iotype="in", copy=None)
 
     def __init__(self, n):
         super(Comm_AntRotation, self).__init__()
-        self.add('q_A', Array(np.zeros((4, n)), iotype='out', shape=(4,n)))
+        self.add('q_A', Array(np.zeros((4, n)), iotype='out', shape=(4, n)))
         self.dq_dt = np.zeros(4)
         self.n = n
 
@@ -57,24 +60,22 @@ class Comm_AntRotation(Component):
 
     def execute(self):
         rt2 = np.sqrt(2)
-        self.q_A[0,:] = np.cos(self.antAngle/2.)
-        self.q_A[1,:] = np.sin(self.antAngle/2.) / rt2
-        self.q_A[2,:] = - np.sin(self.antAngle/2.) / rt2
-        self.q_A[3,:] = 0.0
+        self.q_A[0, :] = np.cos(self.antAngle/2.)
+        self.q_A[1, :] = np.sin(self.antAngle/2.) / rt2
+        self.q_A[2, :] = - np.sin(self.antAngle/2.) / rt2
+        self.q_A[3, :] = 0.0
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'antAngle' in arg:
-            result['q_A'] = np.zeros((4, self.n))
             for k in xrange(4):
-                result['q_A'][k,:] += self.dq_dt[k] * arg['antAngle']
-        return result
-
-    def applyDerT(self, arg, result):
+                result['q_A'][k, :] += self.dq_dt[k] * arg['antAngle']
+        
+    def apply_derivT(self, arg, result):
+        
         if 'q_A' in arg:
-            result['antAngle'] = 0.
             for k in xrange(4):
                 result['antAngle'] += self.dq_dt[k] * np.sum(arg['q_A'][k,:])
-        return result
 
 
 class Comm_AntRotationMtx(Component):
@@ -90,10 +91,11 @@ class Comm_AntRotationMtx(Component):
         self.J = np.empty((self.n, 3, 3, 4))
 
     def linearize(self):
-        A = np.zeros((4,3))
-        B = np.zeros((4,3))
-        dA_dq = np.zeros((4,3,4))
-        dB_dq = np.zeros((4,3,4))
+        
+        A = np.zeros((4, 3))
+        B = np.zeros((4, 3))
+        dA_dq = np.zeros((4, 3, 4))
+        dB_dq = np.zeros((4, 3, 4))
         
         dA_dq[0,:,0] = (1, 0, 0)
         dA_dq[1,:,0] = (0, 1, 0)
@@ -136,7 +138,7 @@ class Comm_AntRotationMtx(Component):
         dB_dq[2,:,3] = (0, 0, 0)
         dB_dq[3,:,3] = (0, 0, 1)
         
-        for i in range(0,self.n):
+        for i in range(0, self.n):
             A[0,:] = (self.q_A[0,i], -self.q_A[3,i], self.q_A[2,i])
             A[1,:] = (self.q_A[3,i], self.q_A[0,i], -self.q_A[1,i])
             A[2,:] = (-self.q_A[2,i], self.q_A[1,i], self.q_A[0,i])
@@ -147,8 +149,9 @@ class Comm_AntRotationMtx(Component):
             B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
             B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
             
-            for k in range(0,4):
-                J[i,:,:,k] = np.dot(np.transpose(dA_dq[:,:,k]),B) + np.dot(np.transpose(A),dB_dq[:,:,k])
+            for k in range(0, 4):
+                self.J[i,:,:,k] = np.dot(dA_dq[:,:,k].T, B) + \
+                                  np.dot(A.T, dB_dq[:,:,k])
 
 
     def execute(self):
@@ -166,26 +169,27 @@ class Comm_AntRotationMtx(Component):
             B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
             B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
             
-            self.O_AB[:,:,i] = np.dot(np.transpose(A),B)
+            self.O_AB[:,:,i] = np.dot(A.T, B)
         
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+
         if 'q_A' in arg:
-            result['O_AB'] = np.zeros((3, 3, self.n))
             for u in xrange(3):
                 for v in xrange(3):
                     for k in xrange(4):
-                        result['O_AB'][u,v,:] += self.J[:,u,v,k] * arg['q_A'][k,:]
-        return result  
+                        result['O_AB'][u, v, :] += \
+                            self.J[:, u, v, k] * arg['q_A'][k, :]
+                        
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'O_AB' in arg:
-            result['q_A'] = np.zeros((4, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
-                        result['q_A'][k,:] += self.J[:,u,v,k] * arg['O_AB'][u,v,:]
-        return result
+                        result['q_A'][k, :] += self.J[:, u, v, k] * \
+                                               arg['O_AB'][u, v,:]
     
     
 class Comm_BitRate(Component):
@@ -214,8 +218,15 @@ class Comm_BitRate(Component):
         self.add('CommLOS', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
+        
         S2 = 0.
-        for i in range(0,self.n):
+        self.dD_dP = np.zeros(self.n)
+        self.dD_dGt = np.zeros(self.n)
+        self.dD_dS = np.zeros(self.n)
+        self.dD_dLOS = np.zeros(self.n)
+        
+        for i in range(0, self.n):
+            
             if np.abs(self.GSdist[i]) > 1e-10:
                 S2 = self.GSdist[i] * 1e3
             else:
@@ -223,36 +234,34 @@ class Comm_BitRate(Component):
 
             self.dD_dP[i] = self.alpha * self.gain[i] * self.CommLOS[i] / S2**2
             self.dD_dGt[i] = self.alpha * self.P_comm[i] * self.CommLOS[i] / S2**2
-            self.dD_dS[i] = -2. * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3 * 1e3
-            self.dD_dLOS[i] = self.alpha * sefl.P_comm[i] * self.gain[i] / S2**2
+            self.dD_dS[i] = -2.0 * 1e3 * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3
+            self.dD_dLOS[i] = self.alpha * self.P_comm[i] * self.gain[i] / S2**2
         
     def execute(self):
         S2 = 0.
-        for i in range(0,self.n):
+        for i in range(0, self.n):
             if np.abs(self.GSdist[i]) > 1e-10:
                 S2 = self.GSdist[i] * 1e3
             else:
                 S2 = 1e-10
             self.Dr[i] = self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**2
-
-    def applyDer(self, arg, result):
+    
+    def apply_deriv(self, arg, result):
         if 'P_comm' in arg:
-            result['Dr'] = self.dD_dP * arg['P_comm'][:]
+            result['Dr'] += self.dD_dP * arg['P_comm']
         if 'gain' in arg:
-            result['Dr'] += self.dD_dGt * arg['gain'][:]
+            result['Dr'] += self.dD_dGt * arg['gain']
         if 'GSdist' in arg:
-            result['Dr'] += self.dD_dS * arg['GSdist'][:]
+            result['Dr'] += self.dD_dS * arg['GSdist']
         if 'CommLOS' in arg:
-            result['Dr'] += self.dD_dLOS * arg['CommLOS'][:]
-        return result
-
-    def applyDerT(self, arg, result):
+            result['Dr'] += self.dD_dLOS * arg['CommLOS']
+            
+    def apply_derivT(self, arg, result):
         if 'Dr' in arg:
-            result['P_comm'] = self.dD_dP * arg['Dr']
-            result['gain'] = self.dD_dGt * arg['Dr']
-            result['GSdist'] = self.dD_dS * arg['Dr']
-            result['CommLOS'] = self.dD_dLOS * arg['Dr']
-        return result
+            result['P_comm'] += self.dD_dP.T * arg['Dr']
+            result['gain'] += self.dD_dGt.T * arg['Dr']
+            result['GSdist'] += self.dD_dS.T * arg['Dr']
+            result['CommLOS'] += self.dD_dLOS.T * arg['Dr']
 
     
 class Comm_Distance(Component):
@@ -266,31 +275,31 @@ class Comm_Distance(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        for i in range(0,self.n):
-            norm = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
+        
+        self.J = np.zeros((self.n, 3))
+        for i in range(0, self.n):
+            norm = np.dot(self.r_b2g_A[:, i], self.r_b2g_A[:, i])**0.5
             if norm > 1e-10:
-                self.J[i,:] = self.r_b2g_A[:,i] / norm
+                self.J[i,:] = self.r_b2g_A[:, i] / norm
             else:
                 self.J[i,:] = 0.
 
 
     def execute(self):
-        for i in range(0,self.n):
+        
+        for i in range(0, self.n):
             self.GSdist[i] = np.dot(self.r_b2g_A[:,i], self.r_b2g_A[:,i])**0.5
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'r_b2g_A' in arg:
-            result['GSdist']  = np.zeros(self.n)
             for k in xrange(3):
                 result['GSdist'] += self.J[:,k] * arg['r_b2g_A'][k,:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
         if 'GSdist' in arg:
-            result['r_b2g_A'] = np.zeros((3, self.n))
             for k in xrange(3):
                 result['r_b2g_A'][k,:] += self.J[:,k] * arg['GSdist'][:]
-        return result
 
 
 class Comm_EarthsSpin(Component):
@@ -304,31 +313,35 @@ class Comm_EarthsSpin(Component):
         self.add('t', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
-        for i in range(0,n):
-            theta = np.pi * self.t[i] / 3600.0 / 24.0
-            dtheta_dt = np.pi / 3600.0 / 24.0
-            self.dq_dt[i,0] = -np.sin(theta) * dtheta_dt
-            self.dq_dt[i,3] = -np.cos(theta) * dtheta_dt
+        
+        ntime = self.n
+        self.dq_dt = np.zeros((ntime, 4))
+        
+        fact = np.pi / 3600.0 / 24.0
+        for i in range(0, ntime):
+            theta = fact * self.t[i]
+            self.dq_dt[i, 0] = -np.sin(theta) * fact
+            self.dq_dt[i, 3] = -np.cos(theta) * fact
     
     def execute(self):
-        for i in range(0,self.n):
-            theta = np.pi * self.t[i] / 3600.0 / 24.0
-            self.q_E[0,i] = np.cos(theta)
-            self.q_E[3,i] = -np.sin(theta)
+        
+        fact = np.pi / 3600.0 / 24.0
+        for i in range(0, self.n):
+            theta = fact * self.t[i]
+            self.q_E[0, i] = np.cos(theta)
+            self.q_E[3, i] = -np.sin(theta)
     
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 't' in arg:
-            result['q_E'] = np.zeros((4, self.n))
             for k in range(4):
                 result['q_E'][k,:] += self.dq_dt[:,k] * arg['t'][:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'q_E' in arg:
-            result['t'] = np.zeros(self.n)
             for k in range(4):
                 result['t'][:] += self.dq_dt[:,k] * arg['q_E'][k,:]
-        return result
 
 
 class Comm_EarthsSpinMtx(Component):
@@ -343,10 +356,14 @@ class Comm_EarthsSpinMtx(Component):
                                shape=(3, 3, self.n)))
 
     def linearize(self):
+        
         A = np.zeros((4,3))
         B = np.zeros((4,3))
+        
         dA_dq = np.zeros((4,3,4))
         dB_dq = np.zeros((4,3,4))
+        
+        self.J = np.zeros((self.n, 3, 3, 4))
         
         dA_dq[0,:,0] = (1, 0, 0)
         dA_dq[1,:,0] = (0, 1, 0)
@@ -389,7 +406,7 @@ class Comm_EarthsSpinMtx(Component):
         dB_dq[2,:,3] = (0, 0, 0)
         dB_dq[3,:,3] = (0, 0, 1)
         
-        for i in range(0,self.n):
+        for i in range(0, self.n):
             A[0,:] = (self.q_E[0,i], -self.q_E[3,i], self.q_E[2,i])
             A[1,:] = (self.q_E[3,i], self.q_E[0,i], -self.q_E[1,i])
             A[2,:] = (-self.q_E[2,i], self.q_E[1,i], self.q_E[0,i])
@@ -400,9 +417,8 @@ class Comm_EarthsSpinMtx(Component):
             B[2,:] = (self.q_E[2,i], -self.q_E[1,i], self.q_E[0,i])
             B[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
             
-            for k in range(0,4):
-                J[i,:,:,k] = np.dot(np.transpose(dA_dq[:,:,k]),B) + np.dot(np.transpose(A),dB_dq[:,:,k])
-    
+            for k in range(0, 4):
+                self.J[i,:,:,k] = np.dot(dA_dq[:,:,k].T, B) + np.dot(A.T, dB_dq[:,:,k])
 
 
     def execute(self):
@@ -420,26 +436,23 @@ class Comm_EarthsSpinMtx(Component):
             B[2,:] = (self.q_E[2,i], -self.q_E[1,i], self.q_E[0,i])
             B[3,:] = (self.q_E[1,i], self.q_E[2,i], self.q_E[3,i])
             
-            self.O_IE[:,:,i] = np.dot(np.transpose(A),B)
+            self.O_IE[:,:,i] = np.dot(A.T, B)
 
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'q_E' in arg:
-            result['O_IE'] = np.zeros((3, 3, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
                         result['O_IE'][u,v,:] += self.J[:,u,v,k] * arg['q_E'][k,:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
         if 'O_IE' in arg:
-            result['q_E'] = np.zeros((4, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
                         result['q_E'][k,:] += self.J[:,u,v,k] * arg['O_IE'][u,v,:]
-        return result
 
 
 class Comm_GainPattern(Component):
@@ -450,7 +463,7 @@ class Comm_GainPattern(Component):
         
         self.add('gain', Array(np.zeros(n), iotype='out', shape=(n,)))
         
-        self.add('azimuthGS', Array(np.zeros(n), iotype='in', shape=(self.n,)))
+        self.add('azimuthGS', Array(np.zeros(n), iotype='in', shape=(n,)))
         self.add('elevationGS', Array(np.zeros(n), iotype='in', 
                                       shape=(self.n,)))
         
@@ -458,11 +471,11 @@ class Comm_GainPattern(Component):
         rawG = (10**(rawGdata/10.0)).reshape((361,361),order='F')
         
         pi = np.pi
-        az = np.linspace(0,2*pi,361)
-        el = np.linspace(0,2*pi,361)
+        az = np.linspace(0, 2*pi, 361)
+        el = np.linspace(0, 2*pi, 361)
 
-        self.MBI = MBI.MBI(rawG,[az,el],[15,15],[4,4])
-        self.x = np.zeros((self.n,2),order='F')
+        self.MBI = MBI.MBI(rawG,[az,el], [15,15], [4,4])
+        self.x = np.zeros((self.n, 2), order='F')
 
     def setx(self):
         self.x[:,0] = self.azimuthGS
@@ -473,28 +486,25 @@ class Comm_GainPattern(Component):
         self.azimuthGS, self.elevationGS = result
         self.x[:,0] = self.azimuthGS
         self.x[:,1] = self.elevationGS
-        self.dg_daz = self.MBI.evaluate(self.x,1)[:,0]
-        self.dg_del = self.MBI.evaluate(self.x,2)[:,0]
+        self.dg_daz = self.MBI.evaluate(self.x, 1)[:,0]
+        self.dg_del = self.MBI.evaluate(self.x, 2)[:,0]
 
     def execute(self):
         result = fixangles(self.n, self.azimuthGS, self.elevationGS)
         self.x[:,0] = result[0]
         self.x[:,1] = result[1]
-        self.gain = self.MBI.evaluate(self.x)[:,0]
+        self.gain = self.MBI.evaluate(self.x)[:, 0]
 
-    def applyDer(self, arg, result):
-        result['gain'] = np.zeros(self.n)
+    def apply_deriv(self, arg, result):
         if 'azimuthGS' in arg:
-            result['gain'] += self.dg_daz * arg['azimuthGS'][:]
+            result['gain'] += self.dg_daz * arg['azimuthGS']
         if 'elevationGS' in arg:
-            result['gain'] += self.dg_del * arg['elevationGS'][:]
-        return result
+            result['gain'] += self.dg_del * arg['elevationGS']
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
         if 'gain' in arg:
-            result['azimuthGS'] = self.dg_daz * arg['gain'][:]
-            result['elevationGS'] = self.dg_del * arg['gain'][:]
-        return result
+            result['azimuthGS'] += self.dg_daz * arg['gain']
+            result['elevationGS'] += self.dg_del * arg['gain']
 
 
 class Comm_GSposEarth(Component):
@@ -514,6 +524,11 @@ class Comm_GSposEarth(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
+        
+        self.dr_dlon = np.zeros(3)
+        self.dr_dlat = np.zeros(3)
+        self.dr_dalt = np.zeros(3)
+        
         self.dr_dlon[0] = -self.d2r * (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
         self.dr_dlat[0] = -self.d2r * (self.Re + self.alt) * np.sin(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
         self.dr_dalt[0] = np.cos(self.d2r*self.lat) * np.cos(self.d2r*self.lon)
@@ -531,8 +546,8 @@ class Comm_GSposEarth(Component):
         self.r_e2g_E[1,:] = (self.Re + self.alt) * np.cos(self.d2r*self.lat) * np.sin(self.d2r*self.lon)
         self.r_e2g_E[2,:] = (self.Re + self.alt) * np.sin(self.d2r*self.lat)
     
-    def applyDer(self, arg, result):
-        result['r_e2g_E'] = np.zeros((3, self.n))
+    def apply_deriv(self, arg, result):
+        
         if 'lon' in arg:
             for k in xrange(3):
                 result['r_e2g_E'][k,:] += self.dr_dlon[k] * arg['lon']
@@ -542,18 +557,14 @@ class Comm_GSposEarth(Component):
         if 'alt' in arg:
             for k in xrange(3):
                 result['r_e2g_E'][k,:] += self.dr_dalt[k] * arg['alt']
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'r_e2g_E' in arg:
-            result['lon'] = 0.
-            result['lat'] = 0.
-            result['alt'] = 0.
             for k in xrange(3):
                 result['lon'] += self.dr_dlon[k] * np.sum(arg['r_e2g_E'][k,:])
                 result['lat'] += self.dr_dlat[k] * np.sum(arg['r_e2g_E'][k,:])
                 result['alt'] += self.dr_dalt[k] * np.sum(arg['r_e2g_E'][k,:])
-        return result
 
 
 class Comm_GSposECI(Component):
@@ -571,11 +582,16 @@ class Comm_GSposECI(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        eye = np.eye(3,dtype = double)
-        for i in range(0,n):
-            for k in rannge(0,3):
-                for u in range(0,3):
-                    for v in range(0,3):
+        
+        eye = np.eye(3)
+        
+        self.J1 = np.zeros((self.n, 3, 3, 3))
+        self.J2 = np.zeros((self.n, 3, 3))
+        
+        for i in range(0, self.n):
+            for k in range(0, 3):
+                for u in range(0, 3):
+                    for v in range(0, 3):
                         self.J1[i,k,u,v] = eye[k,u]*self.r_e2g_E[v,i]
                 for j in range(0,3):
                     self.J2[i,k,j] = self.O_IE[k,j,i]
@@ -584,28 +600,25 @@ class Comm_GSposECI(Component):
         for i in range(0,self.n):
             self.r_e2g_I[:,i] = np.dot(self.O_IE[:,:,i],self.r_e2g_E[:,i])
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'O_IE' in arg and 'r_e2g_E' in arg:
-            result['r_e2g_I'] = np.zeros((3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
                         result['r_e2g_I'][k,:] += self.J1[:,k,u,v] * arg['O_IE'][u,v,:]
                 for j in xrange(3):
                     result['r_e2g_I'][k,:] += self.J2[:,k,j] * arg['r_e2g_E'][j,:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'r_e2g_I' in arg:
-            result['O_IE'] = np.zeros((3, 3, self.n))
-            result['r_e2g_E'] = np.zeros((3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
                         result['O_IE'][u,v,:] += self.J1[:,k,u,v] * arg['r_e2g_I'][k,:]
                 for j in xrange(3):
                     result['r_e2g_E'][j,:] += self.J2[:,k,j] * arg['r_e2g_I'][k,:]
-        return result
 
 
 class Comm_LOS(Component):
@@ -625,24 +638,29 @@ class Comm_LOS(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
+        
+        self.dLOS_drb = np.zeros((self.n, 3))
+        self.dLOS_dre = np.zeros((self.n, 3))
+        dproj_drb = np.zeros(3)
+        dproj_dre = np.zeros(3)
+        
         Rb = 10.0
-        for i in range(0,self.n):
-            proj = np.dot(self.r_b2g_I[:,i], r_e2g_I[:,i]) / self.Re
+        for i in range(0, self.n):
+            proj = np.dot(self.r_b2g_I[:,i], self.r_e2g_I[:,i]) / self.Re
             dproj_drb[:] = self.r_e2g_I[:,i]
-            dproj_dre[:] = r_b2g_I[:,i]
+            dproj_dre[:] = self.r_b2g_I[:,i]
             if proj > 0:
-                dLOS_drb[i,:] = 0.
-                dLOS_dre[i,:] = 0.
+                self.dLOS_drb[i,:] = 0.
+                self.dLOS_dre[i,:] = 0.
             elif proj < -Rb:
-                dLOS_drb[i,:] = 0.
-                dLOS_dre[i,:] = 0.
+                self.dLOS_drb[i,:] = 0.
+                self.dLOS_dre[i,:] = 0.
             else:
                 x = (proj - 0) / (-Rb - 0)
                 dx_dproj = -1. / Rb
                 dLOS_dx = 6*x - 6*x**2
                 self.dLOS_drb[i,:] = dLOS_dx * dx_dproj * dproj_drb[:]
                 self.dLOS_dre[i,:] = dLOS_dx * dx_dproj * dproj_dre[:]
-
 
     def execute(self):
         Rb = 100.0
@@ -656,22 +674,19 @@ class Comm_LOS(Component):
                 x = (proj - 0) / (-Rb - 0)
                 self.CommLOS[i] = 3*x**2 - 2*x**3
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'r_b2g_I' in arg:
-            result['CommLOS'] = np.zeros(self.n)
             for k in xrange(3):
                 result['CommLOS'] += self.dLOS_drb[:,k] * arg['r_b2g_I'][k,:]
                 result['CommLOS'] += self.dLOS_dre[:,k] * arg['r_e2g_I'][k,:]
-        return result
-    
-    def applyDerT(self, arg, result):
+        
+    def apply_derivT(self, arg, result):
+        
         if 'CommLOS' in arg:
-            result['r_b2g_I'] = np.zeros((3,self.n))
-            result['r_e2g_I'] = np.zeros((3,self.n))
             for k in xrange(3):
                 result['r_b2g_I'][k,:] += self.dLOS_drb[:,k] * arg['CommLOS']
                 result['r_e2g_I'][k,:] += self.dLOS_dre[:,k] * arg['CommLOS']
-        return result
 
 
 class Comm_VectorAnt(Component):
@@ -692,28 +707,25 @@ class Comm_VectorAnt(Component):
     def execute(self):
         self.r_b2g_A = computepositionrotd(self.n, self.r_b2g_B,self.O_AB)
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'O_AB' in arg and 'r_b2g_B' in arg:
-            result['r_b2g_A'] = np.zeros((3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
                         result['r_b2g_A'][k,:] += self.J1[:,k,u,v] * arg['O_AB'][u,v,:]
                 for j in xrange(3):
                     result['r_b2g_A'][k,:] += self.J2[:,k,j] * arg['r_b2g_B'][j,:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'r_b2g_A' in arg:
-            result['r_b2g_B'] = np.zeros((3, self.n))
-            result['O_AB'] = np.zeros((3, 3, self.n))
             for k in xrange(3):
                 for u in xrange(3):
                     for v in xrange(3):
                         result['O_AB'][u,v,:] += self.J1[:,k,u,v] * arg['r_b2g_A'][k,:]
                 for j in xrange(3):
                     result['r_b2g_B'][j,:] += self.J2[:,k,j] * arg['r_b2g_A'][k,:]
-        return result
 
 
 class Comm_VectorBody(Component):
@@ -729,11 +741,15 @@ class Comm_VectorBody(Component):
                                shape=(3, 3, n)))
 
     def linearize(self):
-        eye = np.eye(3,dtype = double)
-        for i in range(0,n):
-            for k in rannge(0,3):
-                for u in range(0,3):
-                    for v in range(0,3):
+        
+        eye = np.eye(3)
+        self.J1 = np.zeros((self.n, 3, 3, 3))
+        self.J2 = np.zeros((self.n, 3, 3))
+        
+        for i in range(0, self.n):
+            for k in range(0, 3):
+                for u in range(0, 3):
+                    for v in range(0, 3):
                         self.J1[i,k,u,v] = eye[k,u]*self.r_b2g_I[v,i]
                 for j in range(0,3):
                     self.J2[i,k,j] = self.O_BI[k,j,i]
@@ -742,28 +758,25 @@ class Comm_VectorBody(Component):
         for i in range(0,self.n):
             self.r_b2g_B[:,i] = np.dot(self.O_BI[:,:,i],self.r_b2g_I[:,i])
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'O_BI' in arg and 'r_b2g_I' in arg:
-            result['r_b2g_B'] = np.zeros((3, self.n))
             for k in range(3):
                 for u in range(3):
                     for v in range(3):
                         result['r_b2g_B'][k,:] += self.J1[:,k,u,v] * arg['O_BI'][u,v,:]
                 for j in range(3):
                     result['r_b2g_B'][k,:] += self.J2[:,k,j] * arg['r_b2g_I'][j,:]
-        return result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'r_b2g_B' in arg:
-            result['O_BI'] = np.zeros((3, 3, self.n))
-            result['r_b2g_I'] = np.zeros((3, self.n))
             for k in range(3):
                 for u in range(3):
                     for v in range(3):
                         result['O_BI'][u,v,:] += self.J1[:,k,u,v] * arg['r_b2g_B'][k,:]
                 for j in range(3):
                     result['r_b2g_I'][j,:] += self.J2[:,k,j] * arg['r_b2g_B'][k,:]
-        return result
     
 
 class Comm_VectorECI(Component):
@@ -781,20 +794,19 @@ class Comm_VectorECI(Component):
         return
 
     def execute(self):
-        self.r_b2g_I = self.r_e2g_I - self.r_e2b_I[:3,:]
+        self.r_b2g_I = self.r_e2g_I - self.r_e2b_I[:3, :]
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        
         if 'r_e2g_I' in arg and 'r_e2b_I' in arg:
-            result['r_b2g_I'] = arg['r_e2g_I']
-            result['r_b2g_I'] -= arg['r_e2b_I'][:3,:]
-        return result
+            result['r_b2g_I'] += arg['r_e2g_I']
+            result['r_b2g_I'] += -arg['r_e2b_I'][:3, :]
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'r_b2g_I' in arg:
-            result['r_e2b_I'] = np.zeros((6, self.n))
-            result['r_e2g_I'] = arg['r_b2g_I']
-            result['r_e2b_I'][:3,:] -= arg['r_b2g_I']
-        return result
+            result['r_e2g_I'] += arg['r_b2g_I']
+            result['r_e2b_I'][:3,:] += -arg['r_b2g_I']
 
 
 class Comm_VectorSpherical(Component):
@@ -810,9 +822,11 @@ class Comm_VectorSpherical(Component):
                                   shape=(3, self.n)))
 
     def linearize(self):
-        self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = computepositionsphericaljacobian(self.n, 3*self.n,self.r_b2g_A)
-        self.J1 = scipy.sparse.csc_matrix((self.Ja1,(self.Ji1,self.Jj1)),shape=(self.n,3*self.n))
-        self.J2 = scipy.sparse.csc_matrix((self.Ja2,(self.Ji2,self.Jj2)),shape=(self.n,3*self.n))
+        self.Ja1, self.Ji1, self.Jj1, self.Ja2, self.Ji2, self.Jj2 = \
+            computepositionsphericaljacobian(self.n, 3*self.n, self.r_b2g_A)
+        
+        self.J1 = scipy.sparse.csc_matrix((self.Ja1, (self.Ji1, self.Jj1)), shape=(self.n,3*self.n))
+        self.J2 = scipy.sparse.csc_matrix((self.Ja2, (self.Ji2, self.Jj2)), shape=(self.n,3*self.n))
         self.J1T = self.J1.transpose()
         self.J2T = self.J2.transpose()
 
@@ -822,16 +836,16 @@ class Comm_VectorSpherical(Component):
         self.elevationGS = elevationGS
 
     def apply_deriv(self, arg, result):
+        
         if 'r_b2g_A' in arg:
             r_b2g_A = arg['r_b2g_A'].reshape((3*self.n),order='F')
-            result['azimuthGS'] = self.J1.dot(r_b2g_A)
-            result['elevationGS'] = self.J2.dot(r_b2g_A)
-        return result
+            result['azimuthGS'] += self.J1.dot(r_b2g_A)
+            result['elevationGS'] += self.J2.dot(r_b2g_A)
 
     def apply_derivT(self, arg, result):
+        
         if 'azimuthGS' in arg and 'elevationGS' in arg:
             azimuthGS = arg['azimuthGS']
             elevationGS = arg['elevationGS']
-            result['r_b2g_A'] = (self.J1T.dot(azimuthGS) + 
-                                    self.J2T.dot(elevationGS)).reshape((3, self.n),order='F')
-        return result
+            result['r_b2g_A'] += (self.J1T.dot(azimuthGS) + 
+                                  self.J2T.dot(elevationGS)).reshape((3, self.n), order='F')
