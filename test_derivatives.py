@@ -146,6 +146,127 @@ class Testcase_CADRE(unittest.TestCase):
         
         self.compare_derivatives(inputs, outputs)
         
+    def test_Comm_Distance(self):
+        
+        compname = 'Comm_Distance'
+        inputs = ['r_b2g_A']
+        outputs = ['GSdist']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_EarthsSpin(self):
+        
+        compname = 'Comm_EarthsSpin'
+        inputs = ['t']
+        outputs = ['q_E']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_EarthsSpinMtx(self):
+        
+        compname = 'Comm_EarthsSpinMtx'
+        inputs = ['q_E']
+        outputs = ['O_IE']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_GainPattern(self):
+        
+        compname = 'Comm_GainPattern'
+        inputs = ['azimuthGS', 'elevationGS']
+        outputs = ['gain']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_GSposEarth(self):
+        
+        compname = 'Comm_GSposEarth'
+        inputs = ['lon', 'lat', 'alt']
+        outputs = ['r_e2g_E']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_GSposECI(self):
+        
+        compname = 'Comm_GSposECI'
+        inputs = ['O_IE', 'r_e2g_E']
+        outputs = ['r_e2g_I']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_LOS(self):
+        
+        compname = 'Comm_LOS'
+        inputs = ['r_b2g_I', 'r_e2g_I']
+        outputs = ['CommLOS']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_VectorAnt(self):
+        
+        compname = 'Comm_VectorAnt'
+        inputs = ['r_b2g_B', 'O_AB']
+        outputs = ['r_b2g_A']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_VectorBody(self):
+        
+        compname = 'Comm_VectorBody'
+        inputs = ['r_b2g_I', 'O_BI']
+        outputs = ['r_b2g_B']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_VectorECI(self):
+        
+        compname = 'Comm_VectorECI'
+        inputs = ['r_e2g_I', 'r_e2b_I']
+        outputs = ['r_b2g_I']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
+    def test_Comm_VectorSpherical(self):
+        
+        compname = 'Comm_VectorSpherical'
+        inputs = ['r_b2g_A']
+        outputs = ['azimuthGS', 'elevationGS']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
+        
         
 if __name__ == "__main__":
     
