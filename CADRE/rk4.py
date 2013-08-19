@@ -277,7 +277,7 @@ class RK4(Component):
         return result
 
     def apply_derivT(self, arg, result):
-        print arg
+        
         r1 = self.applyJintT(arg, result)
         r2 = self._applyJextT(arg, result)
         
@@ -293,7 +293,7 @@ class RK4(Component):
         
         if self.state_var in arg:
             flat_y = arg[self.state_var].flatten()
-            res1['y'] = self.JT.dot(flat_y).reshape((self.n_states,self.n))
+            res1['y'] = self.JT.dot(flat_y).reshape((self.n_states, self.n))
         
         res1 =  dict([(self.name_map[k],v) for k,v in res1.iteritems()])
         return res1

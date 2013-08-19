@@ -1,6 +1,7 @@
 
 import unittest
-from numpy.random import random
+import numpy as np
+import random
 
 from openmdao.main.api import Assembly, set_as_top
 from openmdao.util.testutil import assert_rel_error
@@ -27,101 +28,125 @@ from CADRE.power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 NTIME = 5
 
-class Testcase_provideJ(unittest.TestCase):
+class Testcase_CADRE(unittest.TestCase):
     """ Test run/step/stop aspects of a simple workflow. """
 
+    def setUp(self):
+        """ Called before each test. """
+        self.model = set_as_top(Assembly())
+
+    def tearDown(self):
+        """ Called after each test. """
+        self.model = None
+        
+    def setup(self, compname, inputs, state0):
+        
+        self.model.add('comp', eval('%s(NTIME)' % compname))
+        self.model.driver.workflow.add('comp')
+        
+        for item in inputs+state0:
+            val = self.model.comp.get(item)
+            if hasattr(val, 'shape'):
+                shape1 = val.shape
+                self.model.comp.set(item, np.random.random(shape1))
+            else:
+                self.model.comp.set(item, random.random())
+        
+    def run_model(self):
+    
+        self.model.comp.h = 0.01
+        self.model.run()
+        
+    def compare_derivatives(self, var_in, var_out):
+        
+        wflow = self.model.driver.workflow
+        inputs = ['comp.%s' % v for v in var_in]
+        outputs = ['comp.%s' % v for v in var_out]
+        
+        # Numeric
+        self.model.driver.update_parameters()
+        wflow.config_changed()        
+        Jn = wflow.calc_gradient(inputs=inputs,
+                                 outputs=outputs,
+                                 fd=True)
+        #print Jn
+        
+        # Analytic forward
+        self.model.driver.update_parameters()
+        wflow.config_changed()        
+        Jf = wflow.calc_gradient(inputs=inputs,
+                                 outputs=outputs)
+        
+        #print Jf
+        
+        diff = abs(Jf - Jn)
+        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+        
+        # Analytic adjoint
+        self.model.driver.update_parameters()
+        wflow.config_changed()        
+        Ja = wflow.calc_gradient(inputs=inputs,
+                                 outputs=outputs,
+                                 mode='adjoint')
+        
+        #print Ja
+        
+        diff = abs(Ja - Jn)
+        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+    
     def test_Comm_DataDownloaded(self):
         
-        model = set_as_top(Assembly())
-        model.add('comp', Comm_DataDownloaded(NTIME))
-        model.driver.workflow.add('comp')
+        compname = 'Comm_DataDownloaded'
+        inputs = ['Dr']
+        outputs = ['Data']
+        state0 = ['Data0']
         
-        for item in ['Dr', 'Data0']:
-            val = model.comp.get(item)
-            shape1 = val.shape
-            model.comp.set(item, random(shape1))
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
         
-        model.comp.h = 0.01
-        model.run()
-        wflow = model.driver.workflow
+    def test_Comm_AntRotation(self):
         
-        # Numeric
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Jn = wflow.calc_gradient(inputs=['comp.Dr'],
-                                 outputs=['comp.Data'],
-                                 fd=True)
+        compname = 'Comm_AntRotation'
+        inputs = ['antAngle']
+        outputs = ['q_A']
+        state0 = []
         
-        print Jn
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
         
-        # Analytic forward
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Jf = wflow.calc_gradient(inputs=['comp.Dr'],
-                                 outputs=['comp.Data'])
+    def test_Comm_AntRotationMtx(self):
         
-        print Jf
+        compname = 'Comm_AntRotationMtx'
+        inputs = ['q_A']
+        outputs = ['O_AB']
+        state0 = []
         
-        diff = abs(Jf - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
         
-        # Analytic adjoint
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Ja = wflow.calc_gradient(inputs=['comp.Dr'],
-                                 outputs=['comp.Data'],
-                                 mode='adjoint')
+    def test_Comm_BitRate(self):
         
-        print Ja
+        compname = 'Comm_BitRate'
+        inputs = ['P_comm', 'gain', 'GSdist', 'CommLOS']
+        outputs = ['Dr']
+        state0 = []
         
-        diff = abs(Ja - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+        self.setup(compname, inputs, state0)
         
-    def test_Comm_Comm_AntRotation(self):
+        # These need to be a certain magnitude so it doesn't blow up
+        shape = self.model.comp.P_comm.shape
+        self.model.comp.P_comm = np.ones(shape)
+        shape = self.model.comp.GSdist.shape
+        self.model.comp.GSdist = np.random.random(shape)*1e3
         
-        model = set_as_top(Assembly())
-        model.add('comp', Comm_AntRotation(NTIME))
-        model.driver.workflow.add('comp')
+        self.run_model()
         
-        for item in ['antAngle']:
-            val = model.comp.get(item)
-            shape1 = val.shape
-            model.comp.set(item, random(shape1))
+        self.compare_derivatives(inputs, outputs)
         
-        model.run()
-        wflow = model.driver.workflow
-        
-        # Numeric
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Jn = wflow.calc_gradient(inputs=['comp.antAngle'],
-                                 outputs=['comp.q_A'],
-                                 fd=True)
-        
-        print Jn
-        
-        # Analytic forward
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Jf = wflow.calc_gradient(inputs=['comp.Dr'],
-                                 outputs=['comp.Data'])
-        
-        print Jf
-        
-        diff = abs(Jf - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
-        
-        # Analytic adjoint
-        model.driver.update_parameters()
-        wflow.config_changed()        
-        Ja = wflow.calc_gradient(inputs=['comp.Dr'],
-                                 outputs=['comp.Data'],
-                                 mode='adjoint')
-        
-        print Ja
-        
-        diff = abs(Ja - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
         
 if __name__ == "__main__":
-    unittest.main()        
+    
+    unittest.main()

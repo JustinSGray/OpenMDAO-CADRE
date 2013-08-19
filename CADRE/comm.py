@@ -90,10 +90,11 @@ class Comm_AntRotationMtx(Component):
 
     def linearize(self):
         #self.J = self.lib.computerotmtxjacobian(self.n, self.q_A)
-        A = np.zeros((4,3))
-        B = np.zeros((4,3))
-        dA_dq = np.zeros((4,3,4))
-        dB_dq = np.zeros((4,3,4))
+        
+        A = np.zeros((4, 3))
+        B = np.zeros((4, 3))
+        dA_dq = np.zeros((4, 3, 4))
+        dB_dq = np.zeros((4, 3, 4))
         
         dA_dq[0,:,0] = (1, 0, 0)
         dA_dq[1,:,0] = (0, 1, 0)
@@ -136,7 +137,7 @@ class Comm_AntRotationMtx(Component):
         dB_dq[2,:,3] = (0, 0, 0)
         dB_dq[3,:,3] = (0, 0, 1)
         
-        for i in range(0,self.n):
+        for i in range(0, self.n):
             A[0,:] = (self.q_A[0,i], -self.q_A[3,i], self.q_A[2,i])
             A[1,:] = (self.q_A[3,i], self.q_A[0,i], -self.q_A[1,i])
             A[2,:] = (-self.q_A[2,i], self.q_A[1,i], self.q_A[0,i])
@@ -147,8 +148,13 @@ class Comm_AntRotationMtx(Component):
             B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
             B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
             
-            for k in range(0,4):
-                J[i,:,:,k] = np.dot(np.transpose(dA_dq[:,:,k]),B) + np.dot(np.transpose(A),dB_dq[:,:,k])
+            for k in range(0, 4):
+                print "A", A
+                print "B", B
+                print "dA_dq", dA_dq
+                print "dB_dq", dB_dq
+                self.J[i,:,:,k] = np.dot(dA_dq[:,:,k].T, B) + \
+                                  np.dot(A.T, dB_dq[:,:,k])
 
 
     def execute(self):
@@ -167,26 +173,29 @@ class Comm_AntRotationMtx(Component):
             B[2,:] = (self.q_A[2,i], -self.q_A[1,i], self.q_A[0,i])
             B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
             
-            self.O_AB[:,:,i] = np.dot(np.transpose(A),B)
+            self.O_AB[:,:,i] = np.dot(A.T, B)
         
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
+        print arg, result
+        print 'max', self.J.max()
+        print self.J
         if 'q_A' in arg:
-            result['O_AB'] = np.zeros((3, 3, self.n))
             for u in xrange(3):
                 for v in xrange(3):
-                    for k in xrange(4):
-                        result['O_AB'][u,v,:] += self.J[:,u,v,k] * arg['q_A'][k,:]
-        return result  
+                    result['O_AB'][u, v, :] += \
+                        self.J[:, u, v, :].dot(arg['q_A'])[0]
+                        
+        print 'after', result
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
+        
         if 'O_AB' in arg:
-            result['q_A'] = np.zeros((4, self.n))
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
-                        result['q_A'][k,:] += self.J[:,u,v,k] * arg['O_AB'][u,v,:]
-        return result
+                        result['q_A'][k,:] += self.J[:,u,v,k] * \
+                                              arg['O_AB'][u, v,:]
     
     
 class Comm_BitRate(Component):
@@ -216,8 +225,15 @@ class Comm_BitRate(Component):
         self.add('CommLOS', Array(np.zeros(self.n), iotype='in', shape=(self.n,)))
 
     def linearize(self):
+        
         S2 = 0.
-        for i in range(0,self.n):
+        self.dD_dP = np.zeros(self.n)
+        self.dD_dGt = np.zeros(self.n)
+        self.dD_dS = np.zeros(self.n)
+        self.dD_dLOS = np.zeros(self.n)
+        
+        for i in range(0, self.n):
+            
             if np.abs(self.GSdist[i]) > 1e-10:
                 S2 = self.GSdist[i] * 1e3
             else:
@@ -225,36 +241,34 @@ class Comm_BitRate(Component):
 
             self.dD_dP[i] = self.alpha * self.gain[i] * self.CommLOS[i] / S2**2
             self.dD_dGt[i] = self.alpha * self.P_comm[i] * self.CommLOS[i] / S2**2
-            self.dD_dS[i] = -2. * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3 * 1e3
-            self.dD_dLOS[i] = self.alpha * sefl.P_comm[i] * self.gain[i] / S2**2
+            self.dD_dS[i] = -2.0 * 1e3 * self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**3
+            self.dD_dLOS[i] = self.alpha * self.P_comm[i] * self.gain[i] / S2**2
         
     def execute(self):
         S2 = 0.
-        for i in range(0,self.n):
+        for i in range(0, self.n):
             if np.abs(self.GSdist[i]) > 1e-10:
                 S2 = self.GSdist[i] * 1e3
             else:
                 S2 = 1e-10
             self.Dr[i] = self.alpha * self.P_comm[i] * self.gain[i] * self.CommLOS[i] / S2**2
-
-    def applyDer(self, arg, result):
+    
+    def apply_deriv(self, arg, result):
         if 'P_comm' in arg:
-            result['Dr'] = self.dD_dP * arg['P_comm'][:]
+            result['Dr'] += self.dD_dP * arg['P_comm']
         if 'gain' in arg:
-            result['Dr'] += self.dD_dGt * arg['gain'][:]
+            result['Dr'] += self.dD_dGt * arg['gain']
         if 'GSdist' in arg:
-            result['Dr'] += self.dD_dS * arg['GSdist'][:]
+            result['Dr'] += self.dD_dS * arg['GSdist']
         if 'CommLOS' in arg:
-            result['Dr'] += self.dD_dLOS * arg['CommLOS'][:]
-        return result
-
-    def applyDerT(self, arg, result):
+            result['Dr'] += self.dD_dLOS * arg['CommLOS']
+            
+    def apply_derivT(self, arg, result):
         if 'Dr' in arg:
-            result['P_comm'] = self.dD_dP * arg['Dr']
-            result['gain'] = self.dD_dGt * arg['Dr']
-            result['GSdist'] = self.dD_dS * arg['Dr']
-            result['CommLOS'] = self.dD_dLOS * arg['Dr']
-        return result
+            result['P_comm'] += self.dD_dP.T * arg['Dr']
+            result['gain'] += self.dD_dGt.T * arg['Dr']
+            result['GSdist'] += self.dD_dS.T * arg['Dr']
+            result['CommLOS'] += self.dD_dLOS.T * arg['Dr']
 
     
 class Comm_Distance(Component):

@@ -30,8 +30,8 @@ class CADRE(Assembly):
         super(CADRE, self).__init__()
         
         # Parameters
-        self.add("BsplineParameters", BsplineParameters(n))
-        self.driver.workflow.add("BsplineParameters")
+        #self.add("BsplineParameters", BsplineParameters(n))
+        #self.driver.workflow.add("BsplineParameters")
         
         ## Additude components
         #self.add("Attitude_Angular", Attitude_Angular(n))
@@ -75,11 +75,11 @@ class CADRE(Assembly):
         #self.add("Comm_AntRotationMtx", Comm_AntRotationMtx(n))
         #self.driver.workflow.add("Comm_AntRotationMtx")
         
-        #self.add("Comm_BitRate", Comm_BitRate(n))
-        #self.driver.workflow.add("Comm_BitRate")
+        self.add("Comm_BitRate", Comm_BitRate(n))
+        self.driver.workflow.add("Comm_BitRate")
         
-        self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
-        self.driver.workflow.add("Comm_DataDownloaded")
+        #self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
+        #self.driver.workflow.add("Comm_DataDownloaded")
         
         #self.add("Comm_Distance", Comm_Distance(n))
         #self.driver.workflow.add("Comm_Distance")
