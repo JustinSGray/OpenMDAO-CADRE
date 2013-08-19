@@ -150,10 +150,6 @@ class Comm_AntRotationMtx(Component):
             B[3,:] = (self.q_A[1,i], self.q_A[2,i], self.q_A[3,i])
             
             for k in range(0, 4):
-                print "A", A
-                print "B", B
-                print "dA_dq", dA_dq
-                print "dB_dq", dB_dq
                 self.J[i,:,:,k] = np.dot(dA_dq[:,:,k].T, B) + \
                                   np.dot(A.T, dB_dq[:,:,k])
 
@@ -177,16 +173,14 @@ class Comm_AntRotationMtx(Component):
         
 
     def apply_deriv(self, arg, result):
-        print arg, result
-        print 'max', self.J.max()
-        print self.J
+
         if 'q_A' in arg:
             for u in xrange(3):
                 for v in xrange(3):
-                    result['O_AB'][u, v, :] += \
-                        self.J[:, u, v, :].dot(arg['q_A'])[0]
+                    for k in xrange(4):
+                        result['O_AB'][u, v, :] += \
+                            self.J[:, u, v, k] * arg['q_A'][k, :]
                         
-        print 'after', result
 
     def apply_derivT(self, arg, result):
         
@@ -194,8 +188,8 @@ class Comm_AntRotationMtx(Component):
             for u in range(3):
                 for v in range(3):
                     for k in range(4):
-                        result['q_A'][k,:] += self.J[:,u,v,k] * \
-                                              arg['O_AB'][u, v,:]
+                        result['q_A'][k, :] += self.J[:, u, v, k] * \
+                                               arg['O_AB'][u, v,:]
     
     
 class Comm_BitRate(Component):

@@ -18,6 +18,7 @@ cadre.run()
 
 shape = cadre.Comm_AntRotationMtx.q_A.shape
 cadre.Comm_AntRotationMtx.q_A = np.random.random(shape)
+cadre.run()
 cadre.driver.workflow.check_gradient(inputs=['Comm_AntRotationMtx.q_A'],
                                      outputs=['Comm_AntRotationMtx.O_AB'])
 

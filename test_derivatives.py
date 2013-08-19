@@ -80,7 +80,7 @@ class Testcase_CADRE(unittest.TestCase):
         #print Jf
         
         diff = abs(Jf - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+        assert_rel_error(self, diff.max(), 0.0, 1e-5)
         
         # Analytic adjoint
         self.model.driver.update_parameters()
@@ -92,7 +92,7 @@ class Testcase_CADRE(unittest.TestCase):
         #print Ja
         
         diff = abs(Ja - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-6)
+        assert_rel_error(self, diff.max(), 0.0, 1e-5)
     
     def test_Comm_DataDownloaded(self):
         
