@@ -290,7 +290,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)     
 
     def test_Attitude_AngularRates(self):
-        #fix
+
         compname = 'Attitude_AngularRates'
         inputs = ['h', 'w_B']
         outputs = ['wdot_B']
@@ -301,7 +301,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)        
 
     def test_Attitude_Attitude(self):
-        #fix
+
         compname = 'Attitude_Attitude'
         inputs = ['r_e2b_I']
         outputs = ['O_RI']
@@ -323,7 +323,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)       
 
     def test_Attitude_RotationMtx(self):
-        #fix
+
         compname = 'Attitude_RotationMtx'
         inputs = ['O_BR', 'O_RI']
         outputs = ['O_BI']
@@ -400,7 +400,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)   
 
     def test_Solar_ExposedArea(self):
-        #fix
+
         compname = 'Solar_ExposedArea'
         inputs = ['finAngle', 'azimuth', 'elevation']
         outputs = ['exposedArea']
@@ -422,7 +422,7 @@ class Testcase_CADRE(unittest.TestCase):
     #    self.compare_derivatives(inputs, outputs)  
 
     def test_Power_SolarPower(self):
-        #fix
+
         compname = 'Power_SolarPower'
         inputs = ['V_sol', 'Isetpt']
         outputs = ['P_sol']
@@ -433,10 +433,43 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)    
 
     def test_Power_Total(self):
-        #fix
+
         compname = 'Power_Total'
         inputs = ['P_sol', 'P_comm', 'P_RW']
         outputs = ['P_bat']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)  
+
+    def test_ReactionWheel_Motor(self):
+
+        compname = 'ReactionWheel_Motor'
+        inputs = ['T_RW', 'w_B', 'w_RW']
+        outputs = ['T_m']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_ReactionWheel_Power(self):
+
+        compname = 'ReactionWheel_Power'
+        inputs = ['w_RW', 'T_RW']
+        outputs = ['P_RW']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)   
+
+    def test_ReactionWheel_Torque(self):
+
+        compname = 'ReactionWheel_Torque'
+        inputs = ['T_tot']
+        outputs = ['T_RW']
         state0 = []
         
         self.setup(compname, inputs, state0)

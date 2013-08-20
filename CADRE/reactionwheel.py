@@ -22,12 +22,15 @@ class ReactionWheel_Motor(Component):
 
     def linearize(self): 
         w_Bx = np.zeros((3,3))
-        dwx_dwb = np.zeros((3,3))
+        self.dT_dTm = np.zeros((self.n,3,3))
+        self.dT_dwb = np.zeros((self.n,3,3))
+        self.dT_dh = np.zeros((self.n,3,3))
+        dwx_dwb = np.zeros((3,3,3))
         h_RW = self.J_RW * self.w_RW[:]
         for i in range(0,self.n):
-            w_Bx[0,:] = (0., -self.w_B[2,i] , self.w_B(1,i))
+            w_Bx[0,:] = (0., -self.w_B[2,i] , self.w_B[1,i])
             w_Bx[1,:] = (self.w_B[2,i], 0., -self.w_B[0,i])
-            w_Bx[2,:] = (-self.w_B[1,i], w_B[0,i], 0.)
+            w_Bx[2,:] = (-self.w_B[1,i], self.w_B[0,i], 0.)
             
             dwx_dwb[0,:,0] = (0., 0., 0.)
             dwx_dwb[1,:,0] = (0., 0., -1.)
@@ -56,8 +59,7 @@ class ReactionWheel_Motor(Component):
             
             self.T_m[:,i] = -self.T_RW[:,i] - np.dot(w_Bx , h_RW[:,i])
         
-    def applyDer(self, arg, result):
-        result['T_m'] = np.zeros((3,self.n))
+    def apply_deriv(self, arg, result):
         
         for k in range(3):
             for j in range(3):
@@ -67,12 +69,8 @@ class ReactionWheel_Motor(Component):
                     result['T_m'][k,:] += self.dT_dwb[:,k,j] * arg['w_B'][j,:]
                 if 'w_RW' in arg:
                     result['T_m'][k,:] += self.dT_dh[:,k,j] * arg['w_RW'][j,:] * self.J_RW
-        return result
                     
-    def applyDerT(self, arg, result):
-        result['T_RW'] = np.zeros((3,self.n))
-        result['w_B'] = np.zeros((3,self.n))        
-        result['w_RW'] = np.zeros((3,self.n))
+    def apply_derivT(self, arg, result):
         
         for k in range(3):
             for j in range(3):
@@ -80,7 +78,6 @@ class ReactionWheel_Motor(Component):
                     result['T_RW'][j,:] += self.dT_dTm[:,k,j] * arg['T_m'][k,:]
                     result['w_B'][j,:] += self.dT_dwb[:,k,j] * arg['T_m'][k,:]
                     result['w_RW'][j,:] += self.dT_dh[:,k,j] * arg['T_m'][k,:] * self.J_RW        
-        return result
     
     
 class ReactionWheel_Power(Component):
@@ -101,35 +98,32 @@ class ReactionWheel_Power(Component):
         self.add('P_RW', Array(np.ones((3,n)), size=(3,n), dtype=np.float, iotype='out')) 
              
     def linearize(self):
-        for i in range(0,self.n):
-            for k in range(0,3):
+        self.dP_dw = np.zeros((self.n,3))
+        self.dP_dT = np.zeros((self.n,3))
+        for i in range(self.n):
+            for k in range(3):
                 self.dP_dw[i,k] = 2 * self.V * self.a * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
                 self.dP_dT[i,k] = 2 * self.V * self.b * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
 
     def execute(self):
-        for i in range(0,self.n):
-            for k in range(0,3):
+        for i in range(self.n):
+            for k in range(3):
                 self.P_RW[k,i] = self.V * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])**2 + self.V * self.I0
 
-    def applyDer(self, arg, result):
-        result['P_RW'] = np.zeros((3,self.n))
+    def apply_deriv(self, arg, result):
         
         for k in range(3):
             if 'w_RW' in arg:
                 result['P_RW'][k,:] += self.dP_dw[:,k] * arg['w_RW'][k,:]
             if 'T_RW' in arg:
                 result['P_RW'][k,:] += self.dP_dT[:,k] * arg['T_RW'][k,:]
-        return result
 
-    def applyDerT(self, arg, result):
-        result['w_RW'] = np.zeros((3,self.n))
-        result['T_RW'] = np.zeros((3,self.n))
+    def apply_derivT(self, arg, result):
         
         for k in range(3):
             if 'P_RW' in arg:
                 result['w_RW'][k,:] += self.dP_dw[:,k] * arg['P_RW'][k,:]
                 result['T_RW'][k,:] += self.dP_dT[:,k] * arg['P_RW'][k,:]
-        return result
 
 
 class ReactionWheel_Torque(Component):
@@ -146,19 +140,14 @@ class ReactionWheel_Torque(Component):
         self.T_RW[:] = self.T_tot[:]
 
     def applyDer(self, arg, result):
-        result['T_RW'] = np.zeros((3,self.n))
         
         if 'T_tot' in arg:
             result['T_RW'][:] += arg['T_tot'][:]
-        return result
 
     def applyDerT(self, arg, result):
-        if not result['T_tot']:
-            result['T_tot'] = np.zeros((3,self.n))
         
         if 'T_RW' in arg:
             result['T_tot'][:] += arg['T_RW'][:]
-        return result
 
 
 class ReactionWheel_Dynamics(rk4.RK4):
