@@ -323,7 +323,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)       
 
     def test_Attitude_RotationMtx(self):
-        
+        #fix
         compname = 'Attitude_RotationMtx'
         inputs = ['O_BR', 'O_RI']
         outputs = ['O_BI']
@@ -397,7 +397,52 @@ class Testcase_CADRE(unittest.TestCase):
         
         self.setup(compname, inputs, state0)
         self.run_model()
-        self.compare_derivatives(inputs, outputs)                                 
+        self.compare_derivatives(inputs, outputs)   
+
+    def test_Solar_ExposedArea(self):
+        #fix
+        compname = 'Solar_ExposedArea'
+        inputs = ['finAngle', 'azimuth', 'elevation']
+        outputs = ['exposedArea']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs) 
+
+    #def test_Power_CellVoltage(self):
+    #    #fix
+    #    compname = 'Power_CellVoltage'
+    #    inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
+    #    outputs = ['V_sol']
+    #    state0 = []
+    #    
+    #    self.setup(compname, inputs, state0)
+    #    self.run_model()
+    #    self.compare_derivatives(inputs, outputs)  
+
+    def test_Power_SolarPower(self):
+        #fix
+        compname = 'Power_SolarPower'
+        inputs = ['V_sol', 'Isetpt']
+        outputs = ['P_sol']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_Power_Total(self):
+        #fix
+        compname = 'Power_Total'
+        inputs = ['P_sol', 'P_comm', 'P_RW']
+        outputs = ['P_bat']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
         
 if __name__ == "__main__":
     
