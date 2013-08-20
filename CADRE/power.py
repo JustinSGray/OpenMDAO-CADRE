@@ -75,10 +75,7 @@ class Power_CellVoltage( Component ):
                 self.dV_dA[:,c,p] += self.raw2[:,c,p] * self.LOS[:]
                 self.dV_dI[:,p] += self.raw3[:,c,p]
 
-    def applyDer(self, arg, result):
-
-        if not result['V_sol'] :
-            result['V_sol'] = np.zeros( (12, self.n,) )
+    def apply_deriv(self, arg, result):
 
         if 'LOS' in arg: 
             for p in range(12):
@@ -98,21 +95,7 @@ class Power_CellVoltage( Component ):
                 for c in range(7):
                     result['V_sol'][p,:] += self.dV_dA[:,c,p] * arg['exposedArea'][c,p,:]
 
-        return result   
-
-    def applyDerT(self, arg, result): 
-
-        if not result['LOS'] :
-            result['LOS'] = np.zeros( (self.n,) )
-
-        if not result['temperature'] :
-            result['temperature'] = np.zeros( (5,self.n,) )
-
-        if not result['exposedArea'] :
-            result['exposedArea'] = np.zeros( (7,12,self.n,) )
-
-        if not result['Isetpt'] :
-            result['Isetpt'] = np.zeros( (12, self.n,) )
+    def apply_derivT(self, arg, result): 
 
         if 'V_sol' in arg: 
             for p in range(12):
@@ -122,8 +105,6 @@ class Power_CellVoltage( Component ):
                 result['Isetpt'][p,:] += self.dV_dI[:,p] * arg['V_sol'][p,:]
                 for c in range(7):
                     result['exposedArea'][c,p,:] += self.dV_dA[:,c,p] * arg['V_sol'][p,:]
-
-        return result
 
 class Power_SolarPower( Component ):
 
@@ -145,10 +126,7 @@ class Power_SolarPower( Component ):
         for p in range(12):
             self.P_sol[:] += self.V_sol[p,:] * self.Isetpt[p,:]
 
-    def applyDer(self, arg, result):
-
-        if not result['P_sol'] :
-            result['P_sol'] = np.zeros( (self.n,) )
+    def apply_deriv(self, arg, result):
 
         if 'V_sol' in arg: 
             for p in range(12):
@@ -156,24 +134,14 @@ class Power_SolarPower( Component ):
 
         if 'Isetpt' in arg: 
             for p in range(12):
-                result['P_sol'][:] += arg['Isetpt'][p,:] * self.V_sol[p,:]
+                result['P_sol'][:] += arg['Isetpt'][p,:] * self.V_sol[p,:] 
 
-        return result   
-
-    def applyDerT(self, arg, result): 
-
-        if not result['V_sol'] :
-            result['V_sol'] = np.zeros( (12, self.n,) )
-
-        if not result['Isetpt'] :
-            result['Isetpt'] = np.zeros( (12, self.n,) )
+    def apply_derivT(self, arg, result): 
 
         if 'P_sol' in arg:
             for p in range(12):
                 result['V_sol'][p,:] += arg['P_sol'][:] * self.Isetpt[p,:]
                 result['Isetpt'][p,:] += self.V_sol[p,:] * arg['P_sol'][:]
-
-        return result
 
 class Power_Total( Component ):
 
@@ -195,14 +163,7 @@ class Power_Total( Component ):
     def execute(self): 
         self.P_bat[:] += self.P_sol[:] - 5*self.P_comm[:] - np.sum(self.P_RW[:], 0) - 2.0
 
-    def applyDer(self, arg, result):
-
-        # for k in range(3):
-        #     res('P_bat')[:] -= arg('P_RW')[k,:]
-
-
-        if not result['P_bat'] :
-            result['P_bat'] = np.zeros( (self.n,) )
+    def apply_deriv(self, arg, result):
 
         if 'P_sol' in arg: 
             result['P_bat'][:] += arg['P_sol'][:]
@@ -214,22 +175,11 @@ class Power_Total( Component ):
             for k in range(3):
                 result['P_bat'][:] -= arg['P_RW'][k,:]
 
-        return result   
-
-    def applyDerT(self, arg, result): 
-
-        if not result['P_sol'] :
-            result['P_sol'] = np.zeros( (self.n,) )
-        if not result['P_comm'] :
-            result['P_comm'] = np.zeros( (self.n,) )
-        if not result['P_RW'] :
-            result['P_RW'] = np.zeros( (3,self.n,) )
+    def apply_derivT(self, arg, result): 
 
         if 'P_bat' in arg:
             result['P_sol'][:] += arg['P_bat'][:]
             result['P_comm'][:] -= 5*arg['P_bat'][:]
             for k in range(3):
                 result['P_RW'][k,:] -= arg['P_bat'][:]
-
-        return result
 
