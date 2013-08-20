@@ -267,17 +267,104 @@ class Testcase_CADRE(unittest.TestCase):
         self.run_model()
         self.compare_derivatives(inputs, outputs)
         
-    def test_ThermalTemperature(self):
+    #def test_ThermalTemperature(self):
+    #    
+    #    compname = 'ThermalTemperature'
+    #    inputs = ['exposedArea', 'cellInstd', 'LOS', 'P_comm']
+    #    outputs = ['temperature']
+    #    state0 = ['T0']
+    #    
+    #    self.setup(compname, inputs, state0)
+    #    self.run_model()
+    #    self.compare_derivatives(inputs, outputs)
+
+    def test_Attitude_Angular(self):
         
-        compname = 'ThermalTemperature'
-        inputs = ['exposedArea', 'cellInstd', 'LOS', 'P_comm']
-        outputs = ['temperature']
-        state0 = ['T0']
+        compname = 'Attitude_Angular'
+        inputs = ['O_BI', 'Odot_BI']
+        outputs = ['w_B']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)     
+
+    def test_Attitude_AngularRates(self):
+        #fix
+        compname = 'Attitude_AngularRates'
+        inputs = ['h', 'w_B']
+        outputs = ['wdot_B']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)        
+
+    def test_Attitude_Attitude(self):
+        #fix
+        compname = 'Attitude_Attitude'
+        inputs = ['r_e2b_I']
+        outputs = ['O_RI']
+        state0 = []
         
         self.setup(compname, inputs, state0)
         self.run_model()
         self.compare_derivatives(inputs, outputs)
+
+    def test_Attitude_Roll(self):
         
+        compname = 'Attitude_Roll'
+        inputs = ['Gamma']
+        outputs = ['O_BR']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)       
+
+    def test_Attitude_RotationMtx(self):
+        
+        compname = 'Attitude_RotationMtx'
+        inputs = ['O_BR', 'O_RI']
+        outputs = ['O_BI']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_Attitude_RotationMtxRates(self):
+        
+        compname = 'Attitude_RotationMtxRates'
+        inputs = ['h', 'O_BI']
+        outputs = ['Odot_BI']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_Attitude_Sideslip(self):
+        
+        compname = 'Attitude_Sideslip'
+        inputs = ['r_e2b_I', 'O_BI']
+        outputs = ['v_e2b_B']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_Attitude_Torque(self):
+        
+        compname = 'Attitude_Torque'
+        inputs = ['w_B', 'wdot_B']
+        outputs = ['T_tot']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)                         
         
 if __name__ == "__main__":
     
