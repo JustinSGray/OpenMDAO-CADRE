@@ -45,8 +45,8 @@ class Sun_LOS( Component ):
         
     def linearize(self): 
 
-        nj = self.n
-        
+        nj = 3*self.n
+
         Jab = np.zeros(shape=(nj,), dtype = np.float)
         Jib = np.zeros(shape=(nj,), dtype = np.int)
         Jjb = np.zeros(shape=(nj,), dtype = np.int)
@@ -98,21 +98,18 @@ class Sun_LOS( Component ):
             for k in range(3) :
                 iJ = i*3 + k
                 Jab[iJ] = dLOS_drb[k]
-                Jib[iJ] = i - 1
-                Jjb[iJ] = (i-1)*6 + k - 1
+                Jib[iJ] = i 
+                Jjb[iJ] = (i)*6 + k 
                 Jas[iJ] = dLOS_drs[k]
-                Jis[iJ] = i - 1
-                Jjs[iJ] = (i-1)*3 + k - 1
+                Jis[iJ] = i 
+                Jjs[iJ] = (i)*3 + k 
 
         self.Jb = scipy.sparse.csc_matrix((Jab,(Jib,Jjb)),shape=(self.n,6*self.n))
         self.Js = scipy.sparse.csc_matrix((Jas,(Jis,Jjs)),shape=(self.n,3*self.n))
         self.JbT = self.Jb.transpose()
         self.JsT = self.Js.transpose()
 
-    def applyDer(self, arg, result):
-
-        if not result['LOS'] :
-            result['LOS'] = np.zeros( (self.n,) )
+    def apply_deriv(self, arg, result):
             
         if 'r_e2b_I' in arg: 
             r_e2b_I = arg['r_e2b_I'][:].reshape((6*self.n),order='F')
@@ -122,23 +119,13 @@ class Sun_LOS( Component ):
             r_e2s_I = arg['r_e2s_I'][:].reshape((3*self.n),order='F')
             result['LOS'] += self.Js.dot(r_e2s_I) 
 
-        return result   
-
-    def applyDerT(self, arg, result): 
+    def apply_derivT(self, arg, result): 
 
         if 'LOS' in arg: 
             LOS = arg['LOS']
-
-            if not result['r_e2b_I'] :
-                result['r_e2b_I'] = np.zeros( (6,self.n,) )
-                
-            if not result['r_e2s_I'] :
-                result['r_e2s_I'] = np.zeros( (3,self.n,) )
                 
             result['r_e2b_I'] += self.JbT.dot(LOS).reshape((6,self.n),order='F')
             result['r_e2s_I'] += self.JsT.dot(LOS).reshape((3,self.n),order='F')
-
-        return result
 
 def crossMatrix(v):
 
@@ -170,10 +157,7 @@ class Sun_PositionBody( Component ):
     def linearize(self): 
         self.J1, self.J2 = computepositionrotdjacobian(self.n, self.r_e2s_I, self.O_BI )
 
-    def applyDer(self, arg, result):
-
-        if not result['r_e2s_B'] :
-            result['r_e2s_B'] = np.zeros( (3,self.n,) )
+    def apply_deriv(self, arg, result):
             
         if 'O_BI' in arg: 
             for k in range(3):
@@ -186,15 +170,7 @@ class Sun_PositionBody( Component ):
                 for j in range(3):
                     result['r_e2s_B'][k,:] += self.J2[:,k,j] * arg['r_e2s_I'][j,:]
 
-        return result   
-
-    def applyDerT(self, arg, result): 
-
-        if not result['O_BI'] :
-            result['O_BI'] = np.zeros( (3,3,self.n,) )
-
-        if not result['r_e2s_I'] :
-            result['r_e2s_I'] = np.zeros( (3,self.n,) )
+    def apply_derivT(self, arg, result): 
 
         if 'r_e2s_B' in arg: 
             for k in range(3):
@@ -204,7 +180,6 @@ class Sun_PositionBody( Component ):
                 for j in range(3):
                     result['r_e2s_I'][j,:] += self.J2[:,k,j] * arg['r_e2s_B'][k,:]
 
-        return result
 
 class Sun_PositionECI( Component ):
     
@@ -224,6 +199,10 @@ class Sun_PositionECI( Component ):
         self.add('r_e2s_I', Array(np.zeros((3,n, ), order='F'), size=(3,n, ),
                                   dtype=np.float, iotype="out"))
 
+        self.Ja = np.zeros(3*self.n)
+        self.Ji = np.zeros(3*self.n)
+        self.Jj = np.zeros(3*self.n)
+
     def execute(self): 
         T = self.LD + self.t[:]/3600./24.
         for i in range(0,self.n):
@@ -237,10 +216,11 @@ class Sun_PositionECI( Component ):
 
     def linearize(self): 
         T = self.LD + self.t[:]/3600./24.
+        dr_dt = np.empty(3)
         for i in range(0,self.n):
             L = self.d2r*280.460 + self.d2r*0.9856474*T[i]
             g = self.d2r*357.528 + self.d2r*0.9856003*T[i]
-            Lambda = L + self.d2r*1.914666*np.sin(g) + d2r*0.01999464*np.sin(2*g)
+            Lambda = L + self.d2r*1.914666*np.sin(g) + self.d2r*0.01999464*np.sin(2*g)
             eps = self.d2r*23.439 - self.d2r*3.56e-7*T[i]
             
             dL_dt = self.d2r*0.9856474
@@ -259,36 +239,23 @@ class Sun_PositionECI( Component ):
                 #self.Jj[iJ] = i - 1
                 iJ = i*3 + k #This should resolve the index issues
                 self.Ja[iJ] = dr_dt[k]
-                self.Ji[iJ] = iJ - 1
-                self.Jj[iJ] = i - 1
+                self.Ji[iJ] = iJ 
+                self.Jj[iJ] = i 
 
-    def applyDer(self, arg, result):
+        self.J = scipy.sparse.csc_matrix((self.Ja,(self.Ji,self.Jj)),shape=(3*self.n,self.n))
+        self.JT = self.J.transpose()
 
-        if not result['r_e2s_I'] :
-            result['r_e2s_I'] = np.zeros( (3,self.n,) )
+    def apply_deriv(self, arg, result):
 
-        if 'LD' in arg:
-            result['r_e2s_I'][:] += self.J.dot( arg['LD'] * np.ones( (10, )) ).reshape((3,self.n),order='F')
+        if 'LD' in arg and 't' in arg:
+            result['r_e2s_I'][:] += self.J.dot( arg['LD'] + arg['t']/3600./24. ).reshape((3,self.n),order='F')
 
-        if 't' in arg: 
-            result['r_e2s_I'][:] += self.J.dot( arg['t'][:]/3600.0/24.0).reshape((3,self.n),order='F')
-
-        return result   
-
-    def applyDerT(self, arg, result): 
-
-        if not result['t'] :
-            result['t'] = np.zeros( (self.n,) )
-
-        if not result['LD'] :
-            result['LD'] = 0.
+    def apply_derivT(self, arg, result): 
 
         if 'r_e2s_I' in arg: 
             r_e2s_I = arg['r_e2s_I'][:].reshape((3*self.n),order='F')
             result['LD'] += sum(self.JT.dot(r_e2s_I))
             result['t'][:] += self.JT.dot(r_e2s_I)/3600.0/24.0
-
-        return result
 
 
 class Sun_PositionSpherical( Component ):
