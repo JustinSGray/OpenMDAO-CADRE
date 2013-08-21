@@ -99,8 +99,7 @@ class Solar_ExposedArea(Component):
             for p in range(12):
                 self.exposedArea[c,p,:] += self.P[:,7*p+c]
 
-    def applyDer(self, arg, result):
-        result['exposedArea'] = np.zeros((self.nc,self.np,self.n))
+    def apply_deriv(self, arg, result):
         
         for c in range(7):
             for p in range(12):
@@ -110,18 +109,12 @@ class Solar_ExposedArea(Component):
                     result['exposedArea'][c,p,:] += self.Js[1][:,7*p+c]*arg['azimuth'][:]
                 if 'elevation' in arg:
                     result['exposedArea'][c,p,:] += self.Js[2][:,7*p+c]*arg['elevation'][:]
-        return result
 
-    def applyDerT(self, arg, result):
-        result['finAngle'] = 0.0
-        result['azimuth'] = np.zeros((5,))
-        result['elevation'] = np.zeros((5,))
+    def apply_derivT(self, arg, result):
+
         for c in range(7):
             for p in range(12):
-                if 'finAngle' in arg:
+                if 'exposedArea' in arg:
                     result['finAngle'] += np.dot(self.Js[0][:,7*p+c], arg['exposedArea'][c,p,:])
-                if 'azimuth' in arg:
                     result['azimuth'][:] += self.Js[1][:,7*p+c]*arg['exposedArea'][c,p,:]
-                if 'elevation' in arg:
                     result['elevation'][:] += self.Js[2][:,7*p+c]*arg['exposedArea'][c,p,:]
-        return result
