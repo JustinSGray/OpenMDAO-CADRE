@@ -210,7 +210,7 @@ class RK4(Component):
                                          shape=(self.ny, self.ny))
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve
-    
+        #print self.Jx
     
     def apply_deriv(self, arg, result):
         """Matrix-vector product between Jacobian and arg. Result placed in
@@ -285,6 +285,7 @@ class RK4(Component):
         
         for k,v in r2.iteritems():
             if k in r1 and r1[k] is not None:
+                print 'app', r1[k], v
                 r1[k] += v
             else:
                 r1[k] = v
@@ -331,8 +332,8 @@ class RK4(Component):
                     ext_length = np.prod(ext_var.shape)
                     result[name] = np.zeros((ext_length))
                     for k in xrange(n_time):
-                        for j in xrange(k+1, n_time):
-                            Jsub = self.Jx[j, i_ext:i_ext+ext_length, :]
+                        for j in xrange(k, n_time):
+                            Jsub = self.Jx[k, i_ext:i_ext+ext_length, :]
                             result[name] += Jsub.dot(argsv[:, j])
             
             

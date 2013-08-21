@@ -109,34 +109,6 @@ class ThermalTemperature(RK4):
     
     def df_dy(self, external, state):
         
-        ''' Original Implementation        
-        exposedArea = external[:84]
-        LOS = external[84]
-        P_comm = external[85]
-        cellInstd = external[86:]
-
-        dfdy = np.zeros((5,5))
-        for i,(A_exp,w) in enumerate(zip(exposedArea,cellInstd)): 
-            p_i = i/7
-            c_i = i%7
-
-            if p_i < 4: #body
-                f_i = 4
-                m = m_b
-                cp = cp_b
-
-            else: #fin
-                f_i = p%4 + 1
-                m = m_f
-                cp = cp_f
-            alpha = alpha_c*w + alpha_r*(1-w)
-            eps = eps_c*w + eps_r*(1-w)
-
-            dfdy[f_i,f_i] -= 4 * eps * K * A_T * state[f_i]**3 / m / cp
-            
-        return dfdy
-        '''
-        
         # revised implementation from ThermalTemperature.f90
         exposedArea = external[:84]
         LOS = external[84]
@@ -164,46 +136,6 @@ class ThermalTemperature(RK4):
         return dfdy
 
     def df_dx(self, external, state):
-        '''
-        Original Implementation
-        
-        exposedArea = external[:84]
-        LOS = external[84]
-        P_comm = external[85]
-        cellInstd = external[86:]
-
-        dfdx = np.zeros((5,170))
-        for i,(A_exp,w) in enumerate(zip(exposedArea,cellInstd)): 
-            p_i = i/7
-            c_i = i%7
-            iA = i
-            iw = 86 + i
-
-            if p_i < 4: #body
-                f_i = 4
-                m = m_b
-                cp = cp_b
-
-            else: #fin
-                f_i = (p_i+1)%4
-                m = m_f
-                cp = cp_f
-
-            alpha = alpha_c*w + alpha_r*(1-w)
-            eps = eps_c*w + eps_r*(1-w)
-
-            dalpha_dw = alpha_c - alpha_r
-            deps_dw = eps_c - eps_r
-
-            dfdx[f_i,iA] = dfdx[f_i,iA] + alpha * q_sol * LOS / m / cp
-            dfdx[f_i,iw] = dfdx[f_i,iw] + dalpha_dw * q_sol * A_exp * LOS / m / cp
-            dfdx[f_i,iw] = dfdx[f_i,iw] - deps_dw * K * A_T * state[f_i]**4 / m / cp
-            dfdx[f_i,84] = dfdx[f_i,84] + alpha * q_sol * A_exp / m / cp
-
-        dfdx[4,85] += 4.0 / m_b / cp_b
-
-        return dfdx
-        '''
         
         # revised implementation from ThermalTemperature.f90
         exposedArea = external[:84]
