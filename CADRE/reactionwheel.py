@@ -198,7 +198,6 @@ class ReactionWheel_Dynamics(rk4.RK4):
         for i in xrange(3):
             self.jx[i, 0:3] = -self.djy_dx[:,:,i].dot(state)
             self.jx[i, i+3] = -1.0 / self.J_RW
-        print 'jx', self.jx
         return self.jx
 
     

@@ -210,7 +210,6 @@ class RK4(Component):
                                          shape=(self.ny, self.ny))
         self.JT = self.J.transpose()
         self.Minv = scipy.sparse.linalg.splu(self.J).solve
-        print self.Jx
         
     def apply_deriv(self, arg, result):
         """Matrix-vector product between Jacobian and arg. Result placed in

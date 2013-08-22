@@ -113,19 +113,20 @@ class Power_SolarPower( Component ):
 
         self.n = n 
 
-        self.add('Isetpt', Array(np.zeros((12,n, ), order='F'), size=(12,n,), dtype=np.float,
+        self.add('Isetpt', Array(np.zeros((12, n)), size=(12,n), dtype=np.float,
                                       iotype="in"))
-        self.add('V_sol', Array(np.zeros((12,n, ), order='F'), size=(12,n,), dtype=np.float,
+        self.add('V_sol', Array(np.zeros((12, n)), size=(12,n), dtype=np.float,
                                       iotype="in"))
 
-        self.add('P_sol', Array(np.zeros((n, ), order='F'), size=(n,), dtype=np.float,
+        self.add('P_sol', Array(np.zeros((n, )), size=(n,), dtype=np.float,
                                       iotype="out"))
 
     def execute(self): 
 
+        self.P_sol = np.zeros((self.n))
         for p in range(12):
-            self.P_sol[:] = self.V_sol[p,:] * self.Isetpt[p,:]
-
+            self.P_sol[:] += self.V_sol[p, :] * self.Isetpt[p, :]
+            
     def apply_deriv(self, arg, result):
 
         if 'V_sol' in arg: 

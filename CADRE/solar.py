@@ -18,6 +18,7 @@ class Solar_ExposedArea(Component):
        LOS: line of sight with the sun [0,1]
     '''
     finAngle = Float(0., iotype="in", copy=None)
+    
     def __init__(self, n):
         super(Solar_ExposedArea, self).__init__()
         self.n = n
@@ -90,7 +91,7 @@ class Solar_ExposedArea(Component):
     def linearize(self):
         self.setx()
         for i in range(3):
-            self.Js[i] = self.MBI.evaluate(self.x,1+i)
+            self.Js[i] = self.MBI.evaluate(self.x, 1+i)
 
     def execute(self):
         self.setx()

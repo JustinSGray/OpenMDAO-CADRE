@@ -425,15 +425,22 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs) 
 
     #def test_Power_CellVoltage(self):
-    #    #fix
-    #    compname = 'Power_CellVoltage'
-    #    inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
-    #    outputs = ['V_sol']
-    #    state0 = []
-    #    
-    #    self.setup(compname, inputs, state0)
-    #    self.run_model()
-    #    self.compare_derivatives(inputs, outputs)  
+        ##fix
+        #compname = 'Power_CellVoltage'
+        #inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
+        #outputs = ['V_sol']
+        #state0 = []
+        
+        #self.setup(compname, inputs, state0)
+
+        #shape = self.model.comp.temperature.shape
+        #self.model.comp.temperature = np.random.random(shape)*20 + 263
+
+        #shape = self.model.comp.exposedArea.shape
+        #self.model.comp.exposedArea = np.random.random(shape)*1e-3
+
+        #self.run_model()
+        #self.compare_derivatives(inputs, outputs)  
 
     def test_Power_SolarPower(self):
 
@@ -473,12 +480,19 @@ class Testcase_CADRE(unittest.TestCase):
         compname = 'ReactionWheel_Dynamics'
         inputs = ['w_B', 'T_RW']
         outputs = ['w_RW']
-        state0 = ['w_RW0']
+        
+        # keep these at zeros
+        state0 = [] #['w_RW0']
         
         self.setup(compname, inputs, state0)
         
+        shape = self.model.comp.w_B.shape
+        self.model.comp.w_B = np.random.random(shape)*1e-4
+        shape = self.model.comp.T_RW.shape
+        self.model.comp.T_RW = np.random.random(shape)*1e-9
+
         self.run_model()
-        self.compare_derivatives(inputs, outputs, rel_error=True)    
+        self.compare_derivatives(inputs, outputs)    
 
     def test_ReactionWheel_Power(self):
 
