@@ -34,7 +34,7 @@ class BatterySOC(rk4.RK4):
         )
 
         self.add('iSOC', 
-            Array(np.zeros((1, )), shape=(1, ), dtype=np.float, 
+            Array([0.0], shape=(1, ), dtype=np.float, 
                 iotype="in", desc="initial state of charge")
         )
 
@@ -142,7 +142,7 @@ class BatteryPower(Component):
         self.dI_dT = tmp * dV_dT
         self.dI_dSOC = tmp * dV_dvoc * dVoc_dSOC
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
         if 'P_bat' in arg: 
             result['I_bat'] = self.dI_dP * arg['P_bat'] 
         if 'temperature' in arg:  
@@ -150,9 +150,7 @@ class BatteryPower(Component):
         if 'SOC' in arg:     
             result['I_bat'] += self.dI_dSOC * arg['SOC'][0,:]
 
-        return result   
-
-    def applyDerT(self, arg, result): 
+    def apply_derivT(self, arg, result): 
         if 'I_bat' in arg: 
             result['P_bat'] = self.dI_dP * arg['I_bat']
 
@@ -160,9 +158,7 @@ class BatteryPower(Component):
             result['temperature'][4,:] = self.dI_dT * arg['I_bat']
 
             result['SOC'] = np.zeros(self.SOC.shape)
-            result['SOC'][0,:] = self.dI_dSOC * arg['I_bat']
-
-        return result     
+            result['SOC'][0,:] = self.dI_dSOC * arg['I_bat'] 
 
             
         
@@ -206,7 +202,7 @@ class BatteryConstraints(Component):
         self.dS0_dg, self.dS0_drho = self.KS_s0.derivatives()
         self.dS1_dg, self.dS1_drho = self.KS_s1.derivatives()
         
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
         if 'I_bat' in arg: 
             result['ConCh'] = np.dot(self.dCh_dg, arg['I_bat'])
             result['ConDs'] = -1 * np.dot(self.dDs_dg, arg['I_bat'])
@@ -214,9 +210,7 @@ class BatteryConstraints(Component):
             result['ConS0'] = -1 * np.dot(self.dS0_dg, arg['SOC'][0,:])
             result['ConS1'] = np.dot(self.dS1_dg, arg['SOC'][0,:])
 
-        return result
-
-    def applyDerT(self, arg, result): 
+    def apply_derivT(self, arg, result): 
         if 'ConCh' in arg: 
             result['I_bat'] = np.dot(self.dCh_dg, arg['ConCh'])
         if 'ConDs' in arg: 
@@ -225,8 +219,6 @@ class BatteryConstraints(Component):
             result['SOC'] = -1 * np.dot(self.dS0_dg, arg['ConS0'])
         if 'ConS1' in arg: 
             result['SOC'] += np.dot(self.dS1_dg, arg['ConS1']) 
-
-        return result
             
 
 

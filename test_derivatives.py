@@ -458,6 +458,17 @@ class Testcase_CADRE(unittest.TestCase):
         
         self.setup(compname, inputs, state0)
         self.run_model()
+        self.compare_derivatives(inputs, outputs)   
+
+    def test_ReactionWheel_Dynamics(self):
+
+        compname = 'ReactionWheel_Dynamics'
+        inputs = ['w_B', 'T_RW']
+        outputs = ['w_RW']
+        state0 = ['w_RW0']
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
         self.compare_derivatives(inputs, outputs)    
 
     def test_ReactionWheel_Power(self):
@@ -477,6 +488,50 @@ class Testcase_CADRE(unittest.TestCase):
         inputs = ['T_tot']
         outputs = ['T_RW']
         state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_BatterySOC(self):
+
+        compname = 'BatterySOC'
+        inputs = ['P_bat', 'temperature']
+        outputs = ['SOC']
+        state0 = ['iSOC']
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_BatteryPower(self):
+
+        compname = 'BatteryPower'
+        inputs = ['SOC', 'temperature', 'P_bat']
+        outputs = ['I_bat']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_BatteryConstraints(self):
+
+        compname = 'BatteryConstraints'
+        inputs = ['I_bat', 'SOC']
+        outputs = ['ConCh', 'ConDs', 'ConS0', 'ConS1']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)    
+
+    def test_Orbit_Dynamics(self):
+
+        compname = 'Orbit_Dynamics'
+        inputs = []
+        outputs = ['r_e2b_I']
+        state0 = ['r_e2b_I0']
         
         self.setup(compname, inputs, state0)
         self.run_model()
