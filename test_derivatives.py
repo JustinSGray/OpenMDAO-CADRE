@@ -1,6 +1,7 @@
 
 import unittest
 import numpy as np
+import pickle
 import random
 
 from openmdao.main.api import Assembly, set_as_top
@@ -44,12 +45,17 @@ class Testcase_CADRE(unittest.TestCase):
         self.model.add('comp', eval('%s(NTIME)' % compname))
         self.model.driver.workflow.add('comp')
         
+        #data = pickle.load(open("data1346.pkl", 'rb'))
+        
         for item in inputs+state0:
             val = self.model.comp.get(item)
+            #key = "%d:%s" % (NTIME, item)
             if hasattr(val, 'shape'):
                 shape1 = val.shape
+                #self.model.comp.set(item, data[key])
                 self.model.comp.set(item, np.random.random(shape1))
             else:
+                #self.model.comp.set(item, data[key][0])
                 self.model.comp.set(item, random.random())
         
     def run_model(self):
@@ -267,16 +273,16 @@ class Testcase_CADRE(unittest.TestCase):
         self.run_model()
         self.compare_derivatives(inputs, outputs)
         
-    #def test_ThermalTemperature(self):
-    #    
-    #    compname = 'ThermalTemperature'
-    #    inputs = ['exposedArea', 'cellInstd', 'LOS', 'P_comm']
-    #    outputs = ['temperature']
-    #    state0 = ['T0']
-    #    
-    #    self.setup(compname, inputs, state0)
-    #    self.run_model()
-    #    self.compare_derivatives(inputs, outputs)
+    def test_ThermalTemperature(self):
+        
+        compname = 'ThermalTemperature'
+        inputs = ['exposedArea', 'cellInstd', 'LOS', 'P_comm']
+        outputs = ['temperature']
+        state0 = ['T0']
+        
+        self.setup(compname, inputs, state0)
+        self.run_model()
+        self.compare_derivatives(inputs, outputs)
 
     def test_Attitude_Angular(self):
         
