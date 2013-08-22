@@ -39,8 +39,13 @@ for key in setd.keys():
         assembly.print_set_vals(printvals=key, tval=setd[key])
         print
 
-print assembly.ThermalTemperature.temperature
-print data['3:temperature']
+#print assembly.ThermalTemperature.temperature
+#print data['3:temperature']
 
-
+# Temp testing stuff
+#inputs = ['Power_CellVoltage.LOS', 'Power_CellVoltage.temperature', 
+#          'Power_CellVoltage.exposedArea', 'Power_CellVoltage.Isetpt']
+#inputs = ['Power_CellVoltage.LOS']
+#outputs = ['Power_CellVoltage.V_sol']
+#assembly.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
 

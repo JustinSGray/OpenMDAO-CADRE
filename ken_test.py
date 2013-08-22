@@ -23,17 +23,36 @@ from CADRE.thermal_temperature import ThermalTemperature
 from CADRE.power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 
-NTIME = 2
+NTIME = 1
 
 cadre = set_as_top(Assembly())
 
-cadre.add('comp', Power_SolarPower(NTIME))
+cadre.add('comp', Power_CellVoltage(NTIME))
+data = pickle.load(open("data1346.pkl", 'rb'))
+
+#cadre.comp.LOS = data['5:LOS'][:NTIME]
+shape = cadre.comp.LOS.shape
+cadre.comp.LOS = np.ones(shape)
+#cadre.comp.temperature = data['5:temperature'][:, :NTIME]
+shape = cadre.comp.temperature.shape
+cadre.comp.temperature = np.random.random(shape)*40 + 240
+#cadre.comp.exposedArea = data['5:exposedArea'][:, :, :NTIME]
+shape = cadre.comp.exposedArea.shape
+cadre.comp.exposedArea = np.random.random(shape)*1e-4
+#cadre.comp.Isetpt = data['5:Isetpt'][:, :NTIME]
 shape = cadre.comp.Isetpt.shape
-cadre.comp.Isetpt = np.random.random(shape)
-shape = cadre.comp.V_sol.shape
-cadre.comp.V_sol = np.random.random(shape)
-inputs = ['comp.Isetpt', 'comp.V_sol']
-outputs = ['comp.P_sol']
+cadre.comp.Isetpt = np.random.random(shape)*1e-2
+#inputs = ['comp.Isetpt']
+inputs = ['comp.LOS', 'comp.temperature', 'comp.exposedArea', 'comp.Isetpt']
+outputs = ['comp.V_sol']
+
+#cadre.add('comp', Power_SolarPower(NTIME))
+#shape = cadre.comp.Isetpt.shape
+#cadre.comp.Isetpt = np.random.random(shape)
+#shape = cadre.comp.V_sol.shape
+#cadre.comp.V_sol = np.random.random(shape)
+#inputs = ['comp.Isetpt', 'comp.V_sol']
+#outputs = ['comp.P_sol']
 
 #cadre.add('comp', ReactionWheel_Dynamics(NTIME))
 #shape = cadre.comp.w_B.shape
@@ -95,6 +114,9 @@ outputs = ['comp.P_sol']
 cadre.driver.workflow.add('comp')
 cadre.comp.h = .01
 cadre.run()
+#for name in outputs:
+#    print cadre.get(name)
+    
 cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
 #cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
 

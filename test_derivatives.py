@@ -87,7 +87,6 @@ class Testcase_CADRE(unittest.TestCase):
         
         if rel_error:
             diff = np.nan_to_num(abs(Jf - Jn)/Jn)
-            print Jn
         else:
             diff = abs(Jf - Jn)
         
@@ -425,23 +424,29 @@ class Testcase_CADRE(unittest.TestCase):
         self.run_model()
         self.compare_derivatives(inputs, outputs) 
 
-    #def test_Power_CellVoltage(self):
-        ##fix
-        #compname = 'Power_CellVoltage'
-        #inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
-        #outputs = ['V_sol']
-        #state0 = []
+    def test_Power_CellVoltage(self):
+        #fix
+        compname = 'Power_CellVoltage'
+        inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
+        outputs = ['V_sol']
+        state0 = []
         
-        #self.setup(compname, inputs, state0)
+        self.setup(compname, inputs, state0)
+        
+        shape = self.model.comp.temperature.shape
+        self.model.comp.temperature = np.ones(shape)
 
-        #shape = self.model.comp.temperature.shape
-        #self.model.comp.temperature = np.random.random(shape)*20 + 263
+        shape = self.model.comp.temperature.shape
+        self.model.comp.temperature = np.random.random(shape)*40 + 240
 
-        #shape = self.model.comp.exposedArea.shape
-        #self.model.comp.exposedArea = np.random.random(shape)*1e-3
+        shape = self.model.comp.exposedArea.shape
+        self.model.comp.exposedArea = np.random.random(shape)*1e-4
 
-        #self.run_model()
-        #self.compare_derivatives(inputs, outputs)  
+        shape = self.model.comp.Isetpt.shape
+        self.model.comp.Isetpt = np.random.random(shape)*1e-2
+
+        self.run_model()
+        self.compare_derivatives(inputs, outputs, rel_error=True)  
 
     def test_Power_SolarPower(self):
 
