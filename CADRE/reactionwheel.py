@@ -102,8 +102,9 @@ class ReactionWheel_Power(Component):
         self.dP_dT = np.zeros((self.n,3))
         for i in range(self.n):
             for k in range(3):
-                self.dP_dw[i,k] = 2 * self.V * self.a * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
-                self.dP_dT[i,k] = 2 * self.V * self.b * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
+                prod = 2 * self.V * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])
+                self.dP_dw[i,k] = self.a * prod
+                self.dP_dT[i,k] = self.b * prod
 
     def execute(self):
         for i in range(self.n):
@@ -111,7 +112,6 @@ class ReactionWheel_Power(Component):
                 self.P_RW[k,i] = self.V * (self.a * self.w_RW[k,i] + self.b * self.T_RW[k,i])**2 + self.V * self.I0
 
     def apply_deriv(self, arg, result):
-        
         for k in range(3):
             if 'w_RW' in arg:
                 result['P_RW'][k,:] += self.dP_dw[:,k] * arg['w_RW'][k,:]

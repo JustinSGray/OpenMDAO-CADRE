@@ -79,8 +79,8 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Jf
         
-        diff = abs(Jf - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-5)
+        diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+        assert_rel_error(self, diff.max(), 0.0, 1e-3)
         
         # Analytic adjoint
         self.model.driver.update_parameters()
@@ -91,9 +91,9 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Ja
         
-        diff = abs(Ja - Jn)
-        assert_rel_error(self, diff.max(), 0.0, 1e-5)
-    
+        diff = np.nan_to_num(abs(Ja - Jn)/Jn)
+        assert_rel_error(self, diff.max(), 0.0, 1e-3)
+
     def test_Comm_DataDownloaded(self):
         
         compname = 'Comm_DataDownloaded'
@@ -292,7 +292,7 @@ class Testcase_CADRE(unittest.TestCase):
     def test_Attitude_AngularRates(self):
 
         compname = 'Attitude_AngularRates'
-        inputs = ['h', 'w_B']
+        inputs = ['w_B']
         outputs = ['wdot_B']
         state0 = []
         
