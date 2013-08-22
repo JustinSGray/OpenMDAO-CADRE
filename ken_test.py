@@ -23,17 +23,37 @@ from CADRE.thermal_temperature import ThermalTemperature
 from CADRE.power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 
-NTIME = 3
+NTIME = 4
 
 cadre = set_as_top(Assembly())
 
-cadre.add('comp', ReactionWheel_Power(NTIME))
-shape = cadre.comp.w_RW.shape
-cadre.comp.w_RW = np.random.random(shape)
+cadre.add('comp', ReactionWheel_Dynamics(NTIME))
+shape = cadre.comp.w_B.shape
+cadre.comp.w_B = np.random.random(shape)
 shape = cadre.comp.T_RW.shape
-cadre.comp.T_RW = np.random.random(shape)
+cadre.comp.T_RW = np.random.random(shape)*200
+shape = cadre.comp.w_RW0.shape
+cadre.comp.w_RW0 = np.random.random(shape)
 inputs = ['comp.T_RW']
-outputs = ['comp.P_RW']
+outputs = ['comp.w_RW']
+
+#cadre.add('comp', BatteryPower(NTIME))
+#shape = cadre.comp.SOC.shape
+#cadre.comp.SOC = np.random.random(shape)
+#shape = cadre.comp.temperature.shape
+#cadre.comp.temperature = np.random.random(shape)
+#shape = cadre.comp.P_bat.shape
+#cadre.comp.P_bat = np.random.random(shape)
+#inputs = ['comp.SOC', 'comp.temperature', 'comp.P_bat']
+#outputs = ['comp.I_bat']
+
+#cadre.add('comp', ReactionWheel_Power(NTIME))
+#shape = cadre.comp.w_RW.shape
+#cadre.comp.w_RW = np.random.random(shape)
+#shape = cadre.comp.T_RW.shape
+#cadre.comp.T_RW = np.random.random(shape)
+#inputs = ['comp.T_RW']
+#outputs = ['comp.P_RW']
 
 #cadre.add('comp', BatteryConstraints(NTIME))
 #shape = cadre.comp.I_bat.shape
@@ -67,8 +87,8 @@ outputs = ['comp.P_RW']
 cadre.driver.workflow.add('comp')
 cadre.comp.h = .01
 cadre.run()
-cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
-#cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
+#cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
+cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
 
 
 
@@ -82,4 +102,8 @@ cadre.driver.workflow.config_changed()
 Jf = cadre.driver.workflow.calc_gradient(inputs=inputs,
                                          outputs=outputs)
 diff = abs(Jf - Jn)
+print diff.max()
+
+
+diff = np.nan_to_num(abs(Jf - Jn)/Jn)
 print diff.max()

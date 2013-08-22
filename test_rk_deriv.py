@@ -64,7 +64,7 @@ class RKTest(RK4):
                 
         return df
     
-NTIME = 3
+NTIME = 4
 
 class Testcase_RK_deriv(unittest.TestCase):
     """ Test run/step/stop aspects of a simple workflow. """

@@ -55,7 +55,7 @@ class Power_CellVoltage( Component ):
         self.raw = self.MBI.evaluate(self.x)[:,0].reshape((self.n,7,12),order='F')
         for c in range(7):
             for p in range(12):
-                self.V_sol[p,:] += self.raw[:,c,p]
+                self.V_sol[p,:] = self.raw[:,c,p]
 
     def linearize(self): 
 
@@ -124,7 +124,7 @@ class Power_SolarPower( Component ):
     def execute(self): 
 
         for p in range(12):
-            self.P_sol[:] += self.V_sol[p,:] * self.Isetpt[p,:]
+            self.P_sol[:] = self.V_sol[p,:] * self.Isetpt[p,:]
 
     def apply_deriv(self, arg, result):
 
@@ -161,7 +161,7 @@ class Power_Total( Component ):
                                       iotype="out"))
 
     def execute(self): 
-        self.P_bat[:] += self.P_sol[:] - 5*self.P_comm[:] - np.sum(self.P_RW[:], 0) - 2.0
+        self.P_bat[:] = self.P_sol[:] - 5*self.P_comm[:] - np.sum(self.P_RW[:], 0) - 2.0
 
     def apply_deriv(self, arg, result):
 

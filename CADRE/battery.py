@@ -143,8 +143,9 @@ class BatteryPower(Component):
         self.dI_dSOC = tmp * dV_dvoc * dVoc_dSOC
 
     def apply_deriv(self, arg, result):
+        
         if 'P_bat' in arg: 
-            result['I_bat'] = self.dI_dP * arg['P_bat'] 
+            result['I_bat'] += self.dI_dP * arg['P_bat'] 
         if 'temperature' in arg:  
             result['I_bat'] += self.dI_dT * arg['temperature'][4,:]
         if 'SOC' in arg:     
@@ -152,13 +153,13 @@ class BatteryPower(Component):
 
     def apply_derivT(self, arg, result): 
         if 'I_bat' in arg: 
-            result['P_bat'] = self.dI_dP * arg['I_bat']
+            result['P_bat'] += self.dI_dP * arg['I_bat']
 
-            result['temperature'] = np.zeros(self.temperature.shape)
-            result['temperature'][4,:] = self.dI_dT * arg['I_bat']
+            result['temperature'] += np.zeros(self.temperature.shape)
+            result['temperature'][4,:] += self.dI_dT * arg['I_bat']
 
-            result['SOC'] = np.zeros(self.SOC.shape)
-            result['SOC'][0,:] = self.dI_dSOC * arg['I_bat'] 
+            result['SOC'] += np.zeros(self.SOC.shape)
+            result['SOC'][0,:] += self.dI_dSOC * arg['I_bat'] 
 
             
         

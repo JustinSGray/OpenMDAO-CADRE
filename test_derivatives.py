@@ -63,7 +63,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.model.comp.h = 0.01
         self.model.run()
         
-    def compare_derivatives(self, var_in, var_out):
+    def compare_derivatives(self, var_in, var_out, rel_error=False):
         
         wflow = self.model.driver.workflow
         inputs = ['comp.%s' % v for v in var_in]
@@ -85,7 +85,11 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Jf
         
-        diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+        if rel_error:
+            diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+        else:
+            diff = abs(Jf - Jn)
+        
         assert_rel_error(self, diff.max(), 0.0, 1e-3)
         
         # Analytic adjoint
@@ -97,7 +101,11 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Ja
         
-        diff = np.nan_to_num(abs(Ja - Jn)/Jn)
+        if rel_error:
+            diff = np.nan_to_num(abs(Ja - Jn)/Jn)
+        else:
+            diff = abs(Ja - Jn)
+            
         assert_rel_error(self, diff.max(), 0.0, 1e-3)
 
     def test_Comm_DataDownloaded(self):
@@ -470,7 +478,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.setup(compname, inputs, state0)
         
         self.run_model()
-        self.compare_derivatives(inputs, outputs)    
+        self.compare_derivatives(inputs, outputs, rel_error=True)    
 
     def test_ReactionWheel_Power(self):
 
@@ -482,7 +490,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.setup(compname, inputs, state0)
         
         self.run_model()
-        self.compare_derivatives(inputs, outputs)   
+        self.compare_derivatives(inputs, outputs, rel_error=True)   
 
     def test_ReactionWheel_Torque(self):
 
