@@ -69,12 +69,13 @@ class Attitude_AngularRates(Component):
         return
         
     def execute(self):
+        
         for k in xrange(3):
-            self.wdot_B[k,0] += self.w_B[k,1] / self.h
+            self.wdot_B[k,0] = self.w_B[k,1] / self.h
             self.wdot_B[k,0] -= self.w_B[k,0] / self.h
-            self.wdot_B[k,1:-1] += self.w_B[k,2:] / 2.0 / self.h
+            self.wdot_B[k,1:-1] = self.w_B[k,2:] / 2.0 / self.h
             self.wdot_B[k,1:-1] -= self.w_B[k,:-2] / 2.0 / self.h
-            self.wdot_B[k,-1] += self.w_B[k,-1] / self.h
+            self.wdot_B[k,-1] = self.w_B[k,-1] / self.h
             self.wdot_B[k,-1] -= self.w_B[k,-2] / self.h
 
     def apply_deriv(self, arg, result):

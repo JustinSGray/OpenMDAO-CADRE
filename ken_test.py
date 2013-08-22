@@ -26,9 +26,16 @@ from CADRE.power import Power_CellVoltage, Power_SolarPower, Power_Total
 NTIME = 3
 
 cadre = set_as_top(Assembly())
-cadre.add('comp', ThermalTemperature(NTIME))
-cadre.driver.workflow.add('comp')
 
+
+#cadre.add('comp', Attitude_AngularRates(NTIME))
+#shape = cadre.comp.w_B.shape
+#cadre.comp.w_B = np.random.random(shape)
+#inputs = ['comp.w_B']
+#outputs = ['comp.wdot_B']
+##cadre.add('comp', ThermalTemperature(NTIME))
+
+cadre.add('comp', ThermalTemperature(NTIME))
 shape = cadre.comp.exposedArea.shape
 cadre.comp.exposedArea = np.random.random(shape)
 shape = cadre.comp.cellInstd.shape
@@ -37,11 +44,14 @@ shape = cadre.comp.LOS.shape
 cadre.comp.LOS = np.random.random(shape)
 shape = cadre.comp.P_comm.shape
 cadre.comp.P_comm = np.random.random(shape)
-cadre.run()
 inputs = ['comp.exposedArea', 'comp.cellInstd', 
           'comp.LOS', 'comp.P_comm']
 #inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
 #inputs = ['ThermalTemperature.cellInstd']
 outputs = ['comp.temperature']
 
+cadre.driver.workflow.add('comp')
+cadre.comp.h = .01
+cadre.run()
+#cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
 cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
