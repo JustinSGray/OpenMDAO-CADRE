@@ -95,6 +95,7 @@ class Solar_ExposedArea(Component):
     def execute(self):
         self.setx()
         self.P = self.MBI.evaluate(self.x)
+        self.exposedArea = np.zeros((self.exposedArea.shape))
         for c in range(7):
             for p in range(12):
                 self.exposedArea[c,p,:] = self.P[:,7*p+c]
