@@ -34,7 +34,8 @@ outputs = ['comp.O_RI']
 
 for i_name in inputs: 
     var = cadre.get(i_name)
-    var = np.random.random(var.shape)
+    val = np.random.random(var.shape)
+    cadre.set(i_name, val)
 
 
 cadre.driver.workflow.add('comp')

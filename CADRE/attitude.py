@@ -193,6 +193,7 @@ class Attitude_Attitude(Component):
             
             normr = np.sqrt(np.dot(r,r))
             normv = np.sqrt(np.dot(v,v))
+            
             if normr < 1e-10:
                 normr = 1e-10
             if normv < 1e-10:
