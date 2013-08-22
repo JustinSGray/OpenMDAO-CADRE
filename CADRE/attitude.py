@@ -316,11 +316,11 @@ class Attitude_RotationMtxRates(Component):
     def execute(self):
         for k in range(3):
             for j in range(3):
-                self.Odot_BI[k,j,0] += self.O_BI[k,j,1] / self.h
+                self.Odot_BI[k,j,0] = self.O_BI[k,j,1] / self.h
                 self.Odot_BI[k,j,0] -= self.O_BI[k,j,0] / self.h
-                self.Odot_BI[k,j,1:-1] += self.O_BI[k,j,2:] / 2.0 / self.h
+                self.Odot_BI[k,j,1:-1] = self.O_BI[k,j,2:] / 2.0 / self.h
                 self.Odot_BI[k,j,1:-1] -= self.O_BI[k,j,:-2] / 2.0 / self.h
-                self.Odot_BI[k,j,-1] += self.O_BI[k,j,-1] / self.h
+                self.Odot_BI[k,j,-1] = self.O_BI[k,j,-1] / self.h
                 self.Odot_BI[k,j,-1] -= self.O_BI[k,j,-2] / self.h
 
     def apply_deriv(self, arg, result):

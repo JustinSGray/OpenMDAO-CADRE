@@ -468,6 +468,7 @@ class Testcase_CADRE(unittest.TestCase):
         state0 = ['w_RW0']
         
         self.setup(compname, inputs, state0)
+        
         self.run_model()
         self.compare_derivatives(inputs, outputs)    
 
@@ -479,6 +480,7 @@ class Testcase_CADRE(unittest.TestCase):
         state0 = []
         
         self.setup(compname, inputs, state0)
+        
         self.run_model()
         self.compare_derivatives(inputs, outputs)   
 
@@ -527,15 +529,17 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)    
 
     def test_Orbit_Dynamics(self):
+        # This comp has no inputs, so no derivs.
+        pass
 
-        compname = 'Orbit_Dynamics'
-        inputs = []
-        outputs = ['r_e2b_I']
-        state0 = ['r_e2b_I0']
+        #compname = 'Orbit_Dynamics'
+        #inputs = ['']
+        #outputs = ['r_e2b_I']
+        #state0 = ['r_e2b_I0']
         
-        self.setup(compname, inputs, state0)
-        self.run_model()
-        self.compare_derivatives(inputs, outputs)    
+        #self.setup(compname, inputs, state0)
+        #self.run_model()
+        #self.compare_derivatives(inputs, outputs)    
 
         
 if __name__ == "__main__":

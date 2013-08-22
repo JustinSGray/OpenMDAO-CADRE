@@ -27,31 +27,59 @@ NTIME = 3
 
 cadre = set_as_top(Assembly())
 
+cadre.add('comp', ReactionWheel_Power(NTIME))
+shape = cadre.comp.w_RW.shape
+cadre.comp.w_RW = np.random.random(shape)
+shape = cadre.comp.T_RW.shape
+cadre.comp.T_RW = np.random.random(shape)
+inputs = ['comp.T_RW']
+outputs = ['comp.P_RW']
+
+#cadre.add('comp', BatteryConstraints(NTIME))
+#shape = cadre.comp.I_bat.shape
+#cadre.comp.I_bat = np.random.random(shape)
+#shape = cadre.comp.SOC.shape
+#cadre.comp.SOC = np.random.random(shape)
+#inputs = ['comp.I_bat', 'comp.SOC']
+#outputs = ['comp.ConCh', 'comp.ConDs', 'comp.ConS0', 'comp.ConS1']
 
 #cadre.add('comp', Attitude_AngularRates(NTIME))
 #shape = cadre.comp.w_B.shape
 #cadre.comp.w_B = np.random.random(shape)
 #inputs = ['comp.w_B']
 #outputs = ['comp.wdot_B']
-##cadre.add('comp', ThermalTemperature(NTIME))
 
-cadre.add('comp', ThermalTemperature(NTIME))
-shape = cadre.comp.exposedArea.shape
-cadre.comp.exposedArea = np.random.random(shape)
-shape = cadre.comp.cellInstd.shape
-cadre.comp.cellInstd = np.random.random(shape)
-shape = cadre.comp.LOS.shape
-cadre.comp.LOS = np.random.random(shape)
-shape = cadre.comp.P_comm.shape
-cadre.comp.P_comm = np.random.random(shape)
-inputs = ['comp.exposedArea', 'comp.cellInstd', 
-          'comp.LOS', 'comp.P_comm']
-#inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
-#inputs = ['ThermalTemperature.cellInstd']
-outputs = ['comp.temperature']
+#cadre.add('comp', ThermalTemperature(NTIME))
+#shape = cadre.comp.exposedArea.shape
+#cadre.comp.exposedArea = np.random.random(shape)
+#shape = cadre.comp.cellInstd.shape
+#cadre.comp.cellInstd = np.random.random(shape)
+#shape = cadre.comp.LOS.shape
+#cadre.comp.LOS = np.random.random(shape)
+#shape = cadre.comp.P_comm.shape
+#cadre.comp.P_comm = np.random.random(shape)
+#inputs = ['comp.exposedArea', 'comp.cellInstd', 
+          #'comp.LOS', 'comp.P_comm']
+##inputs = ['ThermalTemperature.exposedArea', 'ThermalTemperature.LOS', 'ThermalTemperature.P_comm']
+##inputs = ['ThermalTemperature.cellInstd']
+#outputs = ['comp.temperature']
 
 cadre.driver.workflow.add('comp')
 cadre.comp.h = .01
 cadre.run()
-#cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
-cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
+cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs)
+#cadre.driver.workflow.check_gradient(inputs=inputs, outputs=outputs, adjoint=True)
+
+
+
+cadre.driver.update_parameters()
+cadre.driver.workflow.config_changed()        
+Jn = cadre.driver.workflow.calc_gradient(inputs=inputs,
+                                         outputs=outputs,
+                                         fd=True)
+cadre.driver.update_parameters()
+cadre.driver.workflow.config_changed()        
+Jf = cadre.driver.workflow.calc_gradient(inputs=inputs,
+                                         outputs=outputs)
+diff = abs(Jf - Jn)
+print diff.max()

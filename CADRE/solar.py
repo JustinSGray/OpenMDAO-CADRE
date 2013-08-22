@@ -97,7 +97,7 @@ class Solar_ExposedArea(Component):
         self.P = self.MBI.evaluate(self.x)
         for c in range(7):
             for p in range(12):
-                self.exposedArea[c,p,:] += self.P[:,7*p+c]
+                self.exposedArea[c,p,:] = self.P[:,7*p+c]
 
     def apply_deriv(self, arg, result):
         

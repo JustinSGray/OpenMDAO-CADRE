@@ -204,21 +204,21 @@ class BatteryConstraints(Component):
         
     def apply_deriv(self, arg, result):
         if 'I_bat' in arg: 
-            result['ConCh'] = np.dot(self.dCh_dg, arg['I_bat'])
-            result['ConDs'] = -1 * np.dot(self.dDs_dg, arg['I_bat'])
+            result['ConCh'] += np.dot(self.dCh_dg, arg['I_bat'])
+            result['ConDs'] -= np.dot(self.dDs_dg, arg['I_bat'])
         if 'SOC' in arg:
-            result['ConS0'] = -1 * np.dot(self.dS0_dg, arg['SOC'][0,:])
-            result['ConS1'] = np.dot(self.dS1_dg, arg['SOC'][0,:])
+            result['ConS0'] -= np.dot(self.dS0_dg, arg['SOC'][0,:])
+            result['ConS1'] += np.dot(self.dS1_dg, arg['SOC'][0,:])
 
     def apply_derivT(self, arg, result): 
         if 'ConCh' in arg: 
-            result['I_bat'] = np.dot(self.dCh_dg, arg['ConCh'])
+            result['I_bat'] += self.dCh_dg * arg['ConCh']
         if 'ConDs' in arg: 
-            result['I_bat'] += -1 * np.dot(self.dDs_dg, arg['ConDs'])
+            result['I_bat'] -= self.dDs_dg * arg['ConDs']
         if 'ConS0' in arg: 
-            result['SOC'] = -1 * np.dot(self.dS0_dg, arg['ConS0'])
+            result['SOC'] -= self.dS0_dg * arg['ConS0']
         if 'ConS1' in arg: 
-            result['SOC'] += np.dot(self.dS1_dg, arg['ConS1']) 
+            result['SOC'] += self.dS1_dg * arg['ConS1'] 
             
 
 
