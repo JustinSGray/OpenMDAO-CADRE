@@ -26,14 +26,14 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=2):
+    def __init__(self, n=3):
         super(CADRE, self).__init__()
         
         # Parameters
-        self.add("BsplineParameters", BsplineParameters(n))
-        self.driver.workflow.add("BsplineParameters")
+        #self.add("BsplineParameters", BsplineParameters(n))
+        #self.driver.workflow.add("BsplineParameters")
         
-        # Additude components
+        # Attitude components
         #self.add("Attitude_Angular", Attitude_Angular(n))
         #self.driver.workflow.add("Attitude_Angular")
         

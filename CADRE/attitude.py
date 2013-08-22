@@ -69,6 +69,7 @@ class Attitude_AngularRates(Component):
         return
         
     def execute(self):
+        
         for k in xrange(3):
             self.wdot_B[k,0] = self.w_B[k,1] / self.h
             self.wdot_B[k,0] -= self.w_B[k,0] / self.h
