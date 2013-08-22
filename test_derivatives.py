@@ -87,6 +87,7 @@ class Testcase_CADRE(unittest.TestCase):
         
         if rel_error:
             diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+            print Jn
         else:
             diff = abs(Jf - Jn)
         
@@ -105,7 +106,7 @@ class Testcase_CADRE(unittest.TestCase):
             diff = np.nan_to_num(abs(Ja - Jn)/Jn)
         else:
             diff = abs(Ja - Jn)
-            
+
         assert_rel_error(self, diff.max(), 0.0, 1e-3)
 
     def test_Comm_DataDownloaded(self):

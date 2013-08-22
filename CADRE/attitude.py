@@ -119,11 +119,26 @@ class Attitude_Attitude(Component):
         self.diB_dv = np.zeros((3,3))
         self.djB_dv = np.zeros((3,3))
 
+        self.dvx_dv[0,:,0] = (0., 0., 0.)
+        self.dvx_dv[1,:,0] = (0., 0., -1.)
+        self.dvx_dv[2,:,0] = (0., 1., 0.)
+
+        self.dvx_dv[0,:,1] = (0., 0., 1.)
+        self.dvx_dv[1,:,1] = (0., 0., 0.)
+        self.dvx_dv[2,:,1] = (-1., 0., 0.)
+
+        self.dvx_dv[0,:,2] = (0., -1., 0.)
+        self.dvx_dv[1,:,2] = (1., 0., 0.)
+        self.dvx_dv[2,:,2] = (0., 0., 0.)
+
     def linearize(self):
 
+
+        
+        
         for i in range(0,self.n):
             r = self.r_e2b_I[0:3,i]
-            v = self.r_e2b_I[3:6,i]
+            v = self.r_e2b_I[3:,i]
             
             normr = np.sqrt(np.dot(r,r))
             normv = np.sqrt(np.dot(v,v))
@@ -135,54 +150,46 @@ class Attitude_Attitude(Component):
             r = r / normr
             v = v / normv
 
+            self.dr_dr = np.zeros((3,3))
+            self.dv_dv = np.zeros((3,3))
+
             for k in range(0,3):
                 self.dr_dr[k,k] = self.dr_dr[k,k] + 1.0 / normr
                 self.dv_dv[k,k] = self.dv_dv[k,k] + 1.0 / normv
                 self.dr_dr[:,k] = self.dr_dr[:,k] - self.r_e2b_I[0:3,i] / normr**2 * self.r_e2b_I[k,i] / normr
-                self.dv_dv[:,k] = self.dv_dv[:,k] - self.r_e2b_I[3:6,i] / normv**2 * self.r_e2b_I[2+k,i]/ normv
+                self.dv_dv[:,k] = self.dv_dv[:,k] - self.r_e2b_I[3:,i] / normv**2 * self.r_e2b_I[2+k,i]/ normv
 
             self.vx[0,:] = (0., -v[2], v[1])
             self.vx[1,:] = (v[2], 0., -v[0])
             self.vx[2,:] = (-v[1], v[0], 0.)
     
-            self.dvx_dv[0,:,0] = (0., 0., 0.)
-            self.dvx_dv[1,:,0] = (0., 0., -1.)
-            self.dvx_dv[2,:,0] = (0., 1., 0.)
-    
-            self.dvx_dv[0,:,1] = (0., 0., 1.)
-            self.dvx_dv[1,:,1] = (0., 0., 0.)
-            self.dvx_dv[2,:,1] = (-1., 0., 0.)
-    
-            self.dvx_dv[0,:,2] = (0., -1., 0.)
-            self.dvx_dv[1,:,2] = (1., 0., 0.)
-            self.dvx_dv[2,:,2] = (0., 0., 0.)
-    
             iB =  np.dot(self.vx, r)
             jB = -np.dot(self.vx, iB)
     
-            diB_dr = self.vx
+            self.diB_dr = self.vx
             self.diB_dv[:,0] = np.dot(self.dvx_dv[:,:,0],r)
             self.diB_dv[:,1] = np.dot(self.dvx_dv[:,:,1],r)
             self.diB_dv[:,2] = np.dot(self.dvx_dv[:,:,2],r)
     
-            djB_diB = -self.vx
+            self.djB_diB = -self.vx
             self.djB_dv[:,0] = -np.dot(self.dvx_dv[:,:,0],iB)
             self.djB_dv[:,1] = -np.dot(self.dvx_dv[:,:,1],iB)
             self.djB_dv[:,2] = -np.dot(self.dvx_dv[:,:,2],iB)
             
-            self.dO_dr[i,0,:,0:3] = np.dot(diB_dr , self.dr_dr)
-            self.dO_dr[i,0,:,3:6] = np.dot(self.diB_dv , self.dv_dv)
+            self.dO_dr[i,0,:,0:3] = np.dot(self.diB_dr , self.dr_dr)
+            self.dO_dr[i,0,:,3:] = np.dot(self.diB_dv , self.dv_dv)
             
-            self.dO_dr[i,1,:,0:3] = np.dot(np.dot(djB_diB, diB_dr) , self.dr_dr)
-            self.dO_dr[i,1,:,3:6] = np.dot(np.dot(djB_diB, self.diB_dv) + self.djB_dv , self.dv_dv)
+            self.dO_dr[i,1,:,0:3] = np.dot(np.dot(self.djB_diB, self.diB_dr) , self.dr_dr)
+            self.dO_dr[i,1,:,3:] = np.dot(np.dot(self.djB_diB, self.diB_dv) + self.djB_dv , self.dv_dv)
             
-            self.dO_dr[i,2,:,3:6] = -self.dv_dv
+            self.dO_dr[i,2,:,3:] = -self.dv_dv
 
 
     def execute(self):
+        self.O_RI = np.zeros(self.O_RI.shape)
         for i in range(0,self.n):
             r = self.r_e2b_I[0:3,i]
-            v = self.r_e2b_I[3:6,i]
+            v = self.r_e2b_I[3:,i]
             
             normr = np.sqrt(np.dot(r,r))
             normv = np.sqrt(np.dot(v,v))
@@ -198,6 +205,7 @@ class Attitude_Attitude(Component):
             vx[0,:] = (0., -v[2], v[1])
             vx[1,:] = (v[2], 0., -v[0])
             vx[2,:] = (-v[1], v[0], 0.)
+            self.vx = vx
             
             iB =  np.dot(vx,r)
             jB = -np.dot(vx,iB)
