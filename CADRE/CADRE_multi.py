@@ -6,8 +6,10 @@ from pyopt_driver import pyopt_driver
 
 class CADRE_Optimization(Assembly):
     
-    def __init__(self, n=3):
+    def __init__(self, n=3, m=300):
         super(CADRE_Optimization, self).__init__()
+        
+        npts = 6
         #add SNOPT driver
         self.add("driver", pyopt_driver.pyOptDriver())
         self.driver.optimizer = "SNOPT"
@@ -28,21 +30,55 @@ class CADRE_Optimization(Assembly):
         power_raw = np.genfromtxt('CADRE/data/Power/curve.dat')
         
         # Initialize analysis points
-        for i in xrange(6):
+        for i in xrange(npts):
+            print "pt",i
             aname = ''.join(["pt", str(i)])
-            self.add(aname, CADRE(n, solar_raw1, solar_raw2, 
+            self.add(aname, CADRE(n, m, solar_raw1, solar_raw2, 
                                   comm_raw, power_raw))
             for param in common_parameters:
                 self.connect(param, '.'.join([aname, param]))
+            
+            # add parameters to driver
+            for k in xrange(12):
+                print "CP_Isetpt",k
+                for j in xrange(m):
+                    param = ''.join(["pt", str(i), ".CP_Isetpt[", str(k), "][",
+                                     str(j), "]"])
+                    self.driver.add_parameter(param, low=0, high=1)
+            for k in xrange(m):
+                print "CP_gamma",k
+                param = ''.join(["pt",str(i),".CP_gamma[",str(k),"]"])
+                self.driver.add_parameter(param, low=0, high=1)
+            for k in xrange(m):
+                print "CP_comm",k
+                param = ''.join(["pt",str(i),".CP_P_comm[",str(k),"]"])
+                self.driver.add_parameter(param, low=0, high=1)
+                
+            # add battery constraints
+            constr = ''.join(["pt",str(i),".ConCh >= 0"])
+            self.driver.add_constraint(constr)  
+            
+            constr = ''.join(["pt",str(i),".ConDs >= 0"])
+            self.driver.add_constraint(constr)  
+            
+            constr = ''.join(["pt",str(i),".ConS0 >= 0"])
+            self.driver.add_constraint(constr)  
+            
+            constr = ''.join(["pt",str(i),".ConS1 >= 0"])
+            self.driver.add_constraint(constr)  
         
-        #add parameters
-        #self.driver.add_parameter()
+        #add rest of parameters to driver
+        for i in xrange(7):
+            print "Cellinstd",i
+            for k in xrange(12):
+                param = ''.join(["cellInstd[",str(i),"][",str(k),"]"])
+                self.driver.add_parameter(param, low=0, high=1)
+        self.driver.add_parameter("finAngle", low=0, high=np.pi/2.)
+        self.driver.add_parameter("antAngle", low=0, high=np.pi)
         
         #add objective
-        #self.driver.add_objective()
-        
-        #add constraints
-        #self.driver.add_constraint()
+        obj = ''.join([''.join(["-np.sum(pt",str(i),".Data)"]) for i in xrange(npts)])
+        self.driver.add_objective(obj)
         
 if __name__ == "__main__":
     a = CADRE_Optimization(1500)

@@ -10,7 +10,7 @@ comm_rawGdata = np.genfromtxt('CADRE/data/Comm/Gain.txt')
 comm_raw = (10**(comm_rawGdata/10.0)).reshape((361,361),order='F')
 
 power_raw = np.genfromtxt('CADRE/data/Power/curve.dat')
-assembly = CADRE(1500, raw1, raw2, comm_raw, power_raw)
+assembly = CADRE(1500, 300, raw1, raw2, comm_raw, power_raw)
 
 pprint.pprint(assembly.varnames)
 
