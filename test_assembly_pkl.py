@@ -1,3 +1,5 @@
+import time
+
 from openmdao.main.api import set_as_top
 from CADRE.CADRE_assembly import CADRE
 from pprint import pprint
@@ -31,7 +33,9 @@ setd['Gamma'] = data[idx+":gamma"]
 
 
 assembly.print_set_vals(setvals=setd, printvals="none")
+start_time = time.time()
 assembly.run()
+print "execution complete: %f seconds"%(time.time()-start_time)
 
 for key in setd.keys():
         print "checking",key
