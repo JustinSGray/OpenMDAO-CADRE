@@ -1,4 +1,5 @@
 from openmdao.main.api import Assembly
+from openmdao.main.datatypes.api import Float, Array, Int
 
 from attitude import Attitude_Angular, Attitude_AngularRates, Attitude_Attitude, \
      Attitude_Roll, Attitude_RotationMtx, \
@@ -19,6 +20,7 @@ from thermal_temperature import ThermalTemperature
 from power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 import numpy as np
+
 #rk4 components:
 #Comm_DataDownloaded, BatterySOC, ThermalTemperature, Orbit_Dynamics
 
@@ -26,10 +28,42 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=3):
+    def __init__(self, n, solar_raw1, solar_raw2, comm_raw, power_raw):
         super(CADRE, self).__init__()
+        self.self = self
         
-        # Parameters
+        ## Assembly-level parameters
+        
+        # Analysis parameters
+        self.n = n
+        self.add('m', Int(300, iotype='in'))
+        self.add('t', Array(np.zeros((n,), order='F'), size=(n,), 
+                            dtype=np.float, iotype="in"))
+        self.add('t1', Float(0., iotype='in'))
+        self.add('t2', Float(43200., iotype='in'))
+        h = (self.t2 - self.t1)/(self.n - 1)
+        self.add("h", Float(h, iotype="in", copy=None))        
+        
+        # Design parameters
+        self.add('CP_Isetpt', Array(np.zeros((12,self.m)), size=(12,self.m), dtype=float, 
+                                    iotype='in'))
+        self.add('CP_gamma', Array(np.zeros((self.m,)), size=(self.m,), dtype=float, 
+                                   iotype='in'))
+        self.add('CP_P_comm', Array(np.zeros((self.m,)), size=(self.m,), dtype=float, 
+                                    iotype='in'))
+        self.add("cellInstd", Array(np.ones((7,12)), size=(7,12), dtype=np.float, 
+            iotype="in", desc="Cell/Radiator indication", low=0, high=1)
+        )
+        self.add("finAngle", Float(0., iotype="in", copy=None))
+        self.add("antAngle", Float(0., iotype="in", copy=None))
+        
+        # State parameters (?)
+        self.add("LD", Float(0., iotype="in"))
+        self.add("lon", Float(0, iotype="in"))
+        self.add("lat", Float(0, iotype="in"))
+        self.add("alt", Float(0, iotype="in"))
+        
+        # B-spline Parameters
         self.add("BsplineParameters", BsplineParameters(n))
         self.driver.workflow.add("BsplineParameters")
         
@@ -58,9 +92,13 @@ class CADRE(Assembly):
         self.add("Attitude_Torque", Attitude_Torque(n))
         self.driver.workflow.add("Attitude_Torque")
         
-        # Battery components
+        ## Battery components
         self.add("BatteryConstraints", BatteryConstraints(n))
         self.driver.workflow.add("BatteryConstraints")
+        self.create_passthrough("BatteryConstraints.ConCh")
+        self.create_passthrough("BatteryConstraints.ConDs")
+        self.create_passthrough("BatteryConstraints.ConS0")
+        self.create_passthrough("BatteryConstraints.ConS1")
 
         self.add("BatteryPower", BatteryPower(n))
         self.driver.workflow.add("BatteryPower")
@@ -68,7 +106,7 @@ class CADRE(Assembly):
         self.add("BatterySOC", BatterySOC(n))
         self.driver.workflow.add("BatterySOC")
         
-        ## Comm components
+        # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))
         self.driver.workflow.add("Comm_AntRotation")
         
@@ -80,6 +118,7 @@ class CADRE(Assembly):
         
         self.add("Comm_DataDownloaded", Comm_DataDownloaded(n))
         self.driver.workflow.add("Comm_DataDownloaded")
+        self.create_passthrough("Comm_DataDownloaded.Data")
         
         self.add("Comm_Distance", Comm_Distance(n))
         self.driver.workflow.add("Comm_Distance")
@@ -90,7 +129,7 @@ class CADRE(Assembly):
         self.add("Comm_EarthsSpinMtx", Comm_EarthsSpinMtx(n))
         self.driver.workflow.add("Comm_EarthsSpinMtx")
 
-        self.add("Comm_GainPattern", Comm_GainPattern(n))
+        self.add("Comm_GainPattern", Comm_GainPattern(n, comm_raw))
         self.driver.workflow.add("Comm_GainPattern")
         
         self.add("Comm_GSposEarth", Comm_GSposEarth(n))
@@ -122,7 +161,7 @@ class CADRE(Assembly):
         self.driver.workflow.add("Orbit_Dynamics")
         
         # Power
-        self.add("Power_CellVoltage", Power_CellVoltage(n))
+        self.add("Power_CellVoltage", Power_CellVoltage(n, power_raw))
         self.driver.workflow.add("Power_CellVoltage")
         
         self.add("Power_SolarPower", Power_SolarPower(n))
@@ -145,7 +184,8 @@ class CADRE(Assembly):
         self.driver.workflow.add("ReactionWheel_Dynamics")
         
         # Solar
-        self.add("Solar_ExposedArea", Solar_ExposedArea(n))
+        self.add("Solar_ExposedArea", Solar_ExposedArea(n, solar_raw1, 
+                                                        solar_raw2))
         self.driver.workflow.add("Solar_ExposedArea")
         
         # Sun components
@@ -161,17 +201,34 @@ class CADRE(Assembly):
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
         
-        ## Thermal temp components
+        # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
         
         self.make_connections()
-        
+    
+    def get_unconnected_inputs(self):
+        unconnected_inputs = []
+        connected_inputs = [i[1] for i in self.get_dataflow()['connections']]
+        defaults = ['itername', 'force_execute', 'directory', 'exec_count',
+                    'derivative_exec_count', 'fixed_external_vars']
+        for compname in self.list_components() + ['self']:
+            if compname == "driver":
+                continue
+            comp = self.get(compname)            
+            for var in comp.list_inputs():
+                if var in defaults:
+                    continue
+                fullname = '.'.join([compname, var])
+                if fullname not in connected_inputs:
+                    unconnected_inputs.append(fullname)
+        return unconnected_inputs
+                
     def print_set_vals(self,setvals=None, printvals=None, tval=None):
         vals = []
         defaults = ['itername', 'force_execute', 'directory', 'exec_count',
                     'derivative_exec_count', 'fixed_external_vars']
-        for compname in self.list_components():
+        for compname in self.list_components() + ['self']:
             if compname == "driver":
                 continue
             comp = self.get(compname)
@@ -204,6 +261,8 @@ class CADRE(Assembly):
                     print v[0], v[2], v[3]
                     if isinstance(tval, np.ndarray):
                         print "rel error:", np.linalg.norm(tval - v[1])/np.linalg.norm(tval)
+                    else:
+                        print "rel error", np.abs(tval - v[1]) / tval
             else:
                 print v[0]
         
@@ -240,18 +299,33 @@ class CADRE(Assembly):
                     outputs[output_name].append(compname)
 
         print
+        
+        assym_level = self.list_inputs()
+        assym_level.remove('directory')
+        assym_level.remove('force_execute')
+        
+        for var in assym_level:
+            outputs[var] = ['']
         for varname in outputs.keys():
             comps = outputs[varname]
             if len(comps) > 1:
                 continue
-            frompath = '.'.join([comps[0], varname])
+            if comps[0]:
+                frompath = '.'.join([comps[0], varname])
+            else:
+                frompath = varname
 
             if varname in inputs:
                 for compname in inputs[varname]:
                     topath = '.'.join([compname, varname])
                     self.connect(frompath, topath)
                     print "Connecting", frompath, "to", topath, "..."
-
+        """        
+        print
+        print "Unconnected inputs:"
+        for i in self.get_unconnected_inputs():
+            print i
+        """
 
 if __name__ == "__main__":
     a = CADRE()
