@@ -1,5 +1,5 @@
 from openmdao.main.api import Component
-from openmdao.lib.datatypes.api import Float, Array
+from openmdao.lib.datatypes.api import Float, Array, Int
 
 from MBI.MBI import MBI
 
@@ -11,28 +11,38 @@ class BsplineParameters(Component):
     def __init__(self, n):
         super(BsplineParameters, self).__init__()
         self.n = n
-        self.add('m', 300)
-        m = self.m
-        self.add('t1', 0.)
-        self.add('t2', 43200.)
         
-        self.add('h', Float(0.01, iotype='out'))
+        self.add('m', Int(300, iotype='in'))
+        self.add('t1', Float(0., iotype='in'))
+        self.add('t2', Float(43200., iotype='in'))
         
-        self.B = MBI(np.zeros(n), [np.linspace(self.t1,self.t2,n)], [m], [4]).getJacobian(0,0)
-        self.Bdot = MBI(np.zeros(n), [np.linspace(self.t1,self.t2,n)], [m], [4]).getJacobian(1,0)
+        self.B = MBI(np.zeros(n), 
+                     [np.linspace(self.t1,self.t2,n)], [self.m], [4]).getJacobian(0,0)
+        self.Bdot = MBI(np.zeros(n), 
+                        [np.linspace(self.t1,self.t2,n)], [self.m], [4]).getJacobian(1,0)
         self.BT = self.B.transpose()
         self.BdotT = self.Bdot.transpose()        
         
-        self.add('CP_P_comm', Array(np.zeros((m,)), size=(m,), dtype=float, iotype='in'))
-        self.add('CP_gamma', Array(np.zeros((m,)), size=(m,), dtype=float, iotype='in'))
-        self.add('CP_Isetpt', Array(np.zeros((12,m)), size=(12,m), dtype=float, iotype='in'))
+        self.add('CP_P_comm', Array(np.zeros((self.m,)), size=(self.m,), dtype=float, 
+                                    iotype='in'))
+        self.add('CP_gamma', Array(np.zeros((self.m,)), size=(self.m,), dtype=float, 
+                                   iotype='in'))
+        self.add('CP_Isetpt', Array(np.zeros((12,self.m)), size=(12,self.m), dtype=float, 
+                                    iotype='in'))
 
-        self.add('P_comm', Array(np.ones((n,)), size=(n,), dtype=float, iotype='out'))
-        self.add('Gamma', Array(0.1*np.ones((n,)), size=(n,), dtype=float, iotype='out'))
-        self.add('Isetpt',Array(0.2*np.ones((12,n)), size=(12,n), dtype=float, iotype='out'))
-
+        self.add('P_comm', Array(np.ones((n,)), size=(n,), dtype=float, 
+                                 iotype='out'))
+        self.add('Gamma', Array(0.1*np.ones((n,)), size=(n,), dtype=float, 
+                                iotype='out'))
+        self.add('Isetpt',Array(0.2*np.ones((12,n)), size=(12,n), dtype=float, 
+                                iotype='out'))
+        
+        #self.add('t', Array(np.zeros((n,), order='F'), size=(n,), 
+        #                    dtype=np.float, iotype="out"))
+        #self.add("LD", Float(0., iotype="out"))
+        
     def execute(self):
-        self.h = (self.t2 - self.t1)/(self.n - 1)
+        #self.h = (self.t2 - self.t1)/(self.n - 1)
         self.P_comm[:] = self.B.dot(self.CP_P_comm[:])
         self.Gamma[:] = self.B.dot(self.CP_gamma[:])
         for k in range(12):
