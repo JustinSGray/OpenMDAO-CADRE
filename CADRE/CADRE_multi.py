@@ -77,9 +77,10 @@ class CADRE_Optimization(Assembly):
         self.driver.add_parameter("antAngle", low=0, high=np.pi)
         
         #add objective
-        obj = ''.join([''.join(["-np.sum(pt",str(i),".Data)"]) for i in xrange(npts)])
+        obj = ''.join([''.join(["-sum(pt",str(i),".Data)"]) for i in xrange(npts)])
         self.driver.add_objective(obj)
         
 if __name__ == "__main__":
     a = CADRE_Optimization(1500)
+    a.run()
     
