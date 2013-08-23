@@ -176,6 +176,7 @@ class ReactionWheel_Dynamics(rk4.RK4):
         self.J_RW = 2.8e-5 #unit conversion of some kind
 
     def f_dot(self, external, state):
+        
         self.jy[0, :] = [0., -external[2], external[1]]
         self.jy[1, :] = [external[2], 0., -external[0]]
         self.jy[2, :] = [-external[1], external[0], 0.]
@@ -185,15 +186,18 @@ class ReactionWheel_Dynamics(rk4.RK4):
         
     
     def df_dy(self, external, state):
+        
+        self.jy[0, :] = [0., -external[2], external[1]]
+        self.jy[1, :] = [external[2], 0., -external[0]]
+        self.jy[2, :] = [-external[1], external[0], 0.]
         return -self.jy
     
     def df_dx(self, external, state):
-        self.jx = np.zeros((3,6))
+        self.jx = np.zeros((3, 6))
 
         for i in xrange(3):
-            self.jx[:,i] = -self.djy_dx[:,:,i].dot(state)
-            self.jx[i,i+3] = -1 / self.J_RW   
-
+            self.jx[i, 0:3] = -self.djy_dx[:,:,i].dot(state)
+            self.jx[i, i+3] = -1.0 / self.J_RW
         return self.jx
 
     

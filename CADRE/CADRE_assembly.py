@@ -122,8 +122,8 @@ class CADRE(Assembly):
         #self.driver.workflow.add("Orbit_Dynamics")
         
         ## Power
-        #self.add("Power_CellVoltage", Power_CellVoltage(n))
-        #self.driver.workflow.add("Power_CellVoltage")
+        self.add("Power_CellVoltage", Power_CellVoltage(n))
+        self.driver.workflow.add("Power_CellVoltage")
         
         #self.add("Power_SolarPower", Power_SolarPower(n))
         #self.driver.workflow.add("Power_SolarPower")
@@ -161,9 +161,9 @@ class CADRE(Assembly):
         #self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         #self.driver.workflow.add("Sun_PositionSpherical")
         
-        ## Thermal temp components
-        self.add("ThermalTemperature", ThermalTemperature(n))
-        self.driver.workflow.add("ThermalTemperature")
+        ### Thermal temp components
+        #self.add("ThermalTemperature", ThermalTemperature(n))
+        #self.driver.workflow.add("ThermalTemperature")
         
         self.make_connections()
         

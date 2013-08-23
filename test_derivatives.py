@@ -63,7 +63,7 @@ class Testcase_CADRE(unittest.TestCase):
         self.model.comp.h = 0.01
         self.model.run()
         
-    def compare_derivatives(self, var_in, var_out):
+    def compare_derivatives(self, var_in, var_out, rel_error=False):
         
         wflow = self.model.driver.workflow
         inputs = ['comp.%s' % v for v in var_in]
@@ -85,7 +85,11 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Jf
         
-        diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+        if rel_error:
+            diff = np.nan_to_num(abs(Jf - Jn)/Jn)
+        else:
+            diff = abs(Jf - Jn)
+        
         assert_rel_error(self, diff.max(), 0.0, 1e-3)
         
         # Analytic adjoint
@@ -97,7 +101,11 @@ class Testcase_CADRE(unittest.TestCase):
         
         #print Ja
         
-        diff = np.nan_to_num(abs(Ja - Jn)/Jn)
+        if rel_error:
+            diff = np.nan_to_num(abs(Ja - Jn)/Jn)
+        else:
+            diff = abs(Ja - Jn)
+
         assert_rel_error(self, diff.max(), 0.0, 1e-3)
 
     def test_Comm_DataDownloaded(self):
@@ -342,7 +350,7 @@ class Testcase_CADRE(unittest.TestCase):
     def test_Attitude_RotationMtxRates(self):
         
         compname = 'Attitude_RotationMtxRates'
-        inputs = ['h', 'O_BI']
+        inputs = ['O_BI']
         outputs = ['Odot_BI']
         state0 = []
         
@@ -416,16 +424,29 @@ class Testcase_CADRE(unittest.TestCase):
         self.run_model()
         self.compare_derivatives(inputs, outputs) 
 
-    #def test_Power_CellVoltage(self):
-    #    #fix
-    #    compname = 'Power_CellVoltage'
-    #    inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
-    #    outputs = ['V_sol']
-    #    state0 = []
-    #    
-    #    self.setup(compname, inputs, state0)
-    #    self.run_model()
-    #    self.compare_derivatives(inputs, outputs)  
+    def test_Power_CellVoltage(self):
+        #fix
+        compname = 'Power_CellVoltage'
+        inputs = ['LOS', 'temperature', 'exposedArea', 'Isetpt']
+        outputs = ['V_sol']
+        state0 = []
+        
+        self.setup(compname, inputs, state0)
+        
+        shape = self.model.comp.temperature.shape
+        self.model.comp.temperature = np.ones(shape)
+
+        shape = self.model.comp.temperature.shape
+        self.model.comp.temperature = np.random.random(shape)*40 + 240
+
+        shape = self.model.comp.exposedArea.shape
+        self.model.comp.exposedArea = np.random.random(shape)*1e-4
+
+        shape = self.model.comp.Isetpt.shape
+        self.model.comp.Isetpt = np.random.random(shape)*1e-2
+
+        self.run_model()
+        self.compare_derivatives(inputs, outputs, rel_error=True)  
 
     def test_Power_SolarPower(self):
 
@@ -465,9 +486,17 @@ class Testcase_CADRE(unittest.TestCase):
         compname = 'ReactionWheel_Dynamics'
         inputs = ['w_B', 'T_RW']
         outputs = ['w_RW']
-        state0 = ['w_RW0']
+        
+        # keep these at zeros
+        state0 = [] #['w_RW0']
         
         self.setup(compname, inputs, state0)
+        
+        shape = self.model.comp.w_B.shape
+        self.model.comp.w_B = np.random.random(shape)*1e-4
+        shape = self.model.comp.T_RW.shape
+        self.model.comp.T_RW = np.random.random(shape)*1e-9
+
         self.run_model()
         self.compare_derivatives(inputs, outputs)    
 
@@ -479,8 +508,9 @@ class Testcase_CADRE(unittest.TestCase):
         state0 = []
         
         self.setup(compname, inputs, state0)
+        
         self.run_model()
-        self.compare_derivatives(inputs, outputs)   
+        self.compare_derivatives(inputs, outputs, rel_error=True)   
 
     def test_ReactionWheel_Torque(self):
 
@@ -527,15 +557,17 @@ class Testcase_CADRE(unittest.TestCase):
         self.compare_derivatives(inputs, outputs)    
 
     def test_Orbit_Dynamics(self):
+        # This comp has no inputs, so no derivs.
+        pass
 
-        compname = 'Orbit_Dynamics'
-        inputs = []
-        outputs = ['r_e2b_I']
-        state0 = ['r_e2b_I0']
+        #compname = 'Orbit_Dynamics'
+        #inputs = ['']
+        #outputs = ['r_e2b_I']
+        #state0 = ['r_e2b_I0']
         
-        self.setup(compname, inputs, state0)
-        self.run_model()
-        self.compare_derivatives(inputs, outputs)    
+        #self.setup(compname, inputs, state0)
+        #self.run_model()
+        #self.compare_derivatives(inputs, outputs)    
 
         
 if __name__ == "__main__":
