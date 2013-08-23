@@ -20,7 +20,7 @@ from thermal_temperature import ThermalTemperature
 from power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 import numpy as np
-from pyopt_driver import pyopt_driver
+
 #rk4 components:
 #Comm_DataDownloaded, BatterySOC, ThermalTemperature, Orbit_Dynamics
 
@@ -28,11 +28,9 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n=3):
+    def __init__(self, n, solar_raw1, solar_raw2, comm_raw, power_raw):
         super(CADRE, self).__init__()
         self.self = self
-        #self.add("driver", pyopt_driver.pyOptDriver())
-        #self.driver.optimizer = "SNOPT"
         
         ## Assembly-level parameters
         
@@ -131,7 +129,7 @@ class CADRE(Assembly):
         self.add("Comm_EarthsSpinMtx", Comm_EarthsSpinMtx(n))
         self.driver.workflow.add("Comm_EarthsSpinMtx")
 
-        self.add("Comm_GainPattern", Comm_GainPattern(n))
+        self.add("Comm_GainPattern", Comm_GainPattern(n, comm_raw))
         self.driver.workflow.add("Comm_GainPattern")
         
         self.add("Comm_GSposEarth", Comm_GSposEarth(n))
@@ -163,7 +161,7 @@ class CADRE(Assembly):
         self.driver.workflow.add("Orbit_Dynamics")
         
         # Power
-        self.add("Power_CellVoltage", Power_CellVoltage(n))
+        self.add("Power_CellVoltage", Power_CellVoltage(n, power_raw))
         self.driver.workflow.add("Power_CellVoltage")
         
         self.add("Power_SolarPower", Power_SolarPower(n))
@@ -186,7 +184,8 @@ class CADRE(Assembly):
         self.driver.workflow.add("ReactionWheel_Dynamics")
         
         # Solar
-        self.add("Solar_ExposedArea", Solar_ExposedArea(n))
+        self.add("Solar_ExposedArea", Solar_ExposedArea(n, solar_raw1, 
+                                                        solar_raw2))
         self.driver.workflow.add("Solar_ExposedArea")
         
         # Sun components
@@ -207,15 +206,6 @@ class CADRE(Assembly):
         self.driver.workflow.add("ThermalTemperature")
         
         self.make_connections()
-        
-        #add parameters
-        #self.driver.add_parameter()
-        
-        #add objective
-        #self.driver.add_objective()
-        
-        #add constraints
-        #self.driver.add_constraint()
     
     def get_unconnected_inputs(self):
         unconnected_inputs = []
@@ -330,11 +320,12 @@ class CADRE(Assembly):
                     topath = '.'.join([compname, varname])
                     self.connect(frompath, topath)
                     print "Connecting", frompath, "to", topath, "..."
+        """        
         print
         print "Unconnected inputs:"
         for i in self.get_unconnected_inputs():
             print i
-
+        """
 
 if __name__ == "__main__":
     a = CADRE()
