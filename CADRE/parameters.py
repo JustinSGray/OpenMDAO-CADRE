@@ -8,11 +8,10 @@ import numpy as np
 
 class BsplineParameters(Component):
 
-    def __init__(self, n):
+    def __init__(self, n, m):
         super(BsplineParameters, self).__init__()
         self.n = n
-        
-        self.add('m', Int(300, iotype='in'))
+        self.m = m
         self.add('t1', Float(0., iotype='in'))
         self.add('t2', Float(43200., iotype='in'))
         

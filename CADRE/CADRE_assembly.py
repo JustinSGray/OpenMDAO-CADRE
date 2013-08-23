@@ -28,7 +28,7 @@ class CADRE(Assembly):
     """
     OpenMDAO implementation of the CADRE model
     """
-    def __init__(self, n, solar_raw1, solar_raw2, comm_raw, power_raw):
+    def __init__(self, n, m, solar_raw1, solar_raw2, comm_raw, power_raw):
         super(CADRE, self).__init__()
         self.self = self
         
@@ -36,7 +36,7 @@ class CADRE(Assembly):
         
         # Analysis parameters
         self.n = n
-        self.add('m', Int(300, iotype='in'))
+        self.m = m
         self.add('t', Array(np.zeros((n,), order='F'), size=(n,), 
                             dtype=np.float, iotype="in"))
         self.add('t1', Float(0., iotype='in'))
@@ -64,7 +64,7 @@ class CADRE(Assembly):
         self.add("alt", Float(0, iotype="in"))
         
         # B-spline Parameters
-        self.add("BsplineParameters", BsplineParameters(n))
+        self.add("BsplineParameters", BsplineParameters(n, m))
         self.driver.workflow.add("BsplineParameters")
         
         # Attitude components
