@@ -409,7 +409,6 @@ class Attitude_Torque(Component):
         
         self.dT_dwdot = np.zeros((n,3,3))
         self.wx = np.zeros((3,3))
-        self.J = np.zeros((3,3))
         self.dwx_dw = np.zeros((3,3,3))
 
     def linearize(self):
@@ -445,8 +444,9 @@ class Attitude_Torque(Component):
             wx[0,:] = (0., -self.w_B[2,i], self.w_B[1,i])
             wx[1,:] = (self.w_B[2,i], 0., -self.w_B[0,i])
             wx[2,:] = (-self.w_B[1,i], self.w_B[0,i], 0.)
-            self.T_tot[:,i] = np.dot(self.J,self.wdot_B[:,i]) + np.dot(wx, np.dot(self.J,self.w_B[:,i]))
-
+            self.T_tot[:,i] = np.dot(self.J, self.wdot_B[:,i]) + \
+                              np.dot(wx, np.dot(self.J,self.w_B[:,i]))
+            
     def apply_deriv(self, arg, result):
         if 'w_B' in arg and 'wdot_B' in arg:
             for k in xrange(3):
