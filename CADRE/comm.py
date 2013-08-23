@@ -457,7 +457,7 @@ class Comm_EarthsSpinMtx(Component):
 
 class Comm_GainPattern(Component):
 
-    def __init__(self, n):
+    def __init__(self, n, rawG):
         super(Comm_GainPattern, self).__init__()
         self.n = n
         
@@ -466,9 +466,6 @@ class Comm_GainPattern(Component):
         self.add('azimuthGS', Array(np.zeros(n), iotype='in', shape=(n,)))
         self.add('elevationGS', Array(np.zeros(n), iotype='in', 
                                       shape=(self.n,)))
-        
-        rawGdata = np.genfromtxt('CADRE/data/Comm/Gain.txt')
-        rawG = (10**(rawGdata/10.0)).reshape((361,361),order='F')
         
         pi = np.pi
         az = np.linspace(0, 2*pi, 361)

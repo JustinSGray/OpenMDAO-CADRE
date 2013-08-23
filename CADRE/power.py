@@ -8,7 +8,7 @@ import MBI
 
 class Power_CellVoltage( Component ):
 
-    def __init__(self, n=2): 
+    def __init__(self, n, dat): 
         super(Power_CellVoltage, self).__init__()
 
         self.n = n 
@@ -25,7 +25,7 @@ class Power_CellVoltage( Component ):
         self.add('V_sol', Array(np.zeros((12,n)), size=(12,n), dtype=np.float,
                                       iotype="out"))
 
-        dat = np.genfromtxt('CADRE/data/Power/curve.dat')
+        
         nT, nA, nI = dat[:3]
         T = dat[3:3+nT]
         A = dat[3+nT:3+nT+nA]
