@@ -350,7 +350,7 @@ class Testcase_CADRE(unittest.TestCase):
     def test_Attitude_RotationMtxRates(self):
         
         compname = 'Attitude_RotationMtxRates'
-        inputs = ['h', 'O_BI']
+        inputs = ['O_BI']
         outputs = ['Odot_BI']
         state0 = []
         

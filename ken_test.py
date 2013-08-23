@@ -23,28 +23,33 @@ from CADRE.thermal_temperature import ThermalTemperature
 from CADRE.power import Power_CellVoltage, Power_SolarPower, Power_Total
 
 
-NTIME = 1
+NTIME = 2
 
 cadre = set_as_top(Assembly())
 
-cadre.add('comp', Power_CellVoltage(NTIME))
-data = pickle.load(open("data1346.pkl", 'rb'))
+cadre.add('comp', Attitude_Attitude(NTIME))
+inputs = ['comp.r_e2b_I']
+outputs = ['comp.O_RI']
+shape = cadre.comp.r_e2b_I.shape
+cadre.comp.r_e2b_I = np.random.random(shape)*1e5
 
-#cadre.comp.LOS = data['5:LOS'][:NTIME]
-shape = cadre.comp.LOS.shape
-cadre.comp.LOS = np.ones(shape)
-#cadre.comp.temperature = data['5:temperature'][:, :NTIME]
-shape = cadre.comp.temperature.shape
-cadre.comp.temperature = np.random.random(shape)*40 + 240
-#cadre.comp.exposedArea = data['5:exposedArea'][:, :, :NTIME]
-shape = cadre.comp.exposedArea.shape
-cadre.comp.exposedArea = np.random.random(shape)*1e-4
-#cadre.comp.Isetpt = data['5:Isetpt'][:, :NTIME]
-shape = cadre.comp.Isetpt.shape
-cadre.comp.Isetpt = np.random.random(shape)*1e-2
-#inputs = ['comp.Isetpt']
-inputs = ['comp.LOS', 'comp.temperature', 'comp.exposedArea', 'comp.Isetpt']
-outputs = ['comp.V_sol']
+#cadre.add('comp', Power_CellVoltage(NTIME))
+#data = pickle.load(open("data1346.pkl", 'rb'))
+##cadre.comp.LOS = data['5:LOS'][:NTIME]
+#shape = cadre.comp.LOS.shape
+#cadre.comp.LOS = np.ones(shape)
+##cadre.comp.temperature = data['5:temperature'][:, :NTIME]
+#shape = cadre.comp.temperature.shape
+#cadre.comp.temperature = np.random.random(shape)*40 + 240
+##cadre.comp.exposedArea = data['5:exposedArea'][:, :, :NTIME]
+#shape = cadre.comp.exposedArea.shape
+#cadre.comp.exposedArea = np.random.random(shape)*1e-4
+##cadre.comp.Isetpt = data['5:Isetpt'][:, :NTIME]
+#shape = cadre.comp.Isetpt.shape
+#cadre.comp.Isetpt = np.random.random(shape)*1e-2
+##inputs = ['comp.Isetpt']
+#inputs = ['comp.LOS', 'comp.temperature', 'comp.exposedArea', 'comp.Isetpt']
+#outputs = ['comp.V_sol']
 
 #cadre.add('comp', Power_SolarPower(NTIME))
 #shape = cadre.comp.Isetpt.shape
