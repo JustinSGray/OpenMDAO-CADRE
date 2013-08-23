@@ -10,9 +10,9 @@ import rk4
 #Constants 
 sigma = 1e-10
 eta = 0.99
-Cp = 2900*0.001*3600
+Cp = 2900.0*0.001*3600.0
 IR = 0.9
-T0 = 293.
+T0 = 293.0
 alpha = np.log(1/1.1**5)
 
 
@@ -53,9 +53,9 @@ class BatterySOC(rk4.RK4):
         self.external_vars = ["P_bat","temperature"]
 
 
-
     def f_dot(self,external,state): 
         """Rate of change of SOC""" 
+        
         SOC = state[0]
         P = external[0]
         T = external[5]
@@ -64,7 +64,7 @@ class BatterySOC(rk4.RK4):
         voc = 3 + np.expm1(SOC) / (np.e-1)
         dVoc_dSOC = np.exp(SOC) / (np.e-1)
 
-        V = IR * voc * (2 - np.exp(alpha*(T-T0)/T0))
+        V = IR * voc * (2.0 - np.exp(alpha*(T-T0)/T0))
         I = P/V
 
         soc_dot = -sigma/24*SOC + eta/Cp*I

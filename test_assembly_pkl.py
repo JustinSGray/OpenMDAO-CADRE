@@ -41,7 +41,7 @@ for key in setd.keys():
 
 #print assembly.ThermalTemperature.temperature
 #print data['3:temperature']
-
+print "done"
 # Temp testing stuff
 #inputs = ['Power_CellVoltage.LOS', 'Power_CellVoltage.temperature', 
 #          'Power_CellVoltage.exposedArea', 'Power_CellVoltage.Isetpt']

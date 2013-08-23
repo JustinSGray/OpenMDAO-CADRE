@@ -73,30 +73,20 @@ Connecting Power_Total.P_bat to BatteryPower.P_bat ...
 Connecting Power_Total.P_bat to BatterySOC.P_bat ...
 Connecting Sun_PositionSpherical.azimuth to Solar_ExposedArea.azimuth ...
 Connecting Comm_VectorSpherical.elevationGS to Comm_GainPattern.elevationGS ...
-setting: <CADRE.comm.Comm_AntRotation object at 0x34b9dd0> antAngle
-setting: <CADRE.sun.Sun_PositionECI object at 0x66fc050> LD
-setting: <CADRE.sun.Sun_PositionECI object at 0x66fc050> t
-setting: <CADRE.comm.Comm_EarthsSpin object at 0x34b9fb0> t
-setting: <CADRE.solar.Solar_ExposedArea object at 0x3565e90> finAngle
-setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> lat
-setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> lon
-setting: <CADRE.comm.Comm_GSposEarth object at 0x3565410> alt
-setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_Isetpt
-setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_P_comm
-setting: <CADRE.parameters.BsplineParameters object at 0x3409c50> CP_gamma
-setting: <CADRE.thermal_temperature.ThermalTemperature object at 0x66fc110> cellInstd
-setting: <CADRE.orbit.Orbit_Dynamics object at 0x3565b30> r_e2b_I0
-setting: <CADRE.battery.BatterySOC object at 0x34b9d70> iSOC
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
-TESTING HERE
+setting: <CADRE.comm.Comm_AntRotation object at 0xb223cec> antAngle
+setting: <CADRE.sun.Sun_PositionECI object at 0xcd9677c> LD
+setting: <CADRE.sun.Sun_PositionECI object at 0xcd9677c> t
+setting: <CADRE.comm.Comm_EarthsSpin object at 0xbd8b38c> t
+setting: <CADRE.solar.Solar_ExposedArea object at 0xcd9662c> finAngle
+setting: <CADRE.comm.Comm_GSposEarth object at 0xbd8b98c> lat
+setting: <CADRE.comm.Comm_GSposEarth object at 0xbd8b98c> lon
+setting: <CADRE.comm.Comm_GSposEarth object at 0xbd8b98c> alt
+setting: <CADRE.parameters.BsplineParameters object at 0xb203f2c> CP_Isetpt
+setting: <CADRE.parameters.BsplineParameters object at 0xb203f2c> CP_P_comm
+setting: <CADRE.parameters.BsplineParameters object at 0xb203f2c> CP_gamma
+setting: <CADRE.thermal_temperature.ThermalTemperature object at 0xcd9698c> cellInstd
+setting: <CADRE.orbit.Orbit_Dynamics object at 0xbd8b6bc> r_e2b_I0
+setting: <CADRE.battery.BatterySOC object at 0xb223bfc> iSOC
 checking r_e2b_I
 r_e2b_I Orbit_Dynamics out
 rel error: 3.52849348691e-07
@@ -115,54 +105,54 @@ rel error: 0.0
 
 checking GSdist
 GSdist Comm_Distance out
-rel error: 1.42156055595e-07
+rel error: 1.42156055603e-07
 GSdist Comm_BitRate in
-rel error: 1.42156055595e-07
+rel error: 1.42156055603e-07
 
 checking CommLOS
 CommLOS Comm_LOS out
-rel error: 3.74990938372e-06
+rel error: 3.74990938508e-06
 CommLOS Comm_BitRate in
-rel error: 3.74990938372e-06
+rel error: 3.74990938508e-06
 
 checking ConDs
 ConDs BatteryConstraints out
 
 checking exposedArea
 exposedArea Solar_ExposedArea out
-rel error: 2.67248724264e-05
+rel error: 2.6276094616e-05
 exposedArea Power_CellVoltage in
-rel error: 2.67248724264e-05
+rel error: 2.6276094616e-05
 exposedArea ThermalTemperature in
-rel error: 2.67248724264e-05
+rel error: 2.6276094616e-05
 
 checking Dr
 Dr Comm_BitRate out
-rel error: 5.06146343944e-06
+rel error: 5.00058917936e-06
 Dr Comm_DataDownloaded in
-rel error: 5.06146343944e-06
+rel error: 5.00058917936e-06
 
 checking LOS
 LOS Sun_LOS out
-rel error: 1.13081001968e-06
+rel error: 1.1308100196e-06
 LOS Power_CellVoltage in
-rel error: 1.13081001968e-06
+rel error: 1.1308100196e-06
 LOS ThermalTemperature in
-rel error: 1.13081001968e-06
+rel error: 1.1308100196e-06
 
 checking r_b2g_B
 r_b2g_B Comm_VectorBody out
-rel error: 2.27465431222e-07
+rel error: 2.27465431253e-07
 r_b2g_B Comm_VectorAnt in
-rel error: 2.27465431222e-07
+rel error: 2.27465431253e-07
 
 checking r_b2g_A
 r_b2g_A Comm_VectorAnt out
-rel error: 2.22071416115e-07
+rel error: 2.22071416148e-07
 r_b2g_A Comm_Distance in
-rel error: 2.22071416115e-07
+rel error: 2.22071416148e-07
 r_b2g_A Comm_VectorSpherical in
-rel error: 2.22071416115e-07
+rel error: 2.22071416148e-07
 
 checking alt
 alt Comm_GSposEarth in
@@ -171,11 +161,11 @@ checking v_e2b_I0
 
 checking r_b2g_I
 r_b2g_I Comm_VectorECI out
-rel error: 2.61952272753e-07
+rel error: 2.6195227275e-07
 r_b2g_I Comm_VectorBody in
-rel error: 2.61952272753e-07
+rel error: 2.6195227275e-07
 r_b2g_I Comm_LOS in
-rel error: 2.61952272753e-07
+rel error: 2.6195227275e-07
 
 checking ConS0
 ConS0 BatteryConstraints out
@@ -189,13 +179,13 @@ rel error: 0.0
 
 checking temperature
 temperature ThermalTemperature out
-rel error: 0.0623566323095
+rel error: 4.30107079424e-06
 temperature Power_CellVoltage in
-rel error: 0.0623566323095
+rel error: 4.30107079424e-06
 temperature BatteryPower in
-rel error: 0.0623566323095
+rel error: 4.30107079424e-06
 temperature BatterySOC in
-rel error: 0.0623566323095
+rel error: 4.30107079424e-06
 
 checking q_A
 q_A Comm_AntRotation out
@@ -215,46 +205,46 @@ lon Comm_GSposEarth in
 
 checking w_B
 w_B Attitude_Angular out
-rel error: 8.11264199166e-09
+rel error: 8.11264196282e-09
 w_B ReactionWheel_Motor in
-rel error: 8.11264199166e-09
+rel error: 8.11264196282e-09
 w_B ReactionWheel_Dynamics in
-rel error: 8.11264199166e-09
+rel error: 8.11264196282e-09
 w_B Attitude_Torque in
-rel error: 8.11264199166e-09
+rel error: 8.11264196282e-09
 w_B Attitude_AngularRates in
-rel error: 8.11264199166e-09
+rel error: 8.11264196282e-09
 
 checking antAngle
 antAngle Comm_AntRotation in
 
 checking Isetpt
 Isetpt BsplineParameters out
-rel error: 0.0
+rel error: 6.61747016542e-15
 Isetpt Power_CellVoltage in
-rel error: 0.0
+rel error: 6.61747016542e-15
 Isetpt Power_SolarPower in
-rel error: 0.0
+rel error: 6.61747016542e-15
 
 checking v_e2b_B
 v_e2b_B Attitude_Sideslip out
-rel error: 8.0882908298e-09
+rel error: 8.08829083231e-09
 
 checking azimuthGS
 azimuthGS Comm_VectorSpherical out
-rel error: 1.25119473583e-07
+rel error: 1.25119473596e-07
 azimuthGS Comm_GainPattern in
-rel error: 1.25119473583e-07
+rel error: 1.25119473596e-07
 
 checking Data
 Data Comm_DataDownloaded out
-rel error: 5.72156205289e-07
+rel error: 1.18204375543e-06
 
 checking V_sol
 V_sol Power_CellVoltage out
-rel error: 0.0600335569309
+rel error: 2.21638995593e-05
 V_sol Power_SolarPower in
-rel error: 0.0600335569309
+rel error: 2.21638995593e-05
 
 checking t
 t Sun_PositionECI in
@@ -264,9 +254,9 @@ rel error: 0.0
 
 checking O_RI
 O_RI Attitude_Attitude out
-rel error: 2.88102893644e-07
+rel error: 2.88102893616e-07
 O_RI Attitude_RotationMtx in
-rel error: 2.88102893644e-07
+rel error: 2.88102893616e-07
 
 checking O_AB
 O_AB Comm_AntRotationMtx out
@@ -276,9 +266,9 @@ rel error: 1.10796868495e-08
 
 checking elevation
 elevation Sun_PositionSpherical out
-rel error: 4.15403353386e-07
+rel error: 4.15403353377e-07
 elevation Solar_ExposedArea in
-rel error: 4.15403353386e-07
+rel error: 4.15403353377e-07
 
 checking CP_P_comm
 CP_P_comm BsplineParameters in
@@ -286,16 +276,16 @@ rel error: 0.0
 
 checking T_m
 T_m ReactionWheel_Motor out
-rel error: 3.8092559583e-08
+rel error: 3.80925587234e-08
 
 checking LD
 LD Sun_PositionECI in
 
 checking P_RW
 P_RW ReactionWheel_Power out
-rel error: 5.43448916958e-08
+rel error: 5.43448916956e-08
 P_RW Power_Total in
-rel error: 5.43448916958e-08
+rel error: 5.43448916956e-08
 
 checking r_e2s_I
 r_e2s_I Sun_PositionECI out
@@ -307,52 +297,52 @@ rel error: 7.85084414896e-07
 
 checking gain
 gain Comm_GainPattern out
-rel error: 1.51748920489e-06
+rel error: 1.48072010344e-06
 gain Comm_BitRate in
-rel error: 1.51748920489e-06
+rel error: 1.48072010344e-06
 
 checking P_sol
 P_sol Power_SolarPower out
-rel error: 0.0201202922779
+rel error: 5.35435956074e-06
 P_sol Power_Total in
-rel error: 0.0201202922779
+rel error: 5.35435956074e-06
 
 checking lat
 lat Comm_GSposEarth in
 
 checking T_tot
 T_tot Attitude_Torque out
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 T_tot ReactionWheel_Torque in
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 
 checking O_IE
 O_IE Comm_EarthsSpinMtx out
-rel error: 4.12183663381e-08
+rel error: 4.121836637e-08
 O_IE Comm_GSposECI in
-rel error: 4.12183663381e-08
+rel error: 4.121836637e-08
 
 checking Gamma
 Gamma BsplineParameters out
-rel error: 0.0
+rel error: 3.60874592159e-15
 Gamma Attitude_Roll in
-rel error: 0.0
+rel error: 3.60874592159e-15
 
 checking r_e2s_B
 r_e2s_B Sun_PositionBody out
-rel error: 9.82106325279e-07
+rel error: 9.82106325305e-07
 r_e2s_B Sun_PositionSpherical in
-rel error: 9.82106325279e-07
+rel error: 9.82106325305e-07
 
 checking T_RW
 T_RW ReactionWheel_Torque out
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 T_RW ReactionWheel_Motor in
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 T_RW ReactionWheel_Dynamics in
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 T_RW ReactionWheel_Power in
-rel error: 3.39852088777e-08
+rel error: 3.39852087608e-08
 
 checking r_e2g_E
 r_e2g_E Comm_GSposEarth out
@@ -362,86 +352,86 @@ rel error: 4.8790042965e-08
 
 checking w_RW
 w_RW ReactionWheel_Dynamics out
-rel error: 1.03067353425e-07
+rel error: 1.03067351405e-07
 w_RW ReactionWheel_Motor in
-rel error: 1.03067353425e-07
+rel error: 1.03067351405e-07
 w_RW ReactionWheel_Power in
-rel error: 1.03067353425e-07
+rel error: 1.03067351405e-07
 
 checking r_e2g_I
 r_e2g_I Comm_GSposECI out
-rel error: 4.27704539895e-08
+rel error: 4.27704540013e-08
 r_e2g_I Comm_VectorECI in
-rel error: 4.27704539895e-08
+rel error: 4.27704540013e-08
 r_e2g_I Comm_LOS in
-rel error: 4.27704539895e-08
+rel error: 4.27704540013e-08
 
 checking wdot_B
 wdot_B Attitude_AngularRates out
-rel error: 1.6635885789e-09
+rel error: 1.6635885496e-09
 wdot_B Attitude_Torque in
-rel error: 1.6635885789e-09
+rel error: 1.6635885496e-09
 
 checking O_BR
 O_BR Attitude_Roll out
-rel error: 3.3100455406e-18
+rel error: 2.87647329761e-15
 O_BR Attitude_RotationMtx in
-rel error: 3.3100455406e-18
+rel error: 2.87647329761e-15
 
 checking Odot_BI
 Odot_BI Attitude_RotationMtxRates out
-rel error: 2.59042457541e-07
+rel error: 2.59042457529e-07
 Odot_BI Attitude_Angular in
-rel error: 2.59042457541e-07
+rel error: 2.59042457529e-07
 
 checking P_comm
 P_comm BsplineParameters out
-rel error: 0.0
+rel error: 1.7156853055e-14
 P_comm Power_Total in
-rel error: 0.0
+rel error: 1.7156853055e-14
 P_comm Comm_BitRate in
-rel error: 0.0
+rel error: 1.7156853055e-14
 P_comm ThermalTemperature in
-rel error: 0.0
+rel error: 1.7156853055e-14
 
 checking finAngle
 finAngle Solar_ExposedArea in
 
 checking SOC
 SOC BatterySOC out
-rel error: 0.0154185344806
+rel error: 1.50039380488e-05
 SOC BatteryConstraints in
-rel error: 0.0154185344806
+rel error: 1.50039380488e-05
 SOC BatteryPower in
-rel error: 0.0154185344806
+rel error: 1.50039380488e-05
 
 checking I_bat
 I_bat BatteryPower out
-rel error: 0.0388517547442
+rel error: 6.88087872355e-06
 I_bat BatteryConstraints in
-rel error: 0.0388517547442
+rel error: 6.88087872355e-06
 
 checking O_BI
 O_BI Attitude_RotationMtx out
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 O_BI Comm_VectorBody in
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 O_BI Attitude_RotationMtxRates in
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 O_BI Attitude_Sideslip in
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 O_BI Sun_PositionBody in
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 O_BI Attitude_Angular in
-rel error: 2.88102893645e-07
+rel error: 2.88102893616e-07
 
 checking P_bat
 P_bat Power_Total out
-rel error: 0.0174154603079
+rel error: 4.63289255016e-06
 P_bat BatteryPower in
-rel error: 0.0174154603079
+rel error: 4.63289255016e-06
 P_bat BatterySOC in
-rel error: 0.0174154603079
+rel error: 4.63289255016e-06
 
 checking r_e2b_I0
 r_e2b_I0 Orbit_Dynamics in
@@ -449,15 +439,15 @@ rel error: 0.0
 
 checking azimuth
 azimuth Sun_PositionSpherical out
-rel error: 4.30944948395e-07
+rel error: 4.38653084863e-07
 azimuth Solar_ExposedArea in
-rel error: 4.30944948395e-07
+rel error: 4.38653084863e-07
 
 checking elevationGS
 elevationGS Comm_VectorSpherical out
-rel error: 1.23151871135e-07
+rel error: 1.23151871151e-07
 elevationGS Comm_GainPattern in
-rel error: 1.23151871135e-07
+rel error: 1.23151871151e-07
 
 checking CP_Isetpt
 CP_Isetpt BsplineParameters in
@@ -467,7 +457,8 @@ checking gamma
 
 checking q_E
 q_E Comm_EarthsSpin out
-rel error: 2.52409913904e-08
+rel error: 2.52409914097e-08
 q_E Comm_EarthsSpinMtx in
-rel error: 2.52409913904e-08
+rel error: 2.52409914097e-08
 
+done
