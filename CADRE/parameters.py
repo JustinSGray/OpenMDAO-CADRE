@@ -10,11 +10,12 @@ class BsplineParameters(Component):
 
     def __init__(self, n):
         super(BsplineParameters, self).__init__()
+        
         self.n = n
-        self.add('m', 300)
+        self.m = 300
         m = self.m
-        self.add('t1', 0.)
-        self.add('t2', 43200.)
+        self.t1 = 0.
+        self.t2 = 43200.
         
         self.add('h', Float(0.01, iotype='out'))
         
@@ -33,35 +34,33 @@ class BsplineParameters(Component):
 
     def execute(self):
         self.h = (self.t2 - self.t1)/(self.n - 1)
-        self.P_comm[:] = self.B.dot(self.CP_P_comm[:])
-        self.Gamma[:] = self.B.dot(self.CP_gamma[:])
+        self.P_comm = self.B.dot(self.CP_P_comm)
+        self.Gamma = self.B.dot(self.CP_gamma)
         for k in range(12):
-            self.Isetpt[k,:] = self.B.dot(self.CP_Isetpt[k,:])
+            self.Isetpt[k, :] = self.B.dot(self.CP_Isetpt[k, :])
 
-    def applyDer(self, arg, result):
+    def apply_deriv(self, arg, result):
         result['P_comm'] = np.zeros((self.n,))
         result['Gamma'] = np.zeros((self.n,))
         result['Isetpt'] = np.zeros((12,self.n))
         
         if 'CP_P_comm' in arg:
-            result['P_comm'][:] += self.B.dot(arg['CP_P_comm'][:])
+            result['P_comm'] += self.B.dot(arg['CP_P_comm'])
         if 'CP_gamma' in arg:
-            result['Gamma'][:] += self.B.dot(arg['CP_gamma'][:])
+            result['Gamma'] += self.B.dot(arg['CP_gamma'])
         if 'CP_Isetpt' in arg:
             for k in range(12):
-                result['Isetpt'][k,:] += self.B.dot(arg['CP_Isetpt'][k,:])
-        return result
+                result['Isetpt'][k, :] += self.B.dot(arg['CP_Isetpt'][k, :])
 
-    def applyDerT(self, arg, result):
+    def apply_derivT(self, arg, result):
         result['CP_P_comm'] = np.zeros((self.m,))
         result['CP_gamma'] = np.zeros((self.m,))
-        result['CP_Isetpt'] = np.zeros((12,self.m))
+        result['CP_Isetpt'] = np.zeros((12, self.m))
         
         if 'P_comm' in arg:
-            result['CP_P_comm'][:] += self.BT.dot(arg['P_comm'][:])
+            result['CP_P_comm'] += self.BT.dot(arg['P_comm'])
         if 'Gamma' in arg:
-            result['CP_gamma'][:] += self.BT.dot(arg['Gamma'][:])
+            result['CP_gamma'] += self.BT.dot(arg['Gamma'])
         if 'Isetpt' in arg:
             for k in range(12):
-                result['CP_Isetpt'][k,:] += self.BT.dot(arg['Isetpt'][k,:])
-        return result
+                result['CP_Isetpt'][k, :] += self.BT.dot(arg['Isetpt'][k, :])

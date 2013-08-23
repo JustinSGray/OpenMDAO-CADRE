@@ -31,7 +31,10 @@ setd['Gamma'] = data[idx+":gamma"]
 
 
 assembly.print_set_vals(setvals=setd, printvals="none")
+from time import time
+tzero = time()
 assembly.run()
+print "Execution time", time()-tzero
 
 for key in setd.keys():
         print "checking",key
