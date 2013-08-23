@@ -19,7 +19,7 @@ class Solar_ExposedArea(Component):
     '''
     finAngle = Float(0., iotype="in", copy=None)
     
-    def __init__(self, n):
+    def __init__(self, n, raw1, raw2):
         super(Solar_ExposedArea, self).__init__()
         
         self.n = n
@@ -38,9 +38,6 @@ class Solar_ExposedArea(Component):
         angle = np.zeros(self.na)
         azimuth = np.zeros(self.nz)
         elevation = np.zeros(self.ne)
-
-        raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
-        raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
 
         index = 0
         for i in range(self.na):

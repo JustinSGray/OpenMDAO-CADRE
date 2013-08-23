@@ -22,7 +22,17 @@ for key in data.keys():
             setd[shortkey] = data[key]
 
 n = setd['P_comm'].size
-assembly = set_as_top(CADRE(n=n))
+m = setd['CP_P_comm'].size
+
+raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
+raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
+
+comm_rawGdata = np.genfromtxt('CADRE/data/Comm/Gain.txt')
+comm_raw = (10**(comm_rawGdata/10.0)).reshape((361,361),order='F')
+
+power_raw = np.genfromtxt('CADRE/data/Power/curve.dat')
+
+assembly = set_as_top(CADRE(n, m, raw1, raw2, comm_raw, power_raw))
 
 setd['r_e2b_I0'] = np.zeros(6)
 setd['r_e2b_I0'][:3] = data[idx+":r_e2b_I0"]
