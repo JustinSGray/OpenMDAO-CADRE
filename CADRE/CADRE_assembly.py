@@ -108,7 +108,7 @@ class CADRE(Assembly):
         self.add("BatterySOC", BatterySOC(n))
         self.driver.workflow.add("BatterySOC")
         
-        ### Comm components
+        # Comm components
         self.add("Comm_AntRotation", Comm_AntRotation(n))
         self.driver.workflow.add("Comm_AntRotation")
         
@@ -155,14 +155,14 @@ class CADRE(Assembly):
         self.add("Comm_VectorSpherical", Comm_VectorSpherical(n))
         self.driver.workflow.add("Comm_VectorSpherical")
         
-        ## Orbit components
-        ##self.add("Orbit_Initial", Orbit_Initial())
-        ##self.driver.workflow.add("Orbit_Initial")
+        # Orbit components
+        #self.add("Orbit_Initial", Orbit_Initial())
+        #self.driver.workflow.add("Orbit_Initial")
         
         self.add("Orbit_Dynamics", Orbit_Dynamics(n))
         self.driver.workflow.add("Orbit_Dynamics")
         
-        ## Power
+        # Power
         self.add("Power_CellVoltage", Power_CellVoltage(n))
         self.driver.workflow.add("Power_CellVoltage")
         
@@ -172,7 +172,7 @@ class CADRE(Assembly):
         self.add("Power_Total", Power_Total(n))
         self.driver.workflow.add("Power_Total")
         
-        ## Reaction wheel components
+        # Reaction wheel components
         self.add("ReactionWheel_Motor", ReactionWheel_Motor(n))
         self.driver.workflow.add("ReactionWheel_Motor")
         
@@ -202,7 +202,7 @@ class CADRE(Assembly):
         self.add("Sun_PositionSpherical", Sun_PositionSpherical(n))
         self.driver.workflow.add("Sun_PositionSpherical")
         
-        ### Thermal temp components
+        # Thermal temp components
         self.add("ThermalTemperature", ThermalTemperature(n))
         self.driver.workflow.add("ThermalTemperature")
         

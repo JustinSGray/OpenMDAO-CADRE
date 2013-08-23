@@ -86,7 +86,7 @@ class ThermalTemperature(RK4):
                 
             # Fin
             else: 
-                f_i = p%4
+                f_i = (p+1)%4
                 m = m_f
                 cp = cp_f
                 
@@ -104,6 +104,7 @@ class ThermalTemperature(RK4):
                 f[f_i] -= eps * K * A_T * state[f_i]**4 / m / cp
 
         f[4] += 4.0 * P_comm / m_b / cp_b
+        
         return f
         
     
@@ -121,7 +122,7 @@ class ThermalTemperature(RK4):
                 m = m_b
                 cp = cp_b
             else: #fin
-                f_i = p%4
+                f_i = (p+1)%4
                 m = m_f
                 cp = cp_f
             for c in range (0,7): #cells
@@ -150,7 +151,7 @@ class ThermalTemperature(RK4):
                 m = m_b
                 cp = cp_b
             else: #fin
-                f_i = p%4
+                f_i = (p+1)%4
                 m = m_f
                 cp = cp_f
             for c in range (0,7): #cells
