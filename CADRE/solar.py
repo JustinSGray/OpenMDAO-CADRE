@@ -21,15 +21,10 @@ class Solar_ExposedArea(Component):
     
     def __init__(self, n):
         super(Solar_ExposedArea, self).__init__()
+        
         self.n = n
-        self.add('raw1', Array(dtype=np.float))
-        self.add('raw2', Array(dtype=np.float))
-        raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
-        raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
-
-        self.add('nc', 7)
-        self.add('np', 12)
-
+        self.nc = 7
+        self.np = 12
 
         self.add('azimuth', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
         self.add('elevation', Array(np.zeros((5,)), size=(5,), dtype=np.float, iotype='in'))
@@ -37,13 +32,15 @@ class Solar_ExposedArea(Component):
         self.add('exposedArea', Array(np.zeros((self.nc,self.np,self.n)), size=(self.nc,self.np,self.n), 
                                       dtype=np.float, iotype='out', low=-5e-3, high=1.834e-1))
 
-        self.add('na', 10)
-        self.add('nz', 73)
-        self.add('ne', 37)
-        
+        self.na = 10
+        self.nz = 73
+        self.ne = 37
         angle = np.zeros(self.na)
         azimuth = np.zeros(self.nz)
         elevation = np.zeros(self.ne)
+
+        raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
+        raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
 
         index = 0
         for i in range(self.na):
@@ -52,8 +49,9 @@ class Solar_ExposedArea(Component):
         for i in range(self.nz):
             azimuth[i] = raw1[index]
             index += 1
+            
         index -= 1
-        azimuth[self.nz-1] = 2*np.pi
+        azimuth[self.nz-1] = 2.0*np.pi
         for i in range(self.ne):
             elevation[i] = raw1[index]
             index += 1
@@ -76,9 +74,9 @@ class Solar_ExposedArea(Component):
                             data[i,j,k,counter] = raw2[7*p+c][index]
                             index += 1
                 counter += 1
-        self.MBI = MBI(data,[angle,azimuth,elevation],[4,10,8],[4,4,4])
-        self.x = np.zeros((self.n,3),order='F')
-        self.exposedArea = np.zeros((self.nc,self.np,self.n),order='F')
+                
+        self.MBI = MBI(data, [angle,azimuth,elevation], [4,10,8], [4,4,4])
+        self.x = np.zeros((self.n,3))
         self.Js = [None for i in range(3)]
     
     def setx(self):
@@ -86,7 +84,6 @@ class Solar_ExposedArea(Component):
         self.x[:,0] = self.finAngle
         self.x[:,1] = result[0]
         self.x[:,2] = result[1]
-    
 
     def linearize(self):
         self.setx()
@@ -99,7 +96,7 @@ class Solar_ExposedArea(Component):
         self.exposedArea = np.zeros((self.exposedArea.shape))
         for c in range(7):
             for p in range(12):
-                self.exposedArea[c,p,:] = self.P[:,7*p+c]
+                self.exposedArea[c, p, :] = self.P[:, 7*p+c]
 
     def apply_deriv(self, arg, result):
         
