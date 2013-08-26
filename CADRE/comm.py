@@ -457,9 +457,13 @@ class Comm_EarthsSpinMtx(Component):
 
 class Comm_GainPattern(Component):
 
-    def __init__(self, n, rawG):
+    def __init__(self, n, rawG=None):
         super(Comm_GainPattern, self).__init__()
         self.n = n
+
+        if rawG is None: 
+            rawGdata = np.genfromtxt('CADRE/data/Comm/Gain.txt')
+            rawG = (10**(rawGdata/10.0)).reshape((361,361),order='F')
         
         self.add('gain', Array(np.zeros(n), iotype='out', shape=(n,)))
         

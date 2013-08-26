@@ -8,10 +8,13 @@ import MBI
 
 class Power_CellVoltage( Component ):
 
-    def __init__(self, n, dat): 
+    def __init__(self, n, dat=None): 
         super(Power_CellVoltage, self).__init__()
 
         self.n = n 
+
+        if dat is None: 
+            dat = np.genfromtxt('CADRE/data/Power/curve.dat')
 
         self.add('LOS', Array(np.zeros((n)), size=(n, ), dtype=np.float, iotype="in", 
             desc="Line of Sight over Time"))

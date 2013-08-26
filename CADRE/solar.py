@@ -19,8 +19,13 @@ class Solar_ExposedArea(Component):
     '''
     finAngle = Float(0., iotype="in", copy=None)
     
-    def __init__(self, n, raw1, raw2):
+    def __init__(self, n, raw1=None, raw2=None):
         super(Solar_ExposedArea, self).__init__()
+
+        if raw1 is None: 
+            raw1 = np.genfromtxt('CADRE/data/Solar/Area10.txt')
+        if raw2 is None: 
+            raw2 = np.loadtxt("CADRE/data/Solar/Area_all.txt")
         
         self.n = n
         self.nc = 7
